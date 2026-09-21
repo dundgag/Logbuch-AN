@@ -1,787 +1,4131 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full bg-slate-50">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Anästhesie Logbuch</title>
-  
-  <!-- iOS PWA Einstellungen -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="AnästhesieLog">
-  
-  <!-- Tailwind CSS & Icons -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <style>
-    body {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    input, select, textarea {
-      user-select: text;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anästhesie Logbuch</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#035485',
+                            900: '#0c2a4a'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        #print-report {
+            display: none;
+        }
+
+        @media print {
+            body > *:not(#print-report) {
+                display: none !important;
+            }
+
+            #print-report {
+                display: block !important;
+                color: #000;
+                background: #fff;
+                font-family: Arial, sans-serif;
+            }
+
+            .print-sheet {
+                padding: 10mm;
+            }
+
+            .print-sheet h1 {
+                font-size: 18px;
+                margin: 0 0 8px;
+            }
+
+            .print-sheet h2 {
+                font-size: 13px;
+                margin: 14px 0 5px;
+            }
+
+            .print-sheet table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 8px;
+                margin-bottom: 10px;
+            }
+
+            .print-sheet th,
+            .print-sheet td {
+                border: 1px solid #999;
+                padding: 3px;
+                text-align: left;
+            }
+
+            .print-sheet th {
+                font-weight: bold;
+            }
+
+            @page {
+                size: A4;
+                margin: 8mm;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen pb-20">
 
-  <!-- Header -->
-  <header class="bg-sky-800 text-white pt-10 pb-4 px-4 sticky top-0 z-30 shadow-md">
-    <div class="max-w-md mx-auto flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-bold flex items-center gap-2">
-          <i data-lucide="activity" class="w-6 h-6"></i>
-          Anästhesie Logbuch
-        </h1>
-        <p class="text-xs text-sky-200">Weiterbildungskatalog Ärztekammer</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="exportCSV()" class="bg-sky-900 hover:bg-sky-950 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm" title="CSV herunterladen">
-          <i data-lucide="download" class="w-4 h-4"></i> CSV
+<body class="h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 transition-colors duration-200">
+
+<div id="app" class="min-h-screen flex flex-col max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+
+    <!-- HEADER -->
+    <header class="py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+
+        <div class="flex items-center space-x-3">
+            <div class="p-2.5 bg-brand-600 text-white rounded-xl shadow-md flex items-center justify-center">
+                <i data-lucide="stethoscope" class="w-6 h-6"></i>
+            </div>
+
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                    Anästhesie Logbuch
+
+                    <span class="text-xs px-2 py-0.5 font-medium bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-300 rounded-full border border-brand-200 dark:border-brand-800">
+                        Weiterbildungs-Auswertung
+                    </span>
+                </h1>
+
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Elektronische Fallerfassung & Weiterbildungs-Auswertung
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+
+            <div class="text-right px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs">
+                <div class="text-slate-500 dark:text-slate-400">
+                    Erfasste Fälle
+                </div>
+
+                <div class="text-base font-bold text-slate-800 dark:text-slate-100"
+                     id="header-total-count">
+                    0
+                </div>
+            </div>
+
+            <button
+                id="theme-toggle"
+                type="button"
+                class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+                title="Dunkel/Hell Modus"
+            >
+                <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+                <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+            </button>
+
+            <button
+                type="button"
+                id="pdf-report-button"
+                class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-600 dark:text-slate-300"
+                title="Druckbericht / PDF"
+            >
+                PDF / Drucken
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav
+        class="my-4 flex space-x-1 sm:space-x-2 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-px"
+        aria-label="Tabs"
+    >
+        <button
+            onclick="switchTab('new-case')"
+            id="tab-btn-new-case"
+            class="tab-btn active px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-brand-600 text-brand-600 dark:text-brand-400 whitespace-nowrap"
+        >
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Neuer Fall
         </button>
-        <button onclick="sendToGoogleSheets()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm" title="Google Sheets Backup">
-          <i data-lucide="sheet" class="w-4 h-4"></i> Sheets
+
+        <button
+            onclick="switchTab('case-list')"
+            id="tab-btn-case-list"
+            class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap"
+        >
+            <i data-lucide="list" class="w-4 h-4"></i>
+            Erfasste Fälle
+            <span
+                id="badge-case-count"
+                class="ml-1 px-2 py-0.5 text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full"
+            >
+                0
+            </span>
         </button>
-      </div>
+
+        <button
+            onclick="switchTab('evaluation')"
+            id="tab-btn-evaluation"
+            class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap"
+        >
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            Auswertung
+        </button>
+
+        <button
+            onclick="switchTab('settings')"
+            id="tab-btn-settings"
+            class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap"
+        >
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            Vorwerte & Einstellungen
+        </button>
+    </nav>
+
+    <!-- ========================================================= -->
+    <!-- TAB: NEUER FALL -->
+    <!-- ========================================================= -->
+
+    <main id="tab-content-new-case" class="tab-content flex-1 pb-12">
+
+        <form
+            id="case-form"
+            onsubmit="handleCaseSubmit(event)"
+            class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-6"
+        >
+
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 pb-3">
+
+                <h2
+                    id="case-form-title"
+                    class="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2"
+                >
+                    <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
+                    Patienten- & Falldaten
+                </h2>
+
+                <span class="text-xs text-slate-400">
+                    * Pflichtfelder
+                </span>
+            </div>
+
+            <!-- BASISDATEN -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                        Datum *
+                    </label>
+
+                    <input
+                        type="date"
+                        id="input-date"
+                        required
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                        Patient Initialen *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="input-initials"
+                        placeholder="z. B. M.M. oder MM"
+                        required
+                        maxlength="6"
+                        onblur="formatInitials(this)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm uppercase focus:ring-2 focus:ring-brand-500 outline-none"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                        Geburtsdatum *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="input-dob"
+                        placeholder="z. B. 15.05.64 oder 15.05.1964"
+                        required
+                        onblur="handleSmartDobInput(this)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    >
+
+                    <p
+                        id="dob-hint"
+                        class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"
+                    >
+                        2-stellige Jahreszahl: 00–26 → 2000–2026, 27–99 → 1927–1999
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                        ASA-Klassifikation *
+                    </label>
+
+                    <select
+                        id="input-asa"
+                        required
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    >
+                        <option value="">-- ASA auswählen --</option>
+                        <option value="1">ASA I</option>
+                        <option value="2">ASA II</option>
+                        <option value="3">ASA III</option>
+                        <option value="4">ASA IV</option>
+                        <option value="5">ASA V</option>
+                        <option value="6">ASA VI</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KIND -->
+            <div
+                id="child-age-alert"
+                class="hidden p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300"
+            >
+                <i data-lucide="baby" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+
+                <span>
+                    <strong>Erkannt:</strong>
+                    Patient ist ≤ 5 Jahre alt.
+                </span>
+            </div>
+
+            <!-- FACHRICHTUNG -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                    Fachrichtung *
+                </label>
+
+                <select
+                    id="input-department"
+                    required
+                    onchange="handleDepartmentChange(this.value)"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                    <option value="">-- Fachrichtung wählen --</option>
+                    <option value="Allg. & Viszeralchirurgie">Allgemein- & Viszeralchirurgie</option>
+                    <option value="Unfallchirurgie / Orthopädie">Unfallchirurgie & Orthopädie</option>
+                    <option value="Gynäkologie">Gynäkologie</option>
+                    <option value="Geburtshilfe">Geburtshilfe</option>
+                    <option value="HNO / Augen">HNO / Augenheilkunde</option>
+                    <option value="Neurochirurgie">Neurochirurgie</option>
+                    <option value="Urologie">Urologie</option>
+                    <option value="Gefäßchirurgie">Gefäßchirurgie</option>
+                    <option value="Thoraxchirurgie">Thoraxchirurgie</option>
+                    <option value="Plastische Chirurgie">Plastische / Ästhetische Chirurgie</option>
+                    <option value="Mund-Kiefer-Gesicht">Mund-Kiefer-Gesichtschirurgie</option>
+                    <option value="Sonstige Fachrichtung">Sonstige Fachrichtung</option>
+                </select>
+            </div>
+
+            <!-- EINGRIFF -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                    Eingriff *
+                </label>
+
+                <div class="flex gap-2">
+
+                    <select
+                        id="input-procedure"
+                        required
+                        onchange="handleProcedureChange(this.value)"
+                        class="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    >
+                        <option value="">-- Fachrichtung zuerst wählen --</option>
+                    </select>
+
+                    <button
+                        type="button"
+                        onclick="openCustomProcedurePrompt()"
+                        class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium whitespace-nowrap"
+                    >
+                        + Eigener Eingriff
+                    </button>
+                </div>
+            </div>
+
+            <!-- BESONDERHEITEN -->
+            <div>
+
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-2">
+                    Eingriffsart & Besonderheiten
+                </label>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-abdominell">
+                        <span>Abdomineller Eingriff</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-kopf-hals">
+                        <span>Eingriff Kopf / Hals</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-intrathorakal">
+                        <span>Intrathorakaler Eingriff</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-intrakraniell">
+                        <span>Intrakranieller Eingriff</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input
+                            type="checkbox"
+                            id="check-sectio"
+                            onchange="syncSectioGeburtshilfe(this)"
+                        >
+                        <span>Sectio Caesarea</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-ambulant">
+                        <span>Ambulante Anästhesie</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ANÄSTHESIE -->
+            <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <i data-lucide="syringe" class="w-4 h-4 text-brand-600"></i>
+                    Anästhesieverfahren
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                    <label class="checkbox-card font-medium">
+                        <input
+                            type="checkbox"
+                            id="proc-vollnarkose"
+                            checked
+                        >
+                        <span>Allgemeinanästhesie / Narkose</span>
+                    </label>
+
+                    <label class="checkbox-card font-medium">
+                        <input
+                            type="checkbox"
+                            id="proc-spa-pdk"
+                            onchange="handleSpaPdkChange(this)"
+                        >
+                        <span>Rückenmarksnahe Regionalanästhesie</span>
+                    </label>
+
+                    <label class="checkbox-card font-medium">
+                        <input
+                            type="checkbox"
+                            id="proc-periphere-ra"
+                            onchange="togglePeriphereDropdown(this.checked)"
+                        >
+                        <span>Periphere Regionalanästhesie</span>
+                    </label>
+
+                    <label class="checkbox-card font-medium">
+                        <input
+                            type="checkbox"
+                            id="proc-sedierung"
+                        >
+                        <span class="text-slate-600 dark:text-slate-400">
+                            Analgosedierung
+                        </span>
+                    </label>
+                </div>
+
+                <!-- SPA / PDK -->
+                <div
+                    id="spa-pdk-container"
+                    class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700"
+                >
+                    <label
+                        for="select-spa-pdk"
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                    >
+                        Verfahren *
+                    </label>
+
+                    <select
+                        id="select-spa-pdk"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm"
+                    >
+                        <option value="">-- Verfahren wählen --</option>
+                        <option value="SPA">SPA</option>
+                        <option value="PDK">PDK</option>
+                        <option value="SPA Geb">SPA Geburtshilfe</option>
+                        <option value="PDK Geb">PDK Geburtshilfe</option>
+                    </select>
+                </div>
+
+                <!-- PERIPHERE RA -->
+                <div
+                    id="periphere-ra-container"
+                    class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700"
+                >
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Peripheres Regionalanästhesie-Verfahren
+                    </label>
+
+                    <select
+                        id="select-periphere-verfahren"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm"
+                    >
+                        <option value="Interskalenusblockade (ISB)">Interskalenusblockade (ISB)</option>
+                        <option value="Supraclaviculäre Blockade">Supraclaviculäre Blockade</option>
+                        <option value="Infraclaviculäre Blockade">Infraclaviculäre Blockade</option>
+                        <option value="Axilläre Plexusblockade">Axilläre Plexusblockade</option>
+                        <option value="Femoralisnerv / FICB">Femoralisnerv / FICB</option>
+                        <option value="Adduktorkanal-Blockade (ACB)">Adduktorkanal-Blockade (ACB)</option>
+                        <option value="Ischiadicus-Blockade">Ischiadicus-Blockade</option>
+                        <option value="TAP-Block">TAP-Block</option>
+                        <option value="Erector Spinae (ESP) Block">Erector Spinae Plane Block</option>
+                        <option value="Sonstiger peripherer Block">Sonstiger peripherer Block</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ATEMWEG -->
+            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-brand-600"></i>
+                    Atemwegs- & Gefäßinterventionen
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-fiberoptik">
+                        <span>Fiberoptische Intubation</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-videolaryngo">
+                        <span>Videolaryngoskopie</span>
+                    </label>
+
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="check-sono-gefaess">
+                        <span>Sonografische Gefäßpunktion</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- BEMERKUNG -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">
+                    Bemerkungen / Prozeduren-Details
+                </label>
+
+                <input
+                    type="text"
+                    id="input-notes"
+                    placeholder="z. B. Schwieriger Atemweg Cormack III, ZVK V. jugularis int."
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-sm"
+                >
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="pt-2 flex justify-end gap-2">
+
+                <button
+                    id="case-cancel-edit"
+                    type="button"
+                    onclick="cancelEditCase()"
+                    class="hidden px-5 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium rounded-xl text-sm"
+                >
+                    Abbrechen
+                </button>
+
+                <button
+                    id="case-submit-button"
+                    type="submit"
+                    class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl shadow-md flex items-center gap-2 text-sm"
+                >
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Fall speichern
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- TAB: FÄLLE -->
+    <!-- ========================================================= -->
+
+    <main id="tab-content-case-list" class="tab-content hidden flex-1 pb-12">
+
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700/50">
+
+                <div class="relative w-full sm:w-72">
+
+                    <i
+                        data-lucide="search"
+                        class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"
+                    ></i>
+
+                    <input
+                        type="text"
+                        id="search-cases"
+                        oninput="renderCaseList()"
+                        placeholder="Suchen..."
+                        class="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100 text-xs"
+                    >
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+
+                    <label class="text-xs text-slate-500">
+                        Sortierung:
+                    </label>
+
+                    <select
+                        id="sort-cases"
+                        onchange="renderCaseList()"
+                        class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs"
+                    >
+                        <option value="date-desc">Neu → Alt</option>
+                        <option value="date-asc">Alt → Neu</option>
+                        <option value="initials-asc">Initialen A → Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="case-list-container" class="space-y-3"></div>
+
+            <div
+                id="empty-cases-placeholder"
+                class="hidden py-12 text-center text-slate-400 space-y-2"
+            >
+                <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
+                <p class="text-sm">
+                    Keine erfassten Fälle gefunden.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- TAB: AUSWERTUNG -->
+    <!-- ========================================================= -->
+
+    <main id="tab-content-evaluation" class="tab-content hidden flex-1 pb-12 space-y-6">
+
+        <div class="bg-gradient-to-r from-slate-900 to-brand-900 text-white rounded-2xl p-6 shadow-md border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+            <div>
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="award" class="w-6 h-6 text-brand-400"></i>
+                    Weiterbildungs-Fortschritt
+                </h2>
+
+                <p class="text-xs text-slate-300 mt-1">
+                    Logbuch-Fälle + eingetragene Vorwerte.
+                </p>
+            </div>
+
+            <button
+                onclick="openAddVorwertModal()"
+                class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-lg shadow flex items-center gap-1.5"
+            >
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Vorwerte hinzufügen
+            </button>
+        </div>
+
+        <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            id="baek-grid"
+        ></div>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- TAB: EINSTELLUNGEN -->
+    <!-- ========================================================= -->
+
+    <main id="tab-content-settings" class="tab-content hidden flex-1 pb-12 space-y-6">
+
+        <!-- VORWERTE -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
+
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 pb-3">
+
+                <div>
+                    <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="building-2" class="w-5 h-5 text-brand-600"></i>
+                        Vorwerte / Altbestand
+                    </h2>
+
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Frühere Beschäftigungszeiten können als Blöcke erfasst werden.
+                    </p>
+                </div>
+
+                <button
+                    onclick="openAddVorwertModal()"
+                    class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg flex items-center gap-1"
+                >
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    Neuer Block
+                </button>
+            </div>
+
+            <div id="vorwerte-list" class="space-y-3"></div>
+        </div>
+
+        <!-- BACKUP -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
+
+            <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700/50 pb-3">
+                <i data-lucide="database" class="w-5 h-5 text-brand-600"></i>
+                Datensicherung & Import
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+
+                    <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        CSV Backup
+                    </h3>
+
+                    <p class="text-xs text-slate-500">
+                        Alle Fälle als CSV-Datei exportieren.
+                    </p>
+
+                    <button
+                        onclick="exportToCSV()"
+                        class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center gap-2"
+                    >
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        CSV exportieren
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+
+                    <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        JSON Komplettsicherung
+                    </h3>
+
+                    <p class="text-xs text-slate-500">
+                        Fälle, Vorwerte und eigene Eingriffe.
+                    </p>
+
+                    <div class="flex gap-2">
+
+                        <button
+                            onclick="exportJSON()"
+                            class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                        >
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Backup
+                        </button>
+
+                        <button
+                            onclick="triggerJSONImport()"
+                            class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                        >
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            Import
+                        </button>
+
+                        <input
+                            type="file"
+                            id="import-file-json"
+                            accept=".json,application/json"
+                            class="hidden"
+                            onchange="importJSON(event)"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 flex flex-wrap gap-3">
+
+                <button
+                    onclick="generateDemoData()"
+                    type="button"
+                    class="px-3 py-2 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 text-xs rounded-lg flex items-center gap-1"
+                >
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+                    Demo-Fälle laden
+                </button>
+
+                <button
+                    onclick="deleteDemoCases()"
+                    type="button"
+                    class="px-3 py-2 border border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-xs rounded-lg"
+                >
+                    Demo-Fälle löschen
+                </button>
+
+                <button
+                    onclick="confirmResetAll()"
+                    type="button"
+                    class="px-3 py-2 border border-rose-200 dark:border-rose-900/50 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs rounded-lg flex items-center gap-1"
+                >
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    Alle Daten löschen
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- VORWERT MODAL -->
+    <!-- ========================================================= -->
+
+    <div
+        id="modal-vorwert"
+        class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+    >
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="building" class="w-5 h-5 text-brand-600"></i>
+
+                    <span id="vorwert-modal-title">
+                        Vorwerte erfassen
+                    </span>
+                </h3>
+
+                <button
+                    onclick="closeVorwertModal()"
+                    type="button"
+                    class="text-slate-400 hover:text-slate-600"
+                >
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form
+                id="vorwert-form"
+                onsubmit="saveVorwertBlock(event)"
+                class="space-y-4"
+            >
+
+                <input type="hidden" id="vorwert-id">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                        Name / Titel *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="vorwert-title"
+                        placeholder="z. B. Klinikum Aachen (2020–2022)"
+                        required
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm"
+                    >
+                </div>
+
+                <p class="text-xs text-slate-500">
+                    Absolute Zahlen des Altbestands.
+                </p>
+
+                <div
+                    id="vorwert-fields"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs"
+                ></div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700">
+
+                    <button
+                        type="button"
+                        onclick="closeVorwertModal()"
+                        class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded-lg"
+                    >
+                        Abbrechen
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow hover:bg-brand-700"
+                    >
+                        Vorwerte speichern
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-  </header>
 
-  <!-- Backup Erinnerungs-Banner -->
-  <div id="backup-reminder" class="hidden bg-amber-100 border-b border-amber-300 text-amber-900 px-4 py-2.5 text-xs flex justify-between items-center max-w-md mx-auto">
-    <div class="flex items-center gap-2">
-      <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
-      <span><strong>Backup-Erinnerung:</strong> Dein letztes Backup ist > 7 Tage her!</span>
-    </div>
-    <button onclick="exportCSV()" class="bg-amber-600 text-white px-2 py-1 rounded text-[11px] font-bold">Jetzt CSV</button>
-  </div>
+    <!-- TOAST -->
+    <div
+        id="toast-container"
+        class="fixed bottom-4 right-4 z-[100] space-y-2 pointer-events-none"
+    ></div>
 
-  <!-- Navigation Tabs -->
-  <main class="max-w-md mx-auto p-4 space-y-5">
-    <div class="flex bg-slate-200 p-1 rounded-xl text-sm font-medium">
-      <button id="tab-btn-add" onclick="switchTab('add')" class="flex-1 py-2 rounded-lg text-center bg-white shadow text-sky-800 font-semibold transition">
-        + Neuer Fall
-      </button>
-      <button id="tab-btn-list" onclick="switchTab('list')" class="flex-1 py-2 rounded-lg text-center text-slate-600 transition">
-        Einträge (<span id="count-badge">0</span>)
-      </button>
-      <button id="tab-btn-stats" onclick="switchTab('stats')" class="flex-1 py-2 rounded-lg text-center text-slate-600 transition">
-        Logbuch
-      </button>
-      <button id="tab-btn-settings" onclick="switchTab('settings')" class="py-2 px-3 rounded-lg text-center text-slate-600 transition">
-        <i data-lucide="settings" class="w-4 h-4 mx-auto"></i>
-      </button>
-    </div>
+</div>
 
-    <!-- TAB 1: FORMULAR NEUE / EDITIEREN -->
-    <section id="tab-add" class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h2 id="form-title" class="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          <i data-lucide="file-plus" class="w-5 h-5 text-sky-700"></i>
-          Fall erfassen
-        </h2>
-        <button id="cancel-edit-btn" onclick="cancelEdit()" class="hidden text-xs bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg font-semibold">
-          Abbrechen
-        </button>
-      </div>
+<script>
+/* ================================================================
+   ANÄSTHESIE LOGBUCH
+   Saubere Single-File-Version
+   ================================================================ */
 
-      <form id="narkose-form" onsubmit="saveEntry(event)" class="space-y-4">
-        
-        <!-- 1. Patient & Basisdaten -->
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">1. Basisdaten & Patient</div>
+/* ------------------------------------------------
+   KONSTANTEN
+------------------------------------------------ */
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Datum *</label>
-            <input type="date" id="datum" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          </div>
+const STORAGE_KEYS = {
+    cases: 'anaesthesie_cases',
+    vorwerte: 'anaesthesie_vorwerte',
+    customProcedures: 'anaesthesie_custom_procedures',
+    darkMode: 'anaesthesie_darkmode'
+};
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Initialen *</label>
-            <input type="text" id="initialen" placeholder="z.B. A.B." required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          </div>
-        </div>
+const BAEK_TARGETS = {
+    vollnarkose: {
+        name: 'Vollnarkosen (Allgemeinanästhesien)',
+        target: 1800,
+        icon: 'wind'
+    },
+    abdominell: {
+        name: 'Abdominelle Eingriffe',
+        target: 300,
+        icon: 'activity'
+    },
+    asa3: {
+        name: 'Risikopatienten ≥ ASA 3',
+        target: 100,
+        icon: 'alert-triangle'
+    },
+    kinder: {
+        name: 'Kinder ≤ 5. Lebensjahr',
+        target: 50,
+        icon: 'baby'
+    },
+    geburtshilfe: {
+        name: 'Geburtshilfliche Eingriffe Gesamt',
+        target: 50,
+        icon: 'heart-handshake'
+    },
+    sectio: {
+        name: 'davon Sectio Caesarea',
+        target: 25,
+        icon: 'scissors'
+    },
+    kopfHals: {
+        name: 'Eingriffe Kopf / Hals',
+        target: 100,
+        icon: 'smile'
+    },
+    intrathorakal: {
+        name: 'Intrathorakale Eingriffe',
+        target: 25,
+        icon: 'heart-pulse'
+    },
+    intrakraniell: {
+        name: 'Intrakranielle Eingriffe',
+        target: 25,
+        icon: 'brain'
+    },
+    spaPdk: {
+        name: 'Rückenmarknahe Regionalanästhesie',
+        target: 100,
+        icon: 'layers'
+    },
+    periphereRA: {
+        name: 'Periphere Regionalanästhesie',
+        target: 50,
+        icon: 'crosshair'
+    },
+    ambulant: {
+        name: 'Ambulante Anästhesien',
+        target: 50,
+        icon: 'clock'
+    },
+    fiberoptik: {
+        name: 'Fiberoptische Intubation',
+        target: 25,
+        icon: 'eye'
+    },
+    videolaryngo: {
+        name: 'Videolaryngoskopie',
+        target: 20,
+        icon: 'video'
+    },
+    sonoGefaess: {
+        name: 'Sonografische Gefäßpunktion',
+        target: 25,
+        icon: 'disc'
+    }
+};
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Geburtsdatum *</label>
-            <input type="date" id="geburtsdatum" onchange="checkAge()" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          </div>
+const PROCEDURE_OPTIONS = {
+    'Allg. & Viszeralchirurgie': [
+        'Appendektomie',
+        'Cholezystektomie',
+        'Hernienoperation',
+        'Hemikolektomie',
+        'Rektumresektion',
+        'Magenresektion',
+        'Whipple-Operation',
+        'Laparotomie',
+        'Laparoskopie',
+        'Sonstiger Eingriff'
+    ],
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">ASA Status *</label>
-            <select id="asa" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-              <option value="ASA 1">ASA 1</option>
-              <option value="ASA 2" selected>ASA 2</option>
-              <option value="ASA 3">ASA 3 (≥ ASA 3)</option>
-              <option value="ASA 4">ASA 4 (≥ ASA 3)</option>
-              <option value="ASA 5">ASA 5 (≥ ASA 3)</option>
-            </select>
-          </div>
-        </div>
+    'Unfallchirurgie / Orthopädie': [
+        'Hüft-TEP',
+        'Knie-TEP',
+        'Osteosynthese',
+        'Arthroskopie Knie',
+        'Arthroskopie Schulter',
+        'Frakturversorgung',
+        'Wirbelsäulenoperation',
+        'Sonstiger Eingriff'
+    ],
 
-        <!-- Quick Checks -->
-        <div class="flex gap-4 pt-1">
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 p-2.5 rounded-lg flex-1">
-            <input type="checkbox" id="ambulant" class="w-4 h-4 text-sky-600 rounded">
-            <span>Ambulanter Eingriff</span>
-          </label>
+    'Gynäkologie': [
+        'Hysterektomie',
+        'Adnexektomie',
+        'Myomenukleation',
+        'Abrasio',
+        'Mammachirurgie',
+        'Laparoskopie',
+        'Sonstiger Eingriff'
+    ],
 
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 p-2.5 rounded-lg flex-1">
-            <input type="checkbox" id="kind_u5" class="w-4 h-4 text-sky-600 rounded">
-            <span>Kind ≤ 5 Jahre</span>
-          </label>
-        </div>
+    'Geburtshilfe': [
+        'Sectio Caesarea',
+        'Geburtshilflicher PDK',
+        'Vaginale Geburt',
+        'Manuelle Plazentalösung',
+        'Geburtshilflicher Eingriff sonstige'
+    ],
 
-        <!-- 2. OP & Fachrichtung -->
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-3">2. OP & Fachrichtung</div>
+    'HNO / Augen': [
+        'Tonsillektomie',
+        'Adenotomie',
+        'Parazentese',
+        'Septumplastik',
+        'Sinusoperation',
+        'Kataraktoperation',
+        'Vitrektomie',
+        'Sonstiger Eingriff'
+    ],
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Fachrichtung *</label>
-          <select id="fachrichtung" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-            <option value="">-- Bitte wählen --</option>
-            <option value="Allgemein- & Viszeralchirurgie">Allgemein- & Viszeralchirurgie</option>
-            <option value="Unfallchirurgie & Orthopädie">Unfallchirurgie & Orthopädie</option>
-            <option value="Geburtshilfe & Gynäkologie">Geburtshilfe & Gynäkologie</option>
-            <option value="Urologie">Urologie</option>
-            <option value="HNO">HNO</option>
-            <option value="Augenheilkunde">Augenheilkunde</option>
-            <option value="Neurochirurgie">Neurochirurgie</option>
-            <option value="Gefäßchirurgie">Gefäßchirurgie</option>
-            <option value="Thoraxchirurgie">Thoraxchirurgie</option>
-            <option value="Kinderchirurgie">Kinderchirurgie</option>
-            <option value="MKG">Mund-Kiefer-Gesicht (MKG)</option>
-            <option value="Außerklinisch / Intervention">Außerklinisch / Endoskopie</option>
-            <option value="Sonstiges">Sonstiges</option>
-          </select>
-        </div>
+    'Neurochirurgie': [
+        'Kraniotomie',
+        'Kranioplastik',
+        'Wirbelsäulenoperation',
+        'Bandscheibenoperation',
+        'Intrakranieller Eingriff sonstige'
+    ],
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Eingriff / OP-Name *</label>
-          <input type="text" id="eingriff" placeholder="z.B. Laparoskopie, TTP, Sectio, ME..." required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-        </div>
+    'Urologie': [
+        'TUR-Prostata',
+        'TUR-Blase',
+        'Ureterorenoskopie',
+        'Nephrektomie',
+        'Prostatektomie',
+        'Zystektomie',
+        'Sonstiger Eingriff'
+    ],
 
-        <!-- Spezielle OP-Kategorien -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-          <label class="block text-xs font-bold text-slate-600">Spezielle Logbuch-Kategorie:</label>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="cat_sectio" class="w-4 h-4 text-sky-600 rounded">
-              <span>Geburtshilfe: Sectio</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="cat_pdk_geb" class="w-4 h-4 text-sky-600 rounded">
-              <span>Geburtshilfe: PDK Geb.</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="cat_kopf_hals" class="w-4 h-4 text-sky-600 rounded">
-              <span>Kopf / Hals</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="cat_thorax" class="w-4 h-4 text-sky-600 rounded">
-              <span>Thorax</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="cat_intrakraniell" class="w-4 h-4 text-sky-600 rounded">
-              <span>Intrakraniell</span>
-            </label>
-          </div>
-        </div>
+    'Gefäßchirurgie': [
+        'Carotis-TEA',
+        'Bypassoperation',
+        'Aortenoperation',
+        'AV-Shunt',
+        'Varizenoperation',
+        'Sonstiger Eingriff'
+    ],
 
-        <!-- 3. Anästhesie Typ & Verfahren -->
-        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-3">3. Anästhesie & Techniken</div>
+    'Thoraxchirurgie': [
+        'Thorakotomie',
+        'VATS',
+        'Lobektomie',
+        'Pneumonektomie',
+        'Mediastinaler Eingriff',
+        'Sonstiger Eingriff'
+    ],
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-2">Art der Anästhesie / Narkose *</label>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="anesthesietyp" value="Vollnarkose" checked onclick="toggleNarkoseDetails(true)" class="sr-only">
-              <span class="font-semibold flex items-center gap-1.5">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-sky-600"></i> Vollnarkose
-              </span>
-            </label>
+    'Plastische Chirurgie': [
+        'Mammareduktion',
+        'Mastektomie',
+        'Rekonstruktive Operation',
+        'Hauttransplantation',
+        'Sonstiger Eingriff'
+    ],
 
-            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="anesthesietyp" value="Reine RA" onclick="toggleNarkoseDetails(true)" class="sr-only">
-              <span class="font-semibold flex items-center gap-1.5">
-                <i data-lucide="syringe" class="w-4 h-4 text-indigo-600"></i> Reine RA
-              </span>
-            </label>
+    'Mund-Kiefer-Gesicht': [
+        'Osteotomie',
+        'Frakturversorgung Gesichtsschädel',
+        'Tumorresektion',
+        'Zahn-/Kieferoperation',
+        'Sonstiger Eingriff'
+    ],
 
-            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="anesthesietyp" value="Sedierung" onclick="toggleNarkoseDetails(true)" class="sr-only">
-              <span class="font-semibold flex items-center gap-1.5">
-                <i data-lucide="moon" class="w-4 h-4 text-amber-600"></i> Sedierung/MAC
-              </span>
-            </label>
+    'Sonstige Fachrichtung': [
+        'Sonstiger Eingriff'
+    ]
+};
 
-            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="anesthesietyp" value="Ausfall" onclick="toggleNarkoseDetails(false)" class="sr-only">
-              <span class="font-semibold flex items-center gap-1.5 text-rose-600">
-                <i data-lucide="x-circle" class="w-4 h-4"></i> Ausfall / Kein OP
-              </span>
-            </label>
-          </div>
-        </div>
+const VORWERT_FIELDS = [
+    ['vollnarkose', 'Vollnarkosen', 1800],
+    ['abdominell', 'Abdominelle Eingriffe', 300],
+    ['asa3', 'ASA ≥ III Risikopatienten', 100],
+    ['kinder', 'Kinder ≤ 5. Lebensjahr', 50],
+    ['geburtshilfe', 'Geburtshilfliche Eingriffe Gesamt', 50],
+    ['sectio', 'Sectio Caesarea', 25],
+    ['kopfHals', 'Eingriffe Kopf / Hals', 100],
+    ['intrathorakal', 'Intrathorakale Eingriffe', 25],
+    ['intrakraniell', 'Intrakranielle Eingriffe', 25],
+    ['spaPdk', 'Rückenmarknahe SPA/PDK', 100],
+    ['periphereRA', 'Periphere Regionalanästhesie', 50],
+    ['ambulant', 'Ambulante Anästhesien', 50],
+    ['fiberoptik', 'Fiberoptische Intubation', 25],
+    ['videolaryngo', 'Videolaryngoskopie', 20],
+    ['sonoGefaess', 'Sonografische Gefäßpunktion', 25]
+];
 
-        <div id="narkose-details" class="space-y-3 bg-sky-50/50 p-3 rounded-xl border border-sky-100">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Verfahren / Hauptmethode</label>
-            <select id="verfahren" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-              <option value="Allgemeinanästhesie (ITN)">Allgemeinanästhesie (ITN)</option>
-              <option value="Allgemeinanästhesie (LMA)">Allgemeinanästhesie (LMA)</option>
-              <option value="TIVA">TIVA</option>
-              <option value="Kombinationsanästhesie (ITN + RA)">Kombinationsanästhesie (ITN + RA)</option>
-              <option value="Spinalanästhesie (SPA)">Spinalanästhesie (SPA)</option>
-              <option value="Periduralanästhesie (PDA)">Periduralanästhesie (PDA)</option>
-              <option value="Periphere Regionalanästhesie">Periphere Regionalanästhesie / Plexus</option>
-              <option value="Sedierung / Standby">Sedierung / Standby</option>
-            </select>
-          </div>
+/* ------------------------------------------------
+   STATE
+------------------------------------------------ */
 
-          <!-- Regionalanästhesie Typen -->
-          <div class="border-t border-sky-200/60 pt-2 space-y-1">
-            <label class="block text-xs font-bold text-slate-700">Regionalanästhesie (RA):</label>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="ra_rm_nah" class="w-4 h-4 text-sky-600 rounded">
-                <span>Rückenmarknah (SPA/PDA)</span>
-              </label>
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="ra_peripher" class="w-4 h-4 text-sky-600 rounded">
-                <span>Peripher (Plexus/Nerv)</span>
-              </label>
-            </div>
-          </div>
+let cases = [];
+let vorwerte = [];
+let customProcedures = {};
+let editingCaseId = null;
 
-          <!-- Spezielle Techniken -->
-          <div class="border-t border-sky-200/60 pt-2 space-y-1">
-            <label class="block text-xs font-bold text-slate-700">Atemweg & Punktions-Techniken:</label>
-            <div class="space-y-1.5 text-xs">
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="tech_fiberoptik" class="w-4 h-4 text-sky-600 rounded">
-                <span>Fiberoptische Intubation</span>
-              </label>
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="tech_videolarynx" class="w-4 h-4 text-sky-600 rounded">
-                <span>Videolaryngoskopie</span>
-              </label>
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" id="tech_sono_gefaess" class="w-4 h-4 text-sky-600 rounded">
-                <span>Sonografische Gefäßpunktion (Art/ZVK)</span>
-              </label>
-            </div>
-          </div>
+/* ------------------------------------------------
+   INITIALISIERUNG
+------------------------------------------------ */
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Notizen / Spezielle Verfahren</label>
-            <input type="text" id="besonderheiten" placeholder="z.B. Arterie, ZVK, TEE, RSI, Block-Name..." class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          </div>
-        </div>
+document.addEventListener('DOMContentLoaded', initApp);
 
-        <button type="submit" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-          <i data-lucide="save" class="w-5 h-5"></i>
-          <span id="submit-btn-text">Fall im Logbuch Speichern</span>
-        </button>
-      </form>
-    </section>
+function initApp() {
+    try {
+        loadFromLocalStorage();
+    } catch (error) {
+        console.error('Fehler beim Laden:', error);
+        showToast('Gespeicherte Daten konnten nicht vollständig geladen werden.', 'error');
+    }
 
-    <!-- TAB 2: LOGBUCH LISTE -->
-    <section id="tab-list" class="hidden space-y-4">
-      <div class="bg-white p-3 rounded-2xl shadow-sm flex items-center gap-2">
-        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-        <input type="text" id="search-input" oninput="renderEntries()" placeholder="Suche (Eingriff, Fach, Initialen, Technik)..." class="w-full text-sm outline-none bg-transparent">
-      </div>
+    applyDarkMode();
+    renderVorwertFields();
+    resetCaseForm();
+    renderAll();
 
-      <div id="entries-container" class="space-y-3"></div>
-    </section>
+    const themeToggle = document.getElementById('theme-toggle');
 
-    <!-- TAB 3: STATISTIK -->
-    <section id="tab-stats" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
-        <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 flex items-center gap-2">
-          <i data-lucide="award" class="w-5 h-5 text-sky-700"></i>
-          Mindestmengen Logbuch
-        </h2>
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleDarkMode);
+    }
 
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <span class="block text-xl font-bold text-slate-800" id="stat-total">0</span>
-            <span class="text-[10px] text-slate-500 font-medium">Gesamt</span>
-          </div>
-          <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-100">
-            <span class="block text-xl font-bold text-sky-800" id="stat-vollnarkose">0</span>
-            <span class="text-[10px] text-sky-700 font-medium">Vollnarkosen</span>
-          </div>
-          <div class="bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
-            <span class="block text-xl font-bold text-indigo-800" id="stat-reinera">0</span>
-            <span class="text-[10px] text-indigo-700 font-medium">Reine RA</span>
-          </div>
-        </div>
+    const pdfButton = document.getElementById('pdf-report-button');
 
-        <div class="space-y-2 pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Patientengruppen & Risiken</h3>
-          <div class="grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-ambulant">0</span>
-              <span class="text-[10px] text-slate-500">Ambulant</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-asa3">0</span>
-              <span class="text-[10px] text-slate-500">≥ ASA 3</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-u5">0</span>
-              <span class="text-[10px] text-slate-500">Kind ≤ 5J</span>
-            </div>
-          </div>
-        </div>
+    if (pdfButton) {
+        pdfButton.addEventListener('click', printPdfReport);
+    }
 
-        <div class="space-y-2 pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Geburtshilfe</h3>
-          <div class="grid grid-cols-2 gap-2 text-center text-xs">
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-sectio">0</span>
-              <span class="text-[10px] text-slate-500">Sectio</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-pdkgeb">0</span>
-              <span class="text-[10px] text-slate-500">PDK Geb.</span>
-            </div>
-          </div>
-        </div>
+    refreshIcons();
+}
 
-        <div class="space-y-2 pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Regionalanästhesie</h3>
-          <div class="grid grid-cols-2 gap-2 text-center text-xs">
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-rmnah">0</span>
-              <span class="text-[10px] text-slate-500">RM Nah (SPA/PDA)</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-peripher">0</span>
-              <span class="text-[10px] text-slate-500">Peripher</span>
-            </div>
-          </div>
-        </div>
+/* ------------------------------------------------
+   LOCAL STORAGE
+------------------------------------------------ */
 
-        <div class="space-y-2 pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Spezielle Eingriffe</h3>
-          <div class="grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-kopfhals">0</span>
-              <span class="text-[10px] text-slate-500">Kopf / Hals</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-thorax">0</span>
-              <span class="text-[10px] text-slate-500">Thorax</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-intrakraniell">0</span>
-              <span class="text-[10px] text-slate-500">Intrakraniell</span>
-            </div>
-          </div>
-        </div>
+function loadFromLocalStorage() {
+    cases = safeParseArray(
+        localStorage.getItem(STORAGE_KEYS.cases)
+    ).map(normalizeCase);
 
-        <div class="space-y-2 pt-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Spezielle Techniken</h3>
-          <div class="grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-fiberoptik">0</span>
-              <span class="text-[10px] text-slate-500">Fiberoptisch</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-videolarynx">0</span>
-              <span class="text-[10px] text-slate-500">Video-Larynx</span>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-lg border">
-              <span class="block font-bold text-sm text-slate-800" id="stat-sonogefaess">0</span>
-              <span class="text-[10px] text-slate-500">Sono Gefäß</span>
-            </div>
-          </div>
-        </div>
+    vorwerte = safeParseArray(
+        localStorage.getItem(STORAGE_KEYS.vorwerte)
+    ).map(normalizeVorwert);
 
-      </div>
-    </section>
+    const custom = safeParseObject(
+        localStorage.getItem(STORAGE_KEYS.customProcedures)
+    );
 
-    <!-- TAB 4: EINSTELLUNGEN & BACKUP -->
-    <section id="tab-settings" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
-        <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 flex items-center gap-2">
-          <i data-lucide="settings" class="w-5 h-5 text-sky-700"></i>
-          Einstellungen & Google Sheets
-        </h2>
+    customProcedures = normalizeCustomProcedures(custom);
+}
 
-        <div class="space-y-3">
-          <label class="block text-xs font-semibold text-slate-700">
-            Google Apps Script Webhook-URL (für automatisches Backup):
-          </label>
-          <input type="text" id="gsheets-url" placeholder="https://script.google.com/macros/s/..." onchange="saveGSheetsUrl()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none">
-          <p class="text-[11px] text-slate-500">
-            Wenn du hier deine Webhook-URL einfügst, kannst du oben im Header auf <strong>Sheets</strong> tippen, um alle deine Fälle direkt in dein Google Sheet zu übertragen!
-          </p>
-        </div>
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem(
+            STORAGE_KEYS.cases,
+            JSON.stringify(cases)
+        );
 
-        <div class="border-t pt-3">
-          <button onclick="sendToGoogleSheets()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
-            <i data-lucide="sheet" class="w-4 h-4"></i>
-            Jetzt mit Google Sheets synchronisieren
-          </button>
-        </div>
+        localStorage.setItem(
+            STORAGE_KEYS.vorwerte,
+            JSON.stringify(vorwerte)
+        );
 
-        <div class="border-t pt-3">
-          <button onclick="exportCSV()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 border">
-            <i data-lucide="download" class="w-4 h-4"></i>
-            Manuelles Backup als CSV herunterladen
-          </button>
-        </div>
-      </div>
-    </section>
-  </main>
+        localStorage.setItem(
+            STORAGE_KEYS.customProcedures,
+            JSON.stringify(customProcedures)
+        );
 
-  <script>
-    let entries = JSON.parse(localStorage.getItem('narkose_entries_v3') || '[]');
-    let editingId = null;
+        updateHeaderCount();
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('datum').valueAsDate = new Date();
-      document.getElementById('gsheets-url').value = localStorage.getItem('gsheets_url') || '';
-      updateUI();
-      checkBackupReminder();
-      lucide.createIcons();
+        return true;
+    } catch (error) {
+        console.error('LocalStorage-Fehler:', error);
+        showToast(
+            'Daten konnten nicht gespeichert werden. Eventuell ist der Speicher voll.',
+            'error'
+        );
+
+        return false;
+    }
+}
+
+function safeParseArray(value) {
+    if (!value) return [];
+
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function safeParseObject(value) {
+    if (!value) return {};
+
+    try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+            ? parsed
+            : {};
+    } catch {
+        return {};
+    }
+}
+
+/* ------------------------------------------------
+   NORMALISIERUNG ALTER DATEN
+------------------------------------------------ */
+
+function normalizeCase(c = {}) {
+    return {
+        id: String(c.id || createId('case')),
+        isDemo: Boolean(c.isDemo),
+
+        date: String(c.date || ''),
+        initials: String(c.initials || ''),
+        dob: String(c.dob || ''),
+        asa: Number(c.asa) || 0,
+
+        department: String(c.department || ''),
+        procedure: String(c.procedure || ''),
+        notes: String(c.notes || ''),
+
+        isAbdominell: Boolean(c.isAbdominell),
+        isKopfHals: Boolean(c.isKopfHals),
+        isIntrathorakal: Boolean(c.isIntrathorakal),
+        isIntrakraniell: Boolean(c.isIntrakraniell),
+        isSectio: Boolean(c.isSectio),
+        isAmbulant: Boolean(c.isAmbulant),
+
+        isVollnarkose: Boolean(c.isVollnarkose),
+
+        isSpaPdk: Boolean(
+            c.isSpaPdk ||
+            c.isSpaPdkGeburtshilfe ||
+            c.isSpaPdkAllg
+        ),
+
+        spaPdkVerfahren: String(c.spaPdkVerfahren || ''),
+
+        isSpaPdkGeburtshilfe: Boolean(
+            c.isSpaPdkGeburtshilfe
+        ),
+
+        spaPdkGebVerfahren: String(
+            c.spaPdkGebVerfahren || ''
+        ),
+
+        isSpaPdkAllg: Boolean(
+            c.isSpaPdkAllg
+        ),
+
+        spaPdkAllgVerfahren: String(
+            c.spaPdkAllgVerfahren || ''
+        ),
+
+        isPeriphereRA: Boolean(c.isPeriphereRA),
+
+        periphereVerfahren: String(
+            c.periphereVerfahren || ''
+        ),
+
+        isSedierung: Boolean(c.isSedierung),
+
+        isFiberoptik: Boolean(c.isFiberoptik),
+        isVideolaryngo: Boolean(c.isVideolaryngo),
+        isSonoGefaess: Boolean(c.isSonoGefaess),
+
+        isChildUnder5: Boolean(c.isChildUnder5)
+    };
+}
+
+function normalizeVorwert(v = {}) {
+    const result = {
+        id: String(v.id || createId('vw')),
+        title: String(v.title || '')
+    };
+
+    VORWERT_FIELDS.forEach(([key]) => {
+        result[key] = Math.max(
+            0,
+            Number(v[key]) || 0
+        );
     });
 
-    function toggleNarkoseDetails(show) {
-      document.getElementById('narkose-details').classList.toggle('hidden', !show);
+    return result;
+}
+
+function normalizeCustomProcedures(obj) {
+    const result = {};
+
+    Object.keys(obj || {}).forEach(dept => {
+        if (!Array.isArray(obj[dept])) return;
+
+        result[dept] = [
+            ...new Set(
+                obj[dept]
+                    .map(v => String(v).trim())
+                    .filter(Boolean)
+            )
+        ];
+    });
+
+    return result;
+}
+
+/* ------------------------------------------------
+   DARK MODE
+------------------------------------------------ */
+
+function applyDarkMode() {
+    try {
+        if (
+            localStorage.getItem(STORAGE_KEYS.darkMode) === '1'
+        ) {
+            document.documentElement.classList.add('dark');
+        }
+    } catch {}
+}
+
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('dark');
+
+    try {
+        localStorage.setItem(
+            STORAGE_KEYS.darkMode,
+            document.documentElement.classList.contains('dark')
+                ? '1'
+                : '0'
+        );
+    } catch {}
+}
+
+/* ------------------------------------------------
+   FORMULAR
+------------------------------------------------ */
+
+function resetCaseForm() {
+    const form = document.getElementById('case-form');
+
+    if (form) {
+        form.reset();
     }
 
-    function checkAge() {
-      const dobVal = document.getElementById('geburtsdatum').value;
-      const opVal = document.getElementById('datum').value;
-      if (!dobVal || !opVal) return;
-      
-      const dob = new Date(dobVal);
-      const op = new Date(opVal);
-      let age = op.getFullYear() - dob.getFullYear();
-      const m = op.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && op.getDate() < dob.getDate())) age--;
-      
-      document.getElementById('kind_u5').checked = (age <= 5 && age >= 0);
-    }
+    editingCaseId = null;
 
-    function switchTab(tab) {
-      ['add', 'list', 'stats', 'settings'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`).className = "flex-1 py-2 rounded-lg text-center text-slate-600 transition";
-      });
+    setDefaultDate();
 
-      document.getElementById(`tab-${tab}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tab}`).className = "flex-1 py-2 rounded-lg text-center bg-white shadow text-sky-800 font-semibold transition";
+    const submitButton = document.getElementById(
+        'case-submit-button'
+    );
 
-      if (tab === 'list') renderEntries();
-      if (tab === 'stats') renderStats();
-    }
-
-    function saveEntry(e) {
-      e.preventDefault();
-      const anesthesietyp = document.querySelector('input[name="anesthesietyp"]:checked').value;
-
-      const entryData = {
-        id: editingId || Date.now(),
-        datum: document.getElementById('datum').value,
-        initialen: document.getElementById('initialen').value.toUpperCase(),
-        geburtsdatum: document.getElementById('geburtsdatum').value,
-        asa: document.getElementById('asa').value,
-        ambulant: document.getElementById('ambulant').checked,
-        kind_u5: document.getElementById('kind_u5').checked,
-        
-        fachrichtung: document.getElementById('fachrichtung').value,
-        eingriff: document.getElementById('eingriff').value,
-        
-        cat_sectio: document.getElementById('cat_sectio').checked,
-        cat_pdk_geb: document.getElementById('cat_pdk_geb').checked,
-        cat_kopf_hals: document.getElementById('cat_kopf_hals').checked,
-        cat_thorax: document.getElementById('cat_thorax').checked,
-        cat_intrakraniell: document.getElementById('cat_intrakraniell').checked,
-        
-        anesthesietyp: anesthesietyp,
-        verfahren: anesthesietyp !== 'Ausfall' ? document.getElementById('verfahren').value : 'Ausfall / Keinerlei Narkose',
-        ra_rm_nah: anesthesietyp !== 'Ausfall' && document.getElementById('ra_rm_nah').checked,
-        ra_peripher: anesthesietyp !== 'Ausfall' && document.getElementById('ra_peripher').checked,
-        
-        tech_fiberoptik: anesthesietyp !== 'Ausfall' && document.getElementById('tech_fiberoptik').checked,
-        tech_videolarynx: anesthesietyp !== 'Ausfall' && document.getElementById('tech_videolarynx').checked,
-        tech_sono_gefaess: anesthesietyp !== 'Ausfall' && document.getElementById('tech_sono_gefaess').checked,
-        
-        besonderheiten: anesthesietyp !== 'Ausfall' ? document.getElementById('besonderheiten').value : ''
-      };
-
-      if (editingId) {
-        entries = entries.map(item => item.id === editingId ? entryData : item);
-        alert('Änderungen gespeichert!');
-      } else {
-        entries.unshift(entryData);
-        alert('Fall erfolgreich im Logbuch gespeichert!');
-      }
-
-      localStorage.setItem('narkose_entries_v3', JSON.stringify(entries));
-      cancelEdit();
-      updateUI();
-      switchTab('list');
-    }
-
-    function editEntry(id) {
-      const item = entries.find(e => e.id === id);
-      if (!item) return;
-
-      editingId = id;
-      document.getElementById('form-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-amber-600"></i> Fall bearbeiten`;
-      document.getElementById('submit-btn-text').textContent = 'Änderungen Speichern';
-      document.getElementById('cancel-edit-btn').classList.remove('hidden');
-
-      document.getElementById('datum').value = item.datum;
-      document.getElementById('initialen').value = item.initialen;
-      document.getElementById('geburtsdatum').value = item.geburtsdatum;
-      document.getElementById('asa').value = item.asa || 'ASA 2';
-      document.getElementById('ambulant').checked = !!item.ambulant;
-      document.getElementById('kind_u5').checked = !!item.kind_u5;
-
-      document.getElementById('fachrichtung').value = item.fachrichtung;
-      document.getElementById('eingriff').value = item.eingriff;
-
-      document.getElementById('cat_sectio').checked = !!item.cat_sectio;
-      document.getElementById('cat_pdk_geb').checked = !!item.cat_pdk_geb;
-      document.getElementById('cat_kopf_hals').checked = !!item.cat_kopf_hals;
-      document.getElementById('cat_thorax').checked = !!item.cat_thorax;
-      document.getElementById('cat_intrakraniell').checked = !!item.cat_intrakraniell;
-
-      const radio = document.querySelector(`input[name="anesthesietyp"][value="${item.anesthesietyp || 'Vollnarkose'}"]`);
-      if (radio) radio.checked = true;
-      toggleNarkoseDetails(item.anesthesietyp !== 'Ausfall');
-
-      document.getElementById('verfahren').value = item.verfahren || 'Allgemeinanästhesie (ITN)';
-      document.getElementById('ra_rm_nah').checked = !!item.ra_rm_nah;
-      document.getElementById('ra_peripher').checked = !!item.ra_peripher;
-      document.getElementById('tech_fiberoptik').checked = !!item.tech_fiberoptik;
-      document.getElementById('tech_videolarynx').checked = !!item.tech_videolarynx;
-      document.getElementById('tech_sono_gefaess').checked = !!item.tech_sono_gefaess;
-      document.getElementById('besonderheiten').value = item.besonderheiten || '';
-
-      switchTab('add');
-      lucide.createIcons();
-    }
-
-    function cancelEdit() {
-      editingId = null;
-      document.getElementById('narkose-form').reset();
-      document.getElementById('datum').valueAsDate = new Date();
-      document.getElementById('form-title').innerHTML = `<i data-lucide="file-plus" class="w-5 h-5 text-sky-700"></i> Fall erfassen`;
-      document.getElementById('submit-btn-text').textContent = 'Fall im Logbuch Speichern';
-      document.getElementById('cancel-edit-btn').classList.add('hidden');
-      toggleNarkoseDetails(true);
-      lucide.createIcons();
-    }
-
-    function deleteEntry(id) {
-      if (confirm('Eintrag wirklich löschen?')) {
-        entries = entries.filter(item => item.id !== id);
-        localStorage.setItem('narkose_entries_v3', JSON.stringify(entries));
-        updateUI();
-        renderEntries();
-      }
-    }
-
-    function updateUI() {
-      document.getElementById('count-badge').textContent = entries.length;
-    }
-
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      const p = dateStr.split('-');
-      return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : dateStr;
-    }
-
-    function renderEntries() {
-      const container = document.getElementById('entries-container');
-      const search = document.getElementById('search-input').value.toLowerCase();
-
-      const filtered = entries.filter(e => 
-        e.initialen.toLowerCase().includes(search) ||
-        e.eingriff.toLowerCase().includes(search) ||
-        e.fachrichtung.toLowerCase().includes(search) ||
-        e.verfahren.toLowerCase().includes(search) ||
-        (e.anesthesietyp && e.anesthesietyp.toLowerCase().includes(search))
-      );
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<p class="text-center py-10 text-slate-400 text-sm">Keine Einträge gefunden.</p>';
-        return;
-      }
-
-      container.innerHTML = filtered.map(item => {
-        const tags = [];
-        if (item.ambulant) tags.push('Ambulant');
-        if (item.kind_u5) tags.push('Kind ≤5J');
-        if (item.cat_sectio) tags.push('Sectio');
-        if (item.cat_pdk_geb) tags.push('PDK Geb');
-        if (item.cat_kopf_hals) tags.push('Kopf/Hals');
-        if (item.cat_thorax) tags.push('Thorax');
-        if (item.cat_intrakraniell) tags.push('Intrakraniell');
-        if (item.ra_rm_nah) tags.push('RM-Nah');
-        if (item.ra_peripher) tags.push('RA Peripher');
-        if (item.tech_fiberoptik) tags.push('Fiberoptik');
-        if (item.tech_videolarynx) tags.push('Video-Larynx');
-        if (item.tech_sono_gefaess) tags.push('Sono Gefäß');
-
-        return `
-          <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-2">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                  <span class="px-2 py-0.5 bg-sky-100 text-sky-800 text-[11px] font-semibold rounded-md">
-                    ${item.fachrichtung}
-                  </span>
-                  <span class="px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold rounded">
-                    ${item.asa}
-                  </span>
-                  <span class="px-1.5 py-0.5 ${item.anesthesietyp === 'Vollnarkose' ? 'bg-sky-600 text-white' : item.anesthesietyp === 'Reine RA' ? 'bg-indigo-600 text-white' : 'bg-slate-500 text-white'} text-[10px] font-bold rounded">
-                    ${item.anesthesietyp || 'Vollnarkose'}
-                  </span>
-                </div>
-                <h3 class="font-bold text-slate-800 text-base leading-tight">${item.eingriff}</h3>
-              </div>
-              
-              <!-- Buttons: Edit & Delete -->
-              <div class="flex items-center gap-1">
-                <button onclick="editEntry(${item.id})" class="text-slate-400 hover:text-sky-600 p-1.5 rounded-lg hover:bg-slate-100" title="Bearbeiten">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteEntry(${item.id})" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-100" title="Löschen">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            ${tags.length > 0 ? `
-              <div class="flex flex-wrap gap-1">
-                ${tags.map(t => `<span class="px-1.5 py-0.5 bg-sky-50 text-sky-700 text-[10px] font-medium rounded border border-sky-100">${t}</span>`).join('')}
-              </div>
-            ` : ''}
-
-            <div class="text-xs text-slate-500 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-              <div class="flex justify-between">
-                <span><strong>Patient:</strong> ${item.initialen} (*${formatDate(item.geburtsdatum)})</span>
-                <span><strong>Datum:</strong> ${formatDate(item.datum)}</span>
-              </div>
-              <div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
-                <span><strong>Verfahren:</strong> ${item.verfahren}</span>
-              </div>
-              ${item.besonderheiten ? `<div class="text-slate-600 italic pt-0.5"><strong>Notiz:</strong> ${item.besonderheiten}</div>` : ''}
-            </div>
-          </div>
+    if (submitButton) {
+        submitButton.innerHTML = `
+            <i data-lucide="check" class="w-4 h-4"></i>
+            Fall speichern
         `;
-      }).join('');
-
-      lucide.createIcons();
     }
 
-    function renderStats() {
-      const valid = entries.filter(e => e.anesthesietyp !== 'Ausfall');
+    const cancelButton = document.getElementById(
+        'case-cancel-edit'
+    );
 
-      document.getElementById('stat-total').textContent = entries.length;
-      document.getElementById('stat-vollnarkose').textContent = valid.filter(e => e.anesthesietyp === 'Vollnarkose').length;
-      document.getElementById('stat-reinera').textContent = valid.filter(e => e.anesthesietyp === 'Reine RA').length;
-
-      document.getElementById('stat-ambulant').textContent = valid.filter(e => e.ambulant).length;
-      document.getElementById('stat-asa3').textContent = valid.filter(e => ['ASA 3', 'ASA 4', 'ASA 5'].includes(e.asa)).length;
-      document.getElementById('stat-u5').textContent = valid.filter(e => e.kind_u5).length;
-
-      document.getElementById('stat-sectio').textContent = valid.filter(e => e.cat_sectio).length;
-      document.getElementById('stat-pdkgeb').textContent = valid.filter(e => e.cat_pdk_geb).length;
-
-      document.getElementById('stat-rmnah').textContent = valid.filter(e => e.ra_rm_nah).length;
-      document.getElementById('stat-peripher').textContent = valid.filter(e => e.ra_peripher).length;
-
-      document.getElementById('stat-kopfhals').textContent = valid.filter(e => e.cat_kopf_hals).length;
-      document.getElementById('stat-thorax').textContent = valid.filter(e => e.cat_thorax).length;
-      document.getElementById('stat-intrakraniell').textContent = valid.filter(e => e.cat_intrakraniell).length;
-
-      document.getElementById('stat-fiberoptik').textContent = valid.filter(e => e.tech_fiberoptik).length;
-      document.getElementById('stat-videolarynx').textContent = valid.filter(e => e.tech_videolarynx).length;
-      document.getElementById('stat-sonogefaess').textContent = valid.filter(e => e.tech_sono_gefaess).length;
+    if (cancelButton) {
+        cancelButton.classList.add('hidden');
     }
 
-    function saveGSheetsUrl() {
-      const url = document.getElementById('gsheets-url').value.trim();
-      localStorage.setItem('gsheets_url', url);
+    const title = document.getElementById(
+        'case-form-title'
+    );
+
+    if (title) {
+        title.innerHTML = `
+            <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
+            Patienten- & Falldaten
+        `;
     }
 
-    function checkBackupReminder() {
-      const lastBackup = localStorage.getItem('last_backup_date');
-      const now = Date.now();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    document.getElementById(
+        'child-age-alert'
+    )?.classList.add('hidden');
 
-      if (entries.length > 0 && (!lastBackup || (now - parseInt(lastBackup)) > sevenDays)) {
-        document.getElementById('backup-reminder').classList.remove('hidden');
-      } else {
-        document.getElementById('backup-reminder').classList.add('hidden');
-      }
+    togglePeriphereDropdown(false);
+    toggleSpaPdkDropdown(false);
+    populateProcedureDropdown('');
+
+    refreshIcons();
+}
+
+function setDefaultDate() {
+    const input = document.getElementById('input-date');
+
+    if (!input) return;
+
+    const now = new Date();
+
+    const localDate =
+        new Date(
+            now.getTime() -
+            now.getTimezoneOffset() * 60000
+        )
+            .toISOString()
+            .split('T')[0];
+
+    input.value = localDate;
+}
+
+function formatInitials(inputEl) {
+    let value = String(inputEl.value || '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-ZÄÖÜ]/g, '');
+
+    if (value.length >= 2) {
+        inputEl.value = `${value[0]}.${value[1]}.`;
+    } else {
+        inputEl.value = value;
     }
+}
 
-    function recordBackupDone() {
-      localStorage.setItem('last_backup_date', Date.now().toString());
-      checkBackupReminder();
-    }
+/* ------------------------------------------------
+   GEBURTSDATUM
+------------------------------------------------ */
 
-    function exportCSV() {
-      if (entries.length === 0) return alert('Keine Einträge vorhanden.');
-      const headers = [
-        'Datum', 'Initialen', 'Geburtsdatum', 'ASA', 'Ambulant', 'Kind <= 5J',
-        'Fachrichtung', 'Eingriff', 'Sectio', 'PDK Geb.', 'Kopf/Hals', 'Thorax', 'Intrakraniell',
-        'Anaesthesie Typ', 'Verfahren', 'RM-Nah', 'RA-Peripher',
-        'Fiberoptik', 'Videolaryngoskopie', 'Sono Gefaesspunktion', 'Notizen'
-      ];
+function handleSmartDobInput(inputEl) {
+    let value = String(inputEl.value || '')
+        .trim()
+        .replace(/[\/,-]/g, '.');
 
-      const rows = entries.map(e => [
-        `"${e.datum}"`, `"${e.initialen}"`, `"${e.geburtsdatum}"`, `"${e.asa}"`, e.ambulant ? 'Ja' : 'Nein', e.kind_u5 ? 'Ja' : 'Nein',
-        `"${e.fachrichtung}"`, `"${e.eingriff}"`, e.cat_sectio ? 'Ja' : 'Nein', e.cat_pdk_geb ? 'Ja' : 'Nein',
-        e.cat_kopf_hals ? 'Ja' : 'Nein', e.cat_thorax ? 'Ja' : 'Nein', e.cat_intrakraniell ? 'Ja' : 'Nein',
-        `"${e.anesthesietyp || 'Vollnarkose'}"`, `"${e.verfahren}"`, e.ra_rm_nah ? 'Ja' : 'Nein', e.ra_peripher ? 'Ja' : 'Nein',
-        e.tech_fiberoptik ? 'Ja' : 'Nein', e.tech_videolarynx ? 'Ja' : 'Nein', e.tech_sono_gefaess ? 'Ja' : 'Nein',
-        `"${e.besonderheiten || ''}"`
-      ]);
-
-      const csv = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
-      const a = document.createElement('a');
-      a.href = encodeURI(csv);
-      a.download = `Anästhesie_Logbuch_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      recordBackupDone();
-    }
-
-    async function sendToGoogleSheets() {
-      const url = localStorage.getItem('gsheets_url');
-      if (!url) {
-        alert('Bitte trage zuerst im Einstellungen-Tab (Zahnrad) deine Google Webhook URL ein!');
-        switchTab('settings');
+    if (!value) {
+        hideChildAlert();
         return;
-      }
-      if (entries.length === 0) return alert('Keine Einträge vorhanden.');
-
-      try {
-        await fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entries)
-        });
-        recordBackupDone();
-        alert('Daten wurden erfolgreich an Google Sheets gesendet!');
-      } catch (err) {
-        alert('Fehler beim Senden: ' + err.message);
-      }
     }
-  </script>
+
+    let day;
+    let month;
+    let year;
+
+    const parts = value
+        .split('.')
+        .filter(Boolean);
+
+    if (
+        parts.length === 3
+    ) {
+        day = Number(parts[0]);
+        month = Number(parts[1]);
+        year = parseYear(parts[2]);
+    } else if (
+        parts.length === 1 &&
+        /^\d{6}$/.test(parts[0])
+    ) {
+        day = Number(parts[0].slice(0, 2));
+        month = Number(parts[0].slice(2, 4));
+        year = parseYear(parts[0].slice(4));
+    } else if (
+        parts.length === 1 &&
+        /^\d{8}$/.test(parts[0])
+    ) {
+        day = Number(parts[0].slice(0, 2));
+        month = Number(parts[0].slice(2, 4));
+        year = Number(parts[0].slice(4));
+    } else if (
+        parts.length === 1 &&
+        /^\d{2}$/.test(parts[0])
+    ) {
+        day = 1;
+        month = 1;
+        year = parseYear(parts[0]);
+    } else {
+        showToast(
+            'Geburtsdatum bitte z. B. als 15.05.1964 eingeben.',
+            'error'
+        );
+        return;
+    }
+
+    if (
+        !isValidDateParts(day, month, year)
+    ) {
+        showToast(
+            'Ungültiges Geburtsdatum.',
+            'error'
+        );
+        return;
+    }
+
+    inputEl.value =
+        `${String(day).padStart(2, '0')}.` +
+        `${String(month).padStart(2, '0')}.` +
+        `${year}`;
+
+    updateChildAgeAlert();
+}
+
+function parseYear(value) {
+    const yearString = String(value).trim();
+
+    if (!/^\d+$/.test(yearString)) {
+        return NaN;
+    }
+
+    const numeric = Number(yearString);
+
+    if (yearString.length <= 2) {
+        return numeric <= 26
+            ? 2000 + numeric
+            : 1900 + numeric;
+    }
+
+    return numeric;
+}
+
+function isValidDateParts(day, month, year) {
+    if (
+        !Number.isInteger(day) ||
+        !Number.isInteger(month) ||
+        !Number.isInteger(year)
+    ) {
+        return false;
+    }
+
+    if (month < 1 || month > 12) {
+        return false;
+    }
+
+    const date = new Date(
+        year,
+        month - 1,
+        day
+    );
+
+    return (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+    );
+}
+
+function parseGermanDate(value) {
+    const parts = String(value || '')
+        .split('.')
+        .map(Number);
+
+    if (parts.length !== 3) {
+        return null;
+    }
+
+    const [day, month, year] = parts;
+
+    if (!isValidDateParts(day, month, year)) {
+        return null;
+    }
+
+    return new Date(
+        year,
+        month - 1,
+        day
+    );
+}
+
+function calculateAge(dobString, referenceDateString) {
+    const dob = parseGermanDate(dobString);
+
+    if (!dob) return null;
+
+    const reference = referenceDateString
+        ? new Date(`${referenceDateString}T12:00:00`)
+        : new Date();
+
+    if (Number.isNaN(reference.getTime())) {
+        return null;
+    }
+
+    let age =
+        reference.getFullYear() -
+        dob.getFullYear();
+
+    const beforeBirthday =
+        reference.getMonth() < dob.getMonth() ||
+        (
+            reference.getMonth() === dob.getMonth() &&
+            reference.getDate() < dob.getDate()
+        );
+
+    if (beforeBirthday) {
+        age--;
+    }
+
+    return age;
+}
+
+function updateChildAgeAlert() {
+    const dob =
+        document.getElementById('input-dob')?.value;
+
+    const date =
+        document.getElementById('input-date')?.value;
+
+    const age = calculateAge(dob, date);
+
+    const alert =
+        document.getElementById('child-age-alert');
+
+    if (!alert) return;
+
+    alert.classList.toggle(
+        'hidden',
+        !(age !== null && age >= 0 && age <= 5)
+    );
+}
+
+/* ------------------------------------------------
+   FACHRICHTUNG / EINGRIFF
+------------------------------------------------ */
+
+function populateProcedureDropdown(
+    department,
+    selectedValue = ''
+) {
+    const select =
+        document.getElementById('input-procedure');
+
+    if (!select) return;
+
+    select.innerHTML = '';
+
+    const placeholder =
+        document.createElement('option');
+
+    placeholder.value = '';
+
+    placeholder.textContent =
+        department
+            ? '-- Eingriff wählen --'
+            : '-- Fachrichtung zuerst wählen --';
+
+    select.appendChild(placeholder);
+
+    if (!department) {
+        return;
+    }
+
+    const options = [
+        ...(PROCEDURE_OPTIONS[department] || [])
+    ];
+
+    const custom =
+        Array.isArray(customProcedures[department])
+            ? customProcedures[department]
+            : [];
+
+    custom.forEach(procedure => {
+        if (!options.includes(procedure)) {
+            options.push(procedure);
+        }
+    });
+
+    options.forEach(label => {
+        const option =
+            document.createElement('option');
+
+        option.value = label;
+        option.textContent = label;
+
+        select.appendChild(option);
+    });
+
+    if (
+        selectedValue &&
+        options.includes(selectedValue)
+    ) {
+        select.value = selectedValue;
+    }
+}
+
+function openCustomProcedurePrompt() {
+    const department =
+        document.getElementById('input-department')?.value;
+
+    if (!department) {
+        showToast(
+            'Bitte zuerst eine Fachrichtung auswählen.',
+            'error'
+        );
+        return;
+    }
+
+    const entered =
+        window.prompt(
+            'Name des eigenen Eingriffs:'
+        );
+
+    if (entered === null) {
+        return;
+    }
+
+    const procedure = entered.trim();
+
+    if (!procedure) {
+        return;
+    }
+
+    if (!Array.isArray(customProcedures[department])) {
+        customProcedures[department] = [];
+    }
+
+    const exists =
+        customProcedures[department]
+            .some(
+                p => p.toLowerCase() === procedure.toLowerCase()
+            );
+
+    if (!exists) {
+        customProcedures[department].push(procedure);
+        saveToLocalStorage();
+    }
+
+    populateProcedureDropdown(
+        department,
+        procedure
+    );
+
+    showToast(
+        exists
+            ? 'Der Eingriff existiert bereits.'
+            : 'Eigener Eingriff hinzugefügt.',
+        exists ? 'info' : 'success'
+    );
+}
+
+function handleDepartmentChange(department) {
+    populateProcedureDropdown(department);
+
+    /*
+     * Bei einem Fachrichtungswechsel werden nur
+     * automatisch abhängige Einstellungen angepasst.
+     */
+    if (
+        department === 'Geburtshilfe'
+    ) {
+        document.getElementById(
+            'proc-vollnarkose'
+        ).checked = true;
+    }
+
+    updateChildAgeAlert();
+}
+
+function handleProcedureChange(procedure) {
+    const department =
+        document.getElementById('input-department')?.value;
+
+    if (!procedure) {
+        return;
+    }
+
+    if (
+        department === 'Allg. & Viszeralchirurgie'
+    ) {
+        document.getElementById(
+            'check-abdominell'
+        ).checked = true;
+    }
+
+    if (
+        department === 'HNO / Augen' ||
+        department === 'Mund-Kiefer-Gesicht'
+    ) {
+        document.getElementById(
+            'check-kopf-hals'
+        ).checked = true;
+    }
+
+    if (
+        department === 'Neurochirurgie'
+    ) {
+        document.getElementById(
+            'check-intrakraniell'
+        ).checked = true;
+    }
+
+    if (
+        department === 'Thoraxchirurgie'
+    ) {
+        document.getElementById(
+            'check-intrathorakal'
+        ).checked = true;
+    }
+
+    if (procedure === 'Sectio Caesarea') {
+        document.getElementById(
+            'input-department'
+        ).value = 'Geburtshilfe';
+
+        populateProcedureDropdown(
+            'Geburtshilfe',
+            'Sectio Caesarea'
+        );
+
+        document.getElementById(
+            'check-sectio'
+        ).checked = true;
+
+        document.getElementById(
+            'proc-vollnarkose'
+        ).checked = false;
+    }
+
+    if (
+        procedure === 'Geburtshilflicher PDK'
+    ) {
+        document.getElementById(
+            'input-department'
+        ).value = 'Geburtshilfe';
+
+        populateProcedureDropdown(
+            'Geburtshilfe',
+            procedure
+        );
+
+        document.getElementById(
+            'check-sectio'
+        ).checked = false;
+
+        document.getElementById(
+            'proc-vollnarkose'
+        ).checked = false;
+
+        const spa =
+            document.getElementById(
+                'proc-spa-pdk'
+            );
+
+        spa.checked = true;
+
+        document.getElementById(
+            'select-spa-pdk'
+        ).value = 'PDK Geb';
+
+        toggleSpaPdkDropdown(true);
+    }
+}
+
+/* ------------------------------------------------
+   ANÄSTHESIE UI
+------------------------------------------------ */
+
+function togglePeriphereDropdown(checked) {
+    const container =
+        document.getElementById(
+            'periphere-ra-container'
+        );
+
+    if (!container) return;
+
+    container.classList.toggle(
+        'hidden',
+        !checked
+    );
+}
+
+function toggleSpaPdkDropdown(checked) {
+    const container =
+        document.getElementById(
+            'spa-pdk-container'
+        );
+
+    const select =
+        document.getElementById(
+            'select-spa-pdk'
+        );
+
+    if (!container || !select) return;
+
+    container.classList.toggle(
+        'hidden',
+        !checked
+    );
+
+    select.required = Boolean(checked);
+
+    if (!checked) {
+        select.value = '';
+    }
+}
+
+function handleSpaPdkChange(element) {
+    toggleSpaPdkDropdown(
+        element.checked
+    );
+
+    if (!element.checked) {
+        return;
+    }
+
+    const procedure =
+        document.getElementById(
+            'input-procedure'
+        )?.value;
+
+    if (
+        procedure ===
+        'Geburtshilflicher PDK'
+    ) {
+        document.getElementById(
+            'select-spa-pdk'
+        ).value = 'PDK Geb';
+
+        document.getElementById(
+            'proc-vollnarkose'
+        ).checked = false;
+    }
+}
+
+function syncSectioGeburtshilfe(element) {
+    if (!element.checked) {
+        return;
+    }
+
+    document.getElementById(
+        'input-department'
+    ).value = 'Geburtshilfe';
+
+    populateProcedureDropdown(
+        'Geburtshilfe',
+        'Sectio Caesarea'
+    );
+
+    document.getElementById(
+        'proc-vollnarkose'
+    ).checked = false;
+}
+
+/* ------------------------------------------------
+   FALL SPEICHERN
+------------------------------------------------ */
+
+function handleCaseSubmit(event) {
+    event.preventDefault();
+
+    const date =
+        document.getElementById('input-date').value;
+
+    const initials =
+        document.getElementById('input-initials').value
+            .trim()
+            .toUpperCase();
+
+    const dob =
+        document.getElementById('input-dob').value.trim();
+
+    const asa =
+        Number(
+            document.getElementById('input-asa').value
+        );
+
+    const department =
+        document.getElementById(
+            'input-department'
+        ).value;
+
+    const procedure =
+        document.getElementById(
+            'input-procedure'
+        ).value;
+
+    const notes =
+        document.getElementById(
+            'input-notes'
+        ).value.trim();
+
+    /* Validierung */
+
+    if (!date || !initials || !dob || !asa || !department || !procedure) {
+        showToast(
+            'Bitte alle Pflichtfelder ausfüllen.',
+            'error'
+        );
+        return;
+    }
+
+    if (!parseGermanDate(dob)) {
+        showToast(
+            'Bitte ein gültiges Geburtsdatum eingeben.',
+            'error'
+        );
+        return;
+    }
+
+    const isSpaPdk =
+        document.getElementById(
+            'proc-spa-pdk'
+        ).checked;
+
+    const spaPdkVerfahren =
+        isSpaPdk
+            ? document.getElementById(
+                'select-spa-pdk'
+            ).value
+            : '';
+
+    if (
+        isSpaPdk &&
+        !spaPdkVerfahren
+    ) {
+        showToast(
+            'Bitte ein SPA-/PDK-Verfahren auswählen.',
+            'error'
+        );
+        return;
+    }
+
+    const isPeriphereRA =
+        document.getElementById(
+            'proc-periphere-ra'
+        ).checked;
+
+    const periphereVerfahren =
+        isPeriphereRA
+            ? document.getElementById(
+                'select-periphere-verfahren'
+            ).value
+            : '';
+
+    const age =
+        calculateAge(
+            dob,
+            date
+        );
+
+    const isChildUnder5 =
+        age !== null &&
+        age >= 0 &&
+        age <= 5;
+
+    const existing =
+        editingCaseId
+            ? cases.find(
+                c => c.id === editingCaseId
+            )
+            : null;
+
+    const isSpaPdkGeburtshilfe =
+        isSpaPdk &&
+        (
+            spaPdkVerfahren === 'SPA Geb' ||
+            spaPdkVerfahren === 'PDK Geb'
+        );
+
+    const isSpaPdkAllg =
+        isSpaPdk &&
+        (
+            spaPdkVerfahren === 'SPA' ||
+            spaPdkVerfahren === 'PDK'
+        );
+
+    const newCase = normalizeCase({
+        id:
+            editingCaseId ||
+            createId('case'),
+
+        isDemo:
+            existing?.isDemo || false,
+
+        date,
+        initials,
+        dob,
+        asa,
+        department,
+        procedure,
+        notes,
+
+        isAbdominell:
+            document.getElementById(
+                'check-abdominell'
+            ).checked,
+
+        isKopfHals:
+            document.getElementById(
+                'check-kopf-hals'
+            ).checked,
+
+        isIntrathorakal:
+            document.getElementById(
+                'check-intrathorakal'
+            ).checked,
+
+        isIntrakraniell:
+            document.getElementById(
+                'check-intrakraniell'
+            ).checked,
+
+        isSectio:
+            document.getElementById(
+                'check-sectio'
+            ).checked,
+
+        isAmbulant:
+            document.getElementById(
+                'check-ambulant'
+            ).checked,
+
+        isVollnarkose:
+            document.getElementById(
+                'proc-vollnarkose'
+            ).checked,
+
+        isSpaPdk,
+        spaPdkVerfahren,
+
+        isSpaPdkGeburtshilfe,
+        spaPdkGebVerfahren:
+            isSpaPdkGeburtshilfe
+                ? spaPdkVerfahren
+                : '',
+
+        isSpaPdkAllg,
+        spaPdkAllgVerfahren:
+            isSpaPdkAllg
+                ? spaPdkVerfahren
+                : '',
+
+        isPeriphereRA,
+        periphereVerfahren,
+
+        isSedierung:
+            document.getElementById(
+                'proc-sedierung'
+            ).checked,
+
+        isFiberoptik:
+            document.getElementById(
+                'check-fiberoptik'
+            ).checked,
+
+        isVideolaryngo:
+            document.getElementById(
+                'check-videolaryngo'
+            ).checked,
+
+        isSonoGefaess:
+            document.getElementById(
+                'check-sono-gefaess'
+            ).checked,
+
+        isChildUnder5
+    });
+
+    /* WICHTIG:
+       Bearbeiten ersetzt den bestehenden Datensatz.
+       Neuer Fall wird vorne eingefügt.
+    */
+
+    if (editingCaseId) {
+        const index =
+            cases.findIndex(
+                c => c.id === editingCaseId
+            );
+
+        if (index === -1) {
+            showToast(
+                'Der zu bearbeitende Fall wurde nicht gefunden.',
+                'error'
+            );
+            return;
+        }
+
+        cases[index] = newCase;
+
+        showToast(
+            'Fall erfolgreich geändert.',
+            'success'
+        );
+    } else {
+        cases.unshift(newCase);
+
+        showToast(
+            'Fall erfolgreich erfasst.',
+            'success'
+        );
+    }
+
+    saveToLocalStorage();
+
+    resetCaseForm();
+
+    renderAll();
+
+    switchTab('case-list');
+}
+
+/* ------------------------------------------------
+   FALL BEARBEITEN
+------------------------------------------------ */
+
+function editCase(id) {
+    const caseData =
+        cases.find(
+            c => c.id === id
+        );
+
+    if (!caseData) {
+        showToast(
+            'Fall wurde nicht gefunden.',
+            'error'
+        );
+        return;
+    }
+
+    editingCaseId = id;
+
+    document.getElementById(
+        'input-date'
+    ).value = caseData.date || '';
+
+    document.getElementById(
+        'input-initials'
+    ).value = caseData.initials || '';
+
+    document.getElementById(
+        'input-dob'
+    ).value = caseData.dob || '';
+
+    document.getElementById(
+        'input-asa'
+    ).value = caseData.asa || '';
+
+    document.getElementById(
+        'input-department'
+    ).value = caseData.department || '';
+
+    populateProcedureDropdown(
+        caseData.department || '',
+        caseData.procedure || ''
+    );
+
+    document.getElementById(
+        'check-abdominell'
+    ).checked = Boolean(caseData.isAbdominell);
+
+    document.getElementById(
+        'check-kopf-hals'
+    ).checked = Boolean(caseData.isKopfHals);
+
+    document.getElementById(
+        'check-intrathorakal'
+    ).checked = Boolean(caseData.isIntrathorakal);
+
+    document.getElementById(
+        'check-intrakraniell'
+    ).checked = Boolean(caseData.isIntrakraniell);
+
+    document.getElementById(
+        'check-sectio'
+    ).checked = Boolean(caseData.isSectio);
+
+    document.getElementById(
+        'check-ambulant'
+    ).checked = Boolean(caseData.isAmbulant);
+
+    document.getElementById(
+        'proc-vollnarkose'
+    ).checked = Boolean(caseData.isVollnarkose);
+
+    const spaValue =
+        caseData.spaPdkVerfahren ||
+        caseData.spaPdkGebVerfahren ||
+        caseData.spaPdkAllgVerfahren ||
+        '';
+
+    const hasSpa =
+        Boolean(
+            caseData.isSpaPdk ||
+            caseData.isSpaPdkGeburtshilfe ||
+            caseData.isSpaPdkAllg
+        );
+
+    document.getElementById(
+        'proc-spa-pdk'
+    ).checked = hasSpa;
+
+    document.getElementById(
+        'select-spa-pdk'
+    ).value = spaValue;
+
+    toggleSpaPdkDropdown(
+        hasSpa
+    );
+
+    document.getElementById(
+        'proc-periphere-ra'
+    ).checked =
+        Boolean(caseData.isPeriphereRA);
+
+    document.getElementById(
+        'select-periphere-verfahren'
+    ).value =
+        caseData.periphereVerfahren || '';
+
+    togglePeriphereDropdown(
+        Boolean(caseData.isPeriphereRA)
+    );
+
+    document.getElementById(
+        'proc-sedierung'
+    ).checked =
+        Boolean(caseData.isSedierung);
+
+    document.getElementById(
+        'check-fiberoptik'
+    ).checked =
+        Boolean(caseData.isFiberoptik);
+
+    document.getElementById(
+        'check-videolaryngo'
+    ).checked =
+        Boolean(caseData.isVideolaryngo);
+
+    document.getElementById(
+        'check-sono-gefaess'
+    ).checked =
+        Boolean(caseData.isSonoGefaess);
+
+    document.getElementById(
+        'input-notes'
+    ).value =
+        caseData.notes || '';
+
+    document.getElementById(
+        'case-submit-button'
+    ).innerHTML = `
+        <i data-lucide="save" class="w-4 h-4"></i>
+        Änderungen speichern
+    `;
+
+    document.getElementById(
+        'case-cancel-edit'
+    ).classList.remove('hidden');
+
+    document.getElementById(
+        'case-form-title'
+    ).innerHTML = `
+        <i data-lucide="pencil" class="w-5 h-5 text-brand-600"></i>
+        Fall bearbeiten
+    `;
+
+    updateChildAgeAlert();
+
+    switchTab('new-case');
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+
+    refreshIcons();
+}
+
+function cancelEditCase() {
+    if (!editingCaseId) {
+        resetCaseForm();
+        return;
+    }
+
+    resetCaseForm();
+
+    showToast(
+        'Bearbeitung abgebrochen.',
+        'info'
+    );
+}
+
+/* ------------------------------------------------
+   FALL LÖSCHEN
+------------------------------------------------ */
+
+function deleteCase(id) {
+    const caseData =
+        cases.find(
+            c => c.id === id
+        );
+
+    if (!caseData) {
+        return;
+    }
+
+    const confirmed =
+        window.confirm(
+            `Fall ${caseData.initials || ''} vom ${formatDateDE(caseData.date)} wirklich löschen?`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    cases =
+        cases.filter(
+            c => c.id !== id
+        );
+
+    if (editingCaseId === id) {
+        resetCaseForm();
+    }
+
+    saveToLocalStorage();
+    renderAll();
+
+    showToast(
+        'Fall gelöscht.',
+        'info'
+    );
+}
+
+/* ------------------------------------------------
+   FALLLISTE
+------------------------------------------------ */
+
+function renderCaseList() {
+    const container =
+        document.getElementById(
+            'case-list-container'
+        );
+
+    const placeholder =
+        document.getElementById(
+            'empty-cases-placeholder'
+        );
+
+    if (!container || !placeholder) {
+        return;
+    }
+
+    const search =
+        String(
+            document.getElementById(
+                'search-cases'
+            )?.value || ''
+        )
+            .trim()
+            .toLowerCase();
+
+    const sort =
+        document.getElementById(
+            'sort-cases'
+        )?.value || 'date-desc';
+
+    const filtered =
+        cases
+            .filter(c => {
+                if (!search) {
+                    return true;
+                }
+
+                const searchable = [
+                    c.initials,
+                    c.department,
+                    c.procedure,
+                    c.notes,
+                    c.periphereVerfahren
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                return searchable.includes(search);
+            })
+            .sort((a, b) => {
+                if (sort === 'date-asc') {
+                    return compareDates(
+                        a.date,
+                        b.date
+                    );
+                }
+
+                if (sort === 'initials-asc') {
+                    return String(a.initials)
+                        .localeCompare(
+                            String(b.initials),
+                            'de'
+                        );
+                }
+
+                return compareDates(
+                    b.date,
+                    a.date
+                );
+            });
+
+    document.getElementById(
+        'badge-case-count'
+    ).textContent = cases.length;
+
+    if (filtered.length === 0) {
+        container.innerHTML = '';
+        placeholder.classList.remove('hidden');
+        refreshIcons();
+        return;
+    }
+
+    placeholder.classList.add('hidden');
+
+    container.innerHTML =
+        filtered
+            .map(renderCaseCard)
+            .join('');
+
+    refreshIcons();
+}
+
+function renderCaseCard(c) {
+    const badges = [];
+
+    if (c.isDemo) {
+        badges.push(
+            badge(
+                'DEMO',
+                'amber'
+            )
+        );
+    }
+
+    if (c.isVollnarkose) {
+        badges.push(
+            badge(
+                'Vollnarkose',
+                'blue'
+            )
+        );
+    }
+
+    if (c.isSpaPdkGeburtshilfe) {
+        badges.push(
+            badge(
+                'SPA/PDK Geburtshilfe',
+                'slate'
+            )
+        );
+    } else if (c.isSpaPdkAllg) {
+        badges.push(
+            badge(
+                'SPA/PDK',
+                'indigo'
+            )
+        );
+    } else if (c.isSpaPdk) {
+        badges.push(
+            badge(
+                `SPA/PDK${c.spaPdkVerfahren ? ': ' + c.spaPdkVerfahren : ''}`,
+                'indigo'
+            )
+        );
+    }
+
+    if (c.isPeriphereRA) {
+        badges.push(
+            badge(
+                `Peri. RA${c.periphereVerfahren ? ': ' + c.periphereVerfahren : ''}`,
+                'teal'
+            )
+        );
+    }
+
+    if (c.isSedierung) {
+        badges.push(
+            badge(
+                'Sedierung',
+                'slate'
+            )
+        );
+    }
+
+    if (c.isSectio) {
+        badges.push(
+            badge(
+                'Sectio',
+                'purple'
+            )
+        );
+    }
+
+    if (c.isAbdominell) {
+        badges.push(
+            badge(
+                'Abdominell',
+                'amber'
+            )
+        );
+    }
+
+    if (c.isKopfHals) {
+        badges.push(
+            badge(
+                'Kopf/Hals',
+                'sky'
+            )
+        );
+    }
+
+    if (c.isIntrathorakal) {
+        badges.push(
+            badge(
+                'Intrathorakal',
+                'rose'
+            )
+        );
+    }
+
+    if (c.isIntrakraniell) {
+        badges.push(
+            badge(
+                'Intrakraniell',
+                'fuchsia'
+            )
+        );
+    }
+
+    if (c.isChildUnder5) {
+        badges.push(
+            badge(
+                'Kind ≤ 5 J.',
+                'orange'
+            )
+        );
+    }
+
+    return `
+        <div class="p-3.5 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+            <div class="space-y-1.5 min-w-0">
+
+                <div class="flex flex-wrap items-center gap-2">
+
+                    <span class="font-bold text-slate-900 dark:text-white text-sm">
+                        ${escapeHtml(c.initials)}
+                    </span>
+
+                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                        ${escapeHtml(formatDateDE(c.date))}
+                    </span>
+
+                    <span class="px-2 py-0.5 text-[11px] font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                        ASA ${escapeHtml(c.asa)}
+                    </span>
+
+                    <span class="text-xs font-semibold text-brand-600 dark:text-brand-400">
+                        ${escapeHtml(c.department)}
+                    </span>
+                </div>
+
+                <div class="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    ${escapeHtml(c.procedure)}
+                </div>
+
+                <div class="flex flex-wrap gap-1">
+                    ${badges.join('')}
+                </div>
+
+                ${
+                    c.notes
+                        ? `
+                            <p class="text-xs text-slate-500 dark:text-slate-400 italic">
+                                ${escapeHtml(c.notes)}
+                            </p>
+                        `
+                        : ''
+                }
+            </div>
+
+            <div class="flex items-center gap-1 self-end sm:self-center">
+
+                <button
+                    type="button"
+                    onclick="editCase('${escapeJs(c.id)}')"
+                    class="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                    title="Bearbeiten"
+                >
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+
+                <button
+                    type="button"
+                    onclick="deleteCase('${escapeJs(c.id)}')"
+                    class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                    title="Löschen"
+                >
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/* ------------------------------------------------
+   AUSWERTUNG
+------------------------------------------------ */
+
+function computeBaekStats() {
+    const counts = {};
+
+    Object.keys(BAEK_TARGETS)
+        .forEach(key => {
+            counts[key] = 0;
+        });
+
+    cases.forEach(c => {
+
+        if (c.isVollnarkose) {
+            counts.vollnarkose++;
+        }
+
+        if (c.isAbdominell) {
+            counts.abdominell++;
+        }
+
+        if (Number(c.asa) >= 3) {
+            counts.asa3++;
+        }
+
+        if (c.isChildUnder5) {
+            counts.kinder++;
+        }
+
+        const isGeburtshilflich =
+            c.department === 'Geburtshilfe' ||
+            c.isSectio ||
+            c.isSpaPdkGeburtshilfe;
+
+        if (isGeburtshilflich) {
+            counts.geburtshilfe++;
+        }
+
+        if (c.isSectio) {
+            counts.sectio++;
+        }
+
+        if (c.isKopfHals) {
+            counts.kopfHals++;
+        }
+
+        if (c.isIntrathorakal) {
+            counts.intrathorakal++;
+        }
+
+        if (c.isIntrakraniell) {
+            counts.intrakraniell++;
+        }
+
+        if (
+            c.isSpaPdk ||
+            c.isSpaPdkGeburtshilfe ||
+            c.isSpaPdkAllg
+        ) {
+            counts.spaPdk++;
+        }
+
+        if (c.isPeriphereRA) {
+            counts.periphereRA++;
+        }
+
+        if (c.isAmbulant) {
+            counts.ambulant++;
+        }
+
+        if (c.isFiberoptik) {
+            counts.fiberoptik++;
+        }
+
+        if (c.isVideolaryngo) {
+            counts.videolaryngo++;
+        }
+
+        if (c.isSonoGefaess) {
+            counts.sonoGefaess++;
+        }
+    });
+
+    vorwerte.forEach(v => {
+        Object.keys(BAEK_TARGETS)
+            .forEach(key => {
+                counts[key] +=
+                    Number(v[key]) || 0;
+            });
+    });
+
+    return counts;
+}
+
+function renderEvaluation() {
+    const container =
+        document.getElementById(
+            'baek-grid'
+        );
+
+    if (!container) return;
+
+    const counts =
+        computeBaekStats();
+
+    container.innerHTML =
+        Object.entries(BAEK_TARGETS)
+            .map(([key, definition]) => {
+
+                const current =
+                    counts[key] || 0;
+
+                const target =
+                    definition.target;
+
+                const percentage =
+                    target > 0
+                        ? Math.min(
+                            100,
+                            Math.round(
+                                current / target * 100
+                            )
+                        )
+                        : 0;
+
+                const complete =
+                    current >= target;
+
+                return `
+                    <div class="p-4 bg-white dark:bg-slate-800 rounded-2xl border ${
+                        complete
+                            ? 'border-emerald-300 dark:border-emerald-800'
+                            : 'border-slate-200 dark:border-slate-700/70'
+                    } shadow-sm flex flex-col justify-between space-y-3">
+
+                        <div>
+
+                            <div class="flex justify-between items-start gap-3">
+
+                                <div class="flex items-center gap-2">
+
+                                    <div class="p-2 rounded-lg ${
+                                        complete
+                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                            : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                                    }">
+
+                                        <i
+                                            data-lucide="${escapeHtml(definition.icon)}"
+                                            class="w-4 h-4"
+                                        ></i>
+                                    </div>
+
+                                    <h3 class="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                        ${escapeHtml(definition.name)}
+                                    </h3>
+                                </div>
+
+                                <span class="px-2 py-0.5 text-[11px] font-bold rounded-full ${
+                                    complete
+                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
+                                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                                }">
+                                    ${percentage}%
+                                </span>
+                            </div>
+
+                            <div class="mt-3 flex items-baseline justify-between">
+
+                                <span class="text-xl font-bold text-slate-900 dark:text-white">
+                                    ${current}
+                                </span>
+
+                                <span class="text-xs text-slate-400">
+                                    Soll: ${target}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+
+                            <div
+                                class="h-full ${
+                                    complete
+                                        ? 'bg-emerald-500'
+                                        : 'bg-brand-600'
+                                } transition-all duration-500"
+                                style="width:${percentage}%"
+                            ></div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join('');
+
+    refreshIcons();
+}
+
+/* ------------------------------------------------
+   VORWERTE
+------------------------------------------------ */
+
+function renderVorwertFields() {
+    const container =
+        document.getElementById(
+            'vorwert-fields'
+        );
+
+    if (!container) return;
+
+    container.innerHTML =
+        VORWERT_FIELDS
+            .map(([key, label, target]) => `
+                <div>
+                    <label class="block text-slate-600 dark:text-slate-400 font-medium mb-1">
+                        ${escapeHtml(label)}
+                        <span class="text-slate-400">
+                            (Soll ${target})
+                        </span>
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        id="vw-${escapeHtml(key)}"
+                        value="0"
+                        class="w-full px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
+                    >
+                </div>
+            `)
+            .join('');
+}
+
+function openAddVorwertModal(id = null) {
+    const form =
+        document.getElementById(
+            'vorwert-form'
+        );
+
+    if (form) {
+        form.reset();
+    }
+
+    document.getElementById(
+        'vorwert-id'
+    ).value = '';
+
+    document.getElementById(
+        'vorwert-modal-title'
+    ).textContent =
+        'Vorwerte aus früheren Kliniken erfassen';
+
+    VORWERT_FIELDS.forEach(([key]) => {
+        const input =
+            document.getElementById(
+                `vw-${key}`
+            );
+
+        if (input) {
+            input.value = '0';
+        }
+    });
+
+    if (id) {
+        const item =
+            vorwerte.find(
+                v => v.id === id
+            );
+
+        if (!item) {
+            showToast(
+                'Vorwert-Block wurde nicht gefunden.',
+                'error'
+            );
+            return;
+        }
+
+        document.getElementById(
+            'vorwert-modal-title'
+        ).textContent =
+            'Vorwert-Block bearbeiten';
+
+        document.getElementById(
+            'vorwert-id'
+        ).value = item.id;
+
+        document.getElementById(
+            'vorwert-title'
+        ).value =
+            item.title || '';
+
+        VORWERT_FIELDS.forEach(([key]) => {
+            const input =
+                document.getElementById(
+                    `vw-${key}`
+                );
+
+            if (input) {
+                input.value =
+                    Number(item[key]) || 0;
+            }
+        });
+    }
+
+    document.getElementById(
+        'modal-vorwert'
+    ).classList.remove('hidden');
+
+    refreshIcons();
+}
+
+function closeVorwertModal() {
+    document.getElementById(
+        'modal-vorwert'
+    )?.classList.add('hidden');
+}
+
+function saveVorwertBlock(event) {
+    event.preventDefault();
+
+    const title =
+        document.getElementById(
+            'vorwert-title'
+        ).value.trim();
+
+    if (!title) {
+        showToast(
+            'Bitte einen Titel eingeben.',
+            'error'
+        );
+        return;
+    }
+
+    const id =
+        document.getElementById(
+            'vorwert-id'
+        ).value ||
+        createId('vw');
+
+    const block = {
+        id,
+        title
+    };
+
+    VORWERT_FIELDS.forEach(([key]) => {
+        block[key] =
+            Math.max(
+                0,
+                Number(
+                    document.getElementById(
+                        `vw-${key}`
+                    )?.value
+                ) || 0
+            );
+    });
+
+    const index =
+        vorwerte.findIndex(
+            v => v.id === id
+        );
+
+    if (index >= 0) {
+        vorwerte[index] =
+            normalizeVorwert(block);
+    } else {
+        vorwerte.push(
+            normalizeVorwert(block)
+        );
+    }
+
+    saveToLocalStorage();
+    closeVorwertModal();
+
+    renderAll();
+
+    showToast(
+        index >= 0
+            ? 'Vorwert-Block geändert.'
+            : 'Vorwert-Block gespeichert.',
+        'success'
+    );
+}
+
+function renderVorwerteList() {
+    const container =
+        document.getElementById(
+            'vorwerte-list'
+        );
+
+    if (!container) return;
+
+    if (vorwerte.length === 0) {
+        container.innerHTML = `
+            <div class="py-6 text-center text-slate-400 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-xs">
+                Keine Vorwert-Blöcke vorhanden.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML =
+        vorwerte
+            .map(v => `
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center gap-3">
+
+                    <div class="min-w-0">
+
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">
+                            ${escapeHtml(v.title)}
+                        </h4>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Narkosen: ${v.vollnarkose}
+                            |
+                            Abdominell: ${v.abdominell}
+                            |
+                            SPA/PDK: ${v.spaPdk}
+                            |
+                            Peri. RA: ${v.periphereRA}
+                            |
+                            GebH: ${v.geburtshilfe}
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+
+                        <button
+                            type="button"
+                            onclick="openAddVorwertModal('${escapeJs(v.id)}')"
+                            class="p-1.5 text-slate-500 hover:text-brand-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                            title="Bearbeiten"
+                        >
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            onclick="deleteVorwertBlock('${escapeJs(v.id)}')"
+                            class="p-1.5 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                            title="Löschen"
+                        >
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `)
+            .join('');
+
+    refreshIcons();
+}
+
+function deleteVorwertBlock(id) {
+    const item =
+        vorwerte.find(
+            v => v.id === id
+        );
+
+    if (!item) return;
+
+    if (
+        !window.confirm(
+            `Vorwert-Block "${item.title}" wirklich löschen?`
+        )
+    ) {
+        return;
+    }
+
+    vorwerte =
+        vorwerte.filter(
+            v => v.id !== id
+        );
+
+    saveToLocalStorage();
+    renderAll();
+
+    showToast(
+        'Vorwert-Block gelöscht.',
+        'info'
+    );
+}
+
+/* ------------------------------------------------
+   TABS
+------------------------------------------------ */
+
+function switchTab(tabKey) {
+    document.querySelectorAll('.tab-btn')
+        .forEach(button => {
+            button.classList.remove(
+                'active',
+                'border-brand-600',
+                'text-brand-600',
+                'dark:text-brand-400'
+            );
+
+            button.classList.add(
+                'border-transparent',
+                'text-slate-500'
+            );
+        });
+
+    document.querySelectorAll('.tab-content')
+        .forEach(content => {
+            content.classList.add('hidden');
+        });
+
+    const button =
+        document.getElementById(
+            `tab-btn-${tabKey}`
+        );
+
+    const content =
+        document.getElementById(
+            `tab-content-${tabKey}`
+        );
+
+    if (!button || !content) {
+        return;
+    }
+
+    button.classList.add(
+        'active',
+        'border-brand-600',
+        'text-brand-600',
+        'dark:text-brand-400'
+    );
+
+    button.classList.remove(
+        'border-transparent',
+        'text-slate-500'
+    );
+
+    content.classList.remove('hidden');
+
+    refreshIcons();
+}
+
+/* ------------------------------------------------
+   HEADER
+------------------------------------------------ */
+
+function updateHeaderCount() {
+    const element =
+        document.getElementById(
+            'header-total-count'
+        );
+
+    if (!element) return;
+
+    const appCases =
+        cases.length;
+
+    const vorwertCases =
+        vorwerte.reduce(
+            (sum, block) =>
+                sum +
+                Number(block.vollnarkose || 0),
+            0
+        );
+
+    /*
+     * Wir zeigen bewusst beide Zahlen,
+     * damit nicht der Eindruck entsteht,
+     * Vorwerte seien einzelne Fall-Datensätze.
+     */
+    element.textContent =
+        `${appCases} + ${vorwertCases}`;
+}
+
+/* ------------------------------------------------
+   CSV
+------------------------------------------------ */
+
+function exportToCSV() {
+    if (cases.length === 0) {
+        showToast(
+            'Keine Fälle zum Exportieren vorhanden.',
+            'info'
+        );
+        return;
+    }
+
+    const headers = [
+        'Datum',
+        'Initialen',
+        'Geburtsdatum',
+        'ASA',
+        'Fachrichtung',
+        'Eingriff',
+        'Vollnarkose',
+        'SPA/PDK',
+        'SPA/PDK-Verfahren',
+        'Periphere RA',
+        'Peripheres Verfahren',
+        'Sedierung',
+        'Sectio',
+        'Abdominell',
+        'Kopf/Hals',
+        'Intrathorakal',
+        'Intrakraniell',
+        'Ambulant',
+        'Fiberoptik',
+        'Videolaryngoskopie',
+        'Sono Gefäßpunktion',
+        'Kind ≤ 5',
+        'Bemerkung'
+    ];
+
+    const rows =
+        cases.map(c => [
+            c.date,
+            c.initials,
+            c.dob,
+            c.asa,
+            c.department,
+            c.procedure,
+            boolToCsv(c.isVollnarkose),
+            boolToCsv(c.isSpaPdk),
+            c.spaPdkVerfahren,
+            boolToCsv(c.isPeriphereRA),
+            c.periphereVerfahren,
+            boolToCsv(c.isSedierung),
+            boolToCsv(c.isSectio),
+            boolToCsv(c.isAbdominell),
+            boolToCsv(c.isKopfHals),
+            boolToCsv(c.isIntrathorakal),
+            boolToCsv(c.isIntrakraniell),
+            boolToCsv(c.isAmbulant),
+            boolToCsv(c.isFiberoptik),
+            boolToCsv(c.isVideolaryngo),
+            boolToCsv(c.isSonoGefaess),
+            boolToCsv(c.isChildUnder5),
+            c.notes
+        ]);
+
+    const csv =
+        [
+            headers,
+            ...rows
+        ]
+            .map(row =>
+                row
+                    .map(csvEscape)
+                    .join(';')
+            )
+            .join('\r\n');
+
+    /*
+     * UTF-8 BOM hilft Excel bei Umlauten.
+     */
+    const blob =
+        new Blob(
+            ['\uFEFF' + csv],
+            {
+                type: 'text/csv;charset=utf-8;'
+            }
+        );
+
+    downloadBlob(
+        blob,
+        `Anaesthesie_Logbuch_${todayFileName()}.csv`
+    );
+
+    showToast(
+        'CSV exportiert.',
+        'success'
+    );
+}
+
+/* ------------------------------------------------
+   JSON BACKUP
+------------------------------------------------ */
+
+function exportJSON() {
+    const data = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        cases,
+        vorwerte,
+        customProcedures
+    };
+
+    const blob =
+        new Blob(
+            [
+                JSON.stringify(
+                    data,
+                    null,
+                    2
+                )
+            ],
+            {
+                type: 'application/json;charset=utf-8'
+            }
+        );
+
+    downloadBlob(
+        blob,
+        `Anaesthesie_Logbuch_Backup_${todayFileName()}.json`
+    );
+
+    showToast(
+        'JSON-Backup erstellt.',
+        'success'
+    );
+}
+
+function triggerJSONImport() {
+    document.getElementById(
+        'import-file-json'
+    )?.click();
+}
+
+function importJSON(event) {
+    const file =
+        event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader =
+        new FileReader();
+
+    reader.onload = function(loadEvent) {
+        try {
+            const parsed =
+                JSON.parse(
+                    loadEvent.target.result
+                );
+
+            if (
+                !parsed ||
+                typeof parsed !== 'object'
+            ) {
+                throw new Error(
+                    'Ungültige JSON-Struktur'
+                );
+            }
+
+            const importedCases =
+                Array.isArray(parsed.cases)
+                    ? parsed.cases
+                    : [];
+
+            const importedVorwerte =
+                Array.isArray(parsed.vorwerte)
+                    ? parsed.vorwerte
+                    : [];
+
+            cases =
+                importedCases.map(
+                    normalizeCase
+                );
+
+            vorwerte =
+                importedVorwerte.map(
+                    normalizeVorwert
+                );
+
+            customProcedures =
+                normalizeCustomProcedures(
+                    parsed.customProcedures || {}
+                );
+
+            editingCaseId = null;
+
+            saveToLocalStorage();
+
+            resetCaseForm();
+            renderAll();
+
+            showToast(
+                'Backup erfolgreich wiederhergestellt.',
+                'success'
+            );
+        } catch (error) {
+            console.error(
+                'JSON-Import:',
+                error
+            );
+
+            showToast(
+                'Die JSON-Datei konnte nicht eingelesen werden.',
+                'error'
+            );
+        } finally {
+            /*
+             * Ermöglicht später erneut dieselbe Datei
+             * auszuwählen.
+             */
+            event.target.value = '';
+        }
+    };
+
+    reader.onerror = function() {
+        showToast(
+            'Datei konnte nicht gelesen werden.',
+            'error'
+        );
+
+        event.target.value = '';
+    };
+
+    reader.readAsText(
+        file,
+        'UTF-8'
+    );
+}
+
+/* ------------------------------------------------
+   DEMODATEN
+------------------------------------------------ */
+
+function generateDemoData() {
+    const demoCases = [
+        normalizeCase({
+            id: 'c_demo_1',
+            isDemo: true,
+            date: '2026-09-15',
+            initials: 'K.S.',
+            dob: '12.04.1964',
+            asa: 3,
+            department: 'Allg. & Viszeralchirurgie',
+            procedure: 'Hemikolektomie',
+            isAbdominell: true,
+            isVollnarkose: true,
+            isVideolaryngo: true,
+            notes: 'Demo-Fall'
+        }),
+
+        normalizeCase({
+            id: 'c_demo_2',
+            isDemo: true,
+            date: '2026-09-18',
+            initials: 'M.B.',
+            dob: '05.08.1992',
+            asa: 1,
+            department: 'Geburtshilfe',
+            procedure: 'Sectio Caesarea',
+            isSectio: true,
+            isSpaPdk: true,
+            isSpaPdkGeburtshilfe: true,
+            spaPdkVerfahren: 'SPA Geb',
+            spaPdkGebVerfahren: 'SPA Geb',
+            notes: 'Demo-Fall'
+        }),
+
+        normalizeCase({
+            id: 'c_demo_3',
+            isDemo: true,
+            date: '2026-09-20',
+            initials: 'T.H.',
+            dob: '22.02.2023',
+            asa: 2,
+            department: 'HNO / Augen',
+            procedure: 'Adenotomie',
+            isChildUnder5: true,
+            isVollnarkose: true,
+            isKopfHals: true,
+            notes: 'Demo-Fall'
+        })
+    ];
+
+    /*
+     * Bereits vorhandene Demo-Fälle nicht duplizieren.
+     */
+    const existingIds =
+        new Set(
+            cases.map(c => c.id)
+        );
+
+    const newDemoCases =
+        demoCases.filter(
+            c => !existingIds.has(c.id)
+        );
+
+    if (newDemoCases.length === 0) {
+        showToast(
+            'Die Demo-Fälle sind bereits vorhanden.',
+            'info'
+        );
+        return;
+    }
+
+    cases =
+        [
+            ...newDemoCases,
+            ...cases
+        ];
+
+    saveToLocalStorage();
+    renderAll();
+
+    showToast(
+        `${newDemoCases.length} Demo-Fall/Fälle hinzugefügt.`,
+        'success'
+    );
+}
+
+function deleteDemoCases() {
+    const demoCount =
+        cases.filter(
+            c =>
+                c.isDemo ||
+                (
+                    typeof c.id === 'string' &&
+                    c.id.startsWith('c_demo_')
+                )
+        ).length;
+
+    if (!demoCount) {
+        showToast(
+            'Keine Demo-Fälle vorhanden.',
+            'info'
+        );
+        return;
+    }
+
+    if (
+        !window.confirm(
+            `${demoCount} Demo-Fall/Fälle löschen?`
+        )
+    ) {
+        return;
+    }
+
+    cases =
+        cases.filter(
+            c =>
+                !c.isDemo &&
+                !(
+                    typeof c.id === 'string' &&
+                    c.id.startsWith('c_demo_')
+                )
+        );
+
+    saveToLocalStorage();
+    renderAll();
+
+    showToast(
+        `${demoCount} Demo-Fall/Fälle gelöscht.`,
+        'info'
+    );
+}
+
+/* ------------------------------------------------
+   RESET
+------------------------------------------------ */
+
+function confirmResetAll() {
+    const confirmed =
+        window.confirm(
+            'Möchten Sie wirklich ALLE Daten löschen?\n\n' +
+            'Gelöscht werden:\n' +
+            '• alle Fälle\n' +
+            '• alle Vorwerte\n' +
+            '• alle eigenen Eingriffe\n\n' +
+            'Dieser Schritt kann nicht rückgängig gemacht werden.'
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    cases = [];
+    vorwerte = [];
+    customProcedures = {};
+    editingCaseId = null;
+
+    try {
+        Object.values(STORAGE_KEYS)
+            .forEach(key => {
+                localStorage.removeItem(key);
+            });
+    } catch (error) {
+        console.error(
+            'Reset:',
+            error
+        );
+    }
+
+    resetCaseForm();
+    renderAll();
+
+    showToast(
+        'Alle Daten wurden gelöscht.',
+        'info'
+    );
+}
+
+/* ------------------------------------------------
+   DRUCKBERICHT
+------------------------------------------------ */
+
+function printPdfReport() {
+    try {
+        const counts =
+            computeBaekStats();
+
+        const evaluationRows =
+            Object.entries(BAEK_TARGETS)
+                .map(([key, definition]) => `
+                    <tr>
+                        <td>${escapeHtml(definition.name)}</td>
+                        <td>${counts[key] || 0}</td>
+                        <td>${definition.target}</td>
+                    </tr>
+                `)
+                .join('');
+
+        const caseRows =
+            cases.length
+                ? cases.map(c => `
+                    <tr>
+                        <td>${escapeHtml(formatDateDE(c.date))}</td>
+                        <td>${escapeHtml(c.initials)}</td>
+                        <td>${escapeHtml(c.dob)}</td>
+                        <td>ASA ${escapeHtml(c.asa)}</td>
+                        <td>${escapeHtml(c.department)}</td>
+                        <td>${escapeHtml(c.procedure)}</td>
+                        <td>${escapeHtml(c.notes)}</td>
+                    </tr>
+                `).join('')
+                : `
+                    <tr>
+                        <td colspan="7">
+                            Keine Fälle erfasst.
+                        </td>
+                    </tr>
+                `;
+
+        let report =
+            document.getElementById(
+                'print-report'
+            );
+
+        if (!report) {
+            report =
+                document.createElement('div');
+
+            report.id =
+                'print-report';
+
+            document.body.appendChild(
+                report
+            );
+        }
+
+        report.innerHTML = `
+            <div class="print-sheet">
+
+                <h1>
+                    Anästhesie Logbuch
+                </h1>
+
+                <p>
+                    Erstellt am ${escapeHtml(
+                        new Date().toLocaleDateString('de-DE')
+                    )}
+                </p>
+
+                <h2>
+                    Weiterbildungs-Auswertung
+                </h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kategorie</th>
+                            <th>Aktuell</th>
+                            <th>Ziel</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${evaluationRows}
+                    </tbody>
+                </table>
+
+                <h2>
+                    Erfasste Fälle
+                </h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Initialen</th>
+                            <th>Geburtsdatum</th>
+                            <th>ASA</th>
+                            <th>Fachrichtung</th>
+                            <th>Eingriff</th>
+                            <th>Bemerkung</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${caseRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        window.setTimeout(
+            () => window.print(),
+            100
+        );
+    } catch (error) {
+        console.error(
+            'Druckbericht:',
+            error
+        );
+
+        showToast(
+            'Druckbericht konnte nicht erstellt werden.',
+            'error'
+        );
+    }
+}
+
+/* ------------------------------------------------
+   ALLGEMEINE HILFSFUNKTIONEN
+------------------------------------------------ */
+
+function renderAll() {
+    renderCaseList();
+    renderEvaluation();
+    renderVorwerteList();
+    updateHeaderCount();
+    refreshIcons();
+}
+
+function createId(prefix) {
+    if (
+        window.crypto &&
+        typeof window.crypto.randomUUID === 'function'
+    ) {
+        return `${prefix}_${window.crypto.randomUUID()}`;
+    }
+
+    return `${prefix}_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 10)}`;
+}
+
+function compareDates(a, b) {
+    const timeA =
+        new Date(
+            `${a || '1970-01-01'}T12:00:00`
+        ).getTime();
+
+    const timeB =
+        new Date(
+            `${b || '1970-01-01'}T12:00:00`
+        ).getTime();
+
+    return timeA - timeB;
+}
+
+function formatDateDE(dateString) {
+    if (!dateString) return '';
+
+    const parts =
+        String(dateString).split('-');
+
+    if (parts.length === 3) {
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+
+    return String(dateString);
+}
+
+function todayFileName() {
+    const now = new Date();
+
+    return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+    ].join('-');
+}
+
+function boolToCsv(value) {
+    return value ? '1' : '0';
+}
+
+function csvEscape(value) {
+    const stringValue =
+        value === null ||
+        value === undefined
+            ? ''
+            : String(value);
+
+    return `"${stringValue.replace(
+        /"/g,
+        '""'
+    )}"`;
+}
+
+function downloadBlob(blob, filename) {
+    const url =
+        URL.createObjectURL(blob);
+
+    const link =
+        document.createElement('a');
+
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    setTimeout(
+        () => URL.revokeObjectURL(url),
+        1000
+    );
+}
+
+function escapeHtml(value) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return '';
+    }
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeJs(value) {
+    return String(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n');
+}
+
+function badge(text, color) {
+    const classes = {
+        amber:
+            'bg-amber-50 text-amber-700 border-amber-200',
+        blue:
+            'bg-blue-50 text-blue-700 border-blue-200',
+        slate:
+            'bg-slate-100 text-slate-700 border-slate-300',
+        indigo:
+            'bg-indigo-50 text-indigo-700 border-indigo-200',
+        teal:
+            'bg-teal-50 text-teal-700 border-teal-200',
+        purple:
+            'bg-purple-50 text-purple-700 border-purple-200',
+        sky:
+            'bg-sky-50 text-sky-700 border-sky-200',
+        rose:
+            'bg-rose-50 text-rose-700 border-rose-200',
+        fuchsia:
+            'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200',
+        orange:
+            'bg-orange-50 text-orange-700 border-orange-200'
+    };
+
+    return `
+        <span class="${classes[color] || classes.slate} border px-2 py-0.5 rounded text-[11px]">
+            ${escapeHtml(text)}
+        </span>
+    `;
+}
+
+function showToast(message, type = 'info') {
+    const container =
+        document.getElementById(
+            'toast-container'
+        );
+
+    if (!container) return;
+
+    const toast =
+        document.createElement('div');
+
+    const background =
+        type === 'success'
+            ? 'bg-emerald-600'
+            : type === 'error'
+                ? 'bg-rose-600'
+                : 'bg-slate-800';
+
+    toast.className =
+        `px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium text-white flex items-center gap-2 pointer-events-auto transition-all transform translate-y-2 opacity-0 ${background}`;
+
+    const text =
+        document.createElement('span');
+
+    text.textContent =
+        String(message);
+
+    toast.appendChild(text);
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.remove(
+            'translate-y-2',
+            'opacity-0'
+        );
+    });
+
+    setTimeout(() => {
+        toast.classList.add(
+            'opacity-0'
+        );
+
+        setTimeout(
+            () => toast.remove(),
+            300
+        );
+    }, 3000);
+}
+
+function refreshIcons() {
+    if (
+        window.lucide &&
+        typeof window.lucide.createIcons === 'function'
+    ) {
+        try {
+            window.lucide.createIcons();
+        } catch (error) {
+            console.warn(
+                'Lucide:',
+                error
+            );
+        }
+    }
+}
+</script>
+
+<!-- Kleine Ergänzung für einheitliche Checkbox-Karten -->
+<style>
+.checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(226 232 240);
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.checkbox-card:hover {
+    background: rgb(248 250 252);
+}
+
+.checkbox-card input {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.dark .checkbox-card {
+    border-color: rgb(51 65 85);
+}
+
+.dark .checkbox-card:hover {
+    background: rgb(51 65 85 / 0.3);
+}
+</style>
+
 </body>
 </html>
