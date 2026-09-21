@@ -37,12 +37,25 @@
         </h1>
         <p class="text-xs text-sky-200">Weiterbildungskatalog Ärztekammer</p>
       </div>
-      <button onclick="exportCSV()" class="bg-sky-900 hover:bg-sky-950 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm">
-        <i data-lucide="download" class="w-4 h-4"></i>
-        CSV Export
-      </button>
+      <div class="flex gap-2">
+        <button onclick="exportCSV()" class="bg-sky-900 hover:bg-sky-950 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm" title="CSV herunterladen">
+          <i data-lucide="download" class="w-4 h-4"></i> CSV
+        </button>
+        <button onclick="sendToGoogleSheets()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-sm" title="Google Sheets Backup">
+          <i data-lucide="sheet" class="w-4 h-4"></i> Sheets
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- Backup Erinnerungs-Banner -->
+  <div id="backup-reminder" class="hidden bg-amber-100 border-b border-amber-300 text-amber-900 px-4 py-2.5 text-xs flex justify-between items-center max-w-md mx-auto">
+    <div class="flex items-center gap-2">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+      <span><strong>Backup-Erinnerung:</strong> Dein letztes Backup ist > 7 Tage her!</span>
+    </div>
+    <button onclick="exportCSV()" class="bg-amber-600 text-white px-2 py-1 rounded text-[11px] font-bold">Jetzt CSV</button>
+  </div>
 
   <!-- Navigation Tabs -->
   <main class="max-w-md mx-auto p-4 space-y-5">
@@ -54,16 +67,24 @@
         Einträge (<span id="count-badge">0</span>)
       </button>
       <button id="tab-btn-stats" onclick="switchTab('stats')" class="flex-1 py-2 rounded-lg text-center text-slate-600 transition">
-        Logbuch Zahlen
+        Logbuch
+      </button>
+      <button id="tab-btn-settings" onclick="switchTab('settings')" class="py-2 px-3 rounded-lg text-center text-slate-600 transition">
+        <i data-lucide="settings" class="w-4 h-4 mx-auto"></i>
       </button>
     </div>
 
-    <!-- TAB 1: FORMULAR NEUE NARKOSE -->
+    <!-- TAB 1: FORMULAR NEUE / EDITIEREN -->
     <section id="tab-add" class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
-      <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 flex items-center gap-2">
-        <i data-lucide="file-plus" class="w-5 h-5 text-sky-700"></i>
-        Fall erfassen
-      </h2>
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 id="form-title" class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+          <i data-lucide="file-plus" class="w-5 h-5 text-sky-700"></i>
+          Fall erfassen
+        </h2>
+        <button id="cancel-edit-btn" onclick="cancelEdit()" class="hidden text-xs bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg font-semibold">
+          Abbrechen
+        </button>
+      </div>
 
       <form id="narkose-form" onsubmit="saveEntry(event)" class="space-y-4">
         
@@ -141,9 +162,9 @@
           <input type="text" id="eingriff" placeholder="z.B. Laparoskopie, TTP, Sectio, ME..." required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
         </div>
 
-        <!-- Spezielle OP-Kategorien (Logbuch) -->
+        <!-- Spezielle OP-Kategorien -->
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-          <label class="block text-xs font-bold text-slate-600">Spezielle Logbuch-Kategorie (zutreffendes ankreuzen):</label>
+          <label class="block text-xs font-bold text-slate-600">Spezielle Logbuch-Kategorie:</label>
           <div class="grid grid-cols-2 gap-2 text-xs">
             <label class="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" id="cat_sectio" class="w-4 h-4 text-sky-600 rounded">
@@ -168,22 +189,37 @@
           </div>
         </div>
 
-        <!-- 3. Anästhesie & Techniken -->
+        <!-- 3. Anästhesie Typ & Verfahren -->
         <div class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-3">3. Anästhesie & Techniken</div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-2">Fand eine Narkose statt? *</label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="flex items-center justify-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="narkose_stattgefunden" value="Ja" checked onclick="toggleNarkoseDetails(true)" class="sr-only">
-              <span class="font-semibold text-sm flex items-center gap-2">
-                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> Ja
+          <label class="block text-xs font-semibold text-slate-600 mb-2">Art der Anästhesie / Narkose *</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
+              <input type="radio" name="anesthesietyp" value="Vollnarkose" checked onclick="toggleNarkoseDetails(true)" class="sr-only">
+              <span class="font-semibold flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-sky-600"></i> Vollnarkose
               </span>
             </label>
-            <label class="flex items-center justify-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
-              <input type="radio" name="narkose_stattgefunden" value="Nein" onclick="toggleNarkoseDetails(false)" class="sr-only">
-              <span class="font-semibold text-sm flex items-center gap-2">
-                <i data-lucide="x-circle" class="w-4 h-4 text-rose-500"></i> Nein / Ausfall
+
+            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
+              <input type="radio" name="anesthesietyp" value="Reine RA" onclick="toggleNarkoseDetails(true)" class="sr-only">
+              <span class="font-semibold flex items-center gap-1.5">
+                <i data-lucide="syringe" class="w-4 h-4 text-indigo-600"></i> Reine RA
+              </span>
+            </label>
+
+            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
+              <input type="radio" name="anesthesietyp" value="Sedierung" onclick="toggleNarkoseDetails(true)" class="sr-only">
+              <span class="font-semibold flex items-center gap-1.5">
+                <i data-lucide="moon" class="w-4 h-4 text-amber-600"></i> Sedierung/MAC
+              </span>
+            </label>
+
+            <label class="flex items-center p-2.5 border rounded-xl cursor-pointer bg-slate-50 has-[:checked]:bg-sky-50 has-[:checked]:border-sky-500 has-[:checked]:text-sky-800 transition">
+              <input type="radio" name="anesthesietyp" value="Ausfall" onclick="toggleNarkoseDetails(false)" class="sr-only">
+              <span class="font-semibold flex items-center gap-1.5 text-rose-600">
+                <i data-lucide="x-circle" class="w-4 h-4"></i> Ausfall / Kein OP
               </span>
             </label>
           </div>
@@ -191,16 +227,16 @@
 
         <div id="narkose-details" class="space-y-3 bg-sky-50/50 p-3 rounded-xl border border-sky-100">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Hauptverfahren</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Verfahren / Hauptmethode</label>
             <select id="verfahren" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none">
               <option value="Allgemeinanästhesie (ITN)">Allgemeinanästhesie (ITN)</option>
               <option value="Allgemeinanästhesie (LMA)">Allgemeinanästhesie (LMA)</option>
               <option value="TIVA">TIVA</option>
+              <option value="Kombinationsanästhesie (ITN + RA)">Kombinationsanästhesie (ITN + RA)</option>
               <option value="Spinalanästhesie (SPA)">Spinalanästhesie (SPA)</option>
               <option value="Periduralanästhesie (PDA)">Periduralanästhesie (PDA)</option>
-              <option value="Kombinationsanästhesie">Kombinationsanästhesie (ITN + RA)</option>
-              <option value="Periphere Regionalanästhesie">Periphere Regionalanästhesie</option>
-              <option value="Sedierung / MAC">Sedierung / MAC</option>
+              <option value="Periphere Regionalanästhesie">Periphere Regionalanästhesie / Plexus</option>
+              <option value="Sedierung / Standby">Sedierung / Standby</option>
             </select>
           </div>
 
@@ -219,7 +255,7 @@
             </div>
           </div>
 
-          <!-- Spezielle Verfahren / Techniken -->
+          <!-- Spezielle Techniken -->
           <div class="border-t border-sky-200/60 pt-2 space-y-1">
             <label class="block text-xs font-bold text-slate-700">Atemweg & Punktions-Techniken:</label>
             <div class="space-y-1.5 text-xs">
@@ -246,7 +282,7 @@
 
         <button type="submit" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
           <i data-lucide="save" class="w-5 h-5"></i>
-          Fall im Logbuch Speichern
+          <span id="submit-btn-text">Fall im Logbuch Speichern</span>
         </button>
       </form>
     </section>
@@ -261,7 +297,7 @@
       <div id="entries-container" class="space-y-3"></div>
     </section>
 
-    <!-- TAB 3: STATISTIK / LOGBUCH ZÄHLER -->
+    <!-- TAB 3: STATISTIK -->
     <section id="tab-stats" class="hidden space-y-4">
       <div class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
         <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 flex items-center gap-2">
@@ -269,19 +305,21 @@
           Mindestmengen Logbuch
         </h2>
 
-        <!-- Hauptzahlen Grid -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-sky-50 p-3 rounded-xl border border-sky-100 text-center">
-            <span class="block text-2xl font-bold text-sky-800" id="stat-total">0</span>
-            <span class="text-xs text-sky-700 font-medium">Gesamt Fälle</span>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="block text-xl font-bold text-slate-800" id="stat-total">0</span>
+            <span class="text-[10px] text-slate-500 font-medium">Gesamt</span>
           </div>
-          <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center">
-            <span class="block text-2xl font-bold text-emerald-800" id="stat-narkosen">0</span>
-            <span class="text-xs text-emerald-700 font-medium">Durchgeführt</span>
+          <div class="bg-sky-50 p-2.5 rounded-xl border border-sky-100">
+            <span class="block text-xl font-bold text-sky-800" id="stat-vollnarkose">0</span>
+            <span class="text-[10px] text-sky-700 font-medium">Vollnarkosen</span>
+          </div>
+          <div class="bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
+            <span class="block text-xl font-bold text-indigo-800" id="stat-reinera">0</span>
+            <span class="text-[10px] text-indigo-700 font-medium">Reine RA</span>
           </div>
         </div>
 
-        <!-- Ärztekammer Kategorie-Zähler -->
         <div class="space-y-2 pt-2">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Patientengruppen & Risiken</h3>
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -366,14 +404,51 @@
 
       </div>
     </section>
+
+    <!-- TAB 4: EINSTELLUNGEN & BACKUP -->
+    <section id="tab-settings" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+        <h2 class="text-lg font-semibold text-slate-800 border-b pb-2 flex items-center gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-sky-700"></i>
+          Einstellungen & Google Sheets
+        </h2>
+
+        <div class="space-y-3">
+          <label class="block text-xs font-semibold text-slate-700">
+            Google Apps Script Webhook-URL (für automatisches Backup):
+          </label>
+          <input type="text" id="gsheets-url" placeholder="https://script.google.com/macros/s/..." onchange="saveGSheetsUrl()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          <p class="text-[11px] text-slate-500">
+            Wenn du hier deine Webhook-URL einfügst, kannst du oben im Header auf <strong>Sheets</strong> tippen, um alle deine Fälle direkt in dein Google Sheet zu übertragen!
+          </p>
+        </div>
+
+        <div class="border-t pt-3">
+          <button onclick="sendToGoogleSheets()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
+            <i data-lucide="sheet" class="w-4 h-4"></i>
+            Jetzt mit Google Sheets synchronisieren
+          </button>
+        </div>
+
+        <div class="border-t pt-3">
+          <button onclick="exportCSV()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 border">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Manuelles Backup als CSV herunterladen
+          </button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
-    let entries = JSON.parse(localStorage.getItem('narkose_entries_v2') || '[]');
+    let entries = JSON.parse(localStorage.getItem('narkose_entries_v3') || '[]');
+    let editingId = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('datum').valueAsDate = new Date();
+      document.getElementById('gsheets-url').value = localStorage.getItem('gsheets_url') || '';
       updateUI();
+      checkBackupReminder();
       lucide.createIcons();
     });
 
@@ -396,7 +471,7 @@
     }
 
     function switchTab(tab) {
-      ['add', 'list', 'stats'].forEach(t => {
+      ['add', 'list', 'stats', 'settings'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
         document.getElementById(`tab-btn-${t}`).className = "flex-1 py-2 rounded-lg text-center text-slate-600 transition";
       });
@@ -410,10 +485,10 @@
 
     function saveEntry(e) {
       e.preventDefault();
-      const narkoseStatt = document.querySelector('input[name="narkose_stattgefunden"]:checked').value;
+      const anesthesietyp = document.querySelector('input[name="anesthesietyp"]:checked').value;
 
-      const newEntry = {
-        id: Date.now(),
+      const entryData = {
+        id: editingId || Date.now(),
         datum: document.getElementById('datum').value,
         initialen: document.getElementById('initialen').value.toUpperCase(),
         geburtsdatum: document.getElementById('geburtsdatum').value,
@@ -424,46 +499,94 @@
         fachrichtung: document.getElementById('fachrichtung').value,
         eingriff: document.getElementById('eingriff').value,
         
-        // Kategorien
         cat_sectio: document.getElementById('cat_sectio').checked,
         cat_pdk_geb: document.getElementById('cat_pdk_geb').checked,
         cat_kopf_hals: document.getElementById('cat_kopf_hals').checked,
         cat_thorax: document.getElementById('cat_thorax').checked,
         cat_intrakraniell: document.getElementById('cat_intrakraniell').checked,
         
-        // Narkose
-        narkoseStatt: narkoseStatt,
-        verfahren: narkoseStatt === 'Ja' ? document.getElementById('verfahren').value : 'Keine Narkose',
-        ra_rm_nah: narkoseStatt === 'Ja' && document.getElementById('ra_rm_nah').checked,
-        ra_peripher: narkoseStatt === 'Ja' && document.getElementById('ra_peripher').checked,
+        anesthesietyp: anesthesietyp,
+        verfahren: anesthesietyp !== 'Ausfall' ? document.getElementById('verfahren').value : 'Ausfall / Keinerlei Narkose',
+        ra_rm_nah: anesthesietyp !== 'Ausfall' && document.getElementById('ra_rm_nah').checked,
+        ra_peripher: anesthesietyp !== 'Ausfall' && document.getElementById('ra_peripher').checked,
         
-        // Techniken
-        tech_fiberoptik: narkoseStatt === 'Ja' && document.getElementById('tech_fiberoptik').checked,
-        tech_videolarynx: narkoseStatt === 'Ja' && document.getElementById('tech_videolarynx').checked,
-        tech_sono_gefaess: narkoseStatt === 'Ja' && document.getElementById('tech_sono_gefaess').checked,
+        tech_fiberoptik: anesthesietyp !== 'Ausfall' && document.getElementById('tech_fiberoptik').checked,
+        tech_videolarynx: anesthesietyp !== 'Ausfall' && document.getElementById('tech_videolarynx').checked,
+        tech_sono_gefaess: anesthesietyp !== 'Ausfall' && document.getElementById('tech_sono_gefaess').checked,
         
-        besonderheiten: narkoseStatt === 'Ja' ? document.getElementById('besonderheiten').value : ''
+        besonderheiten: anesthesietyp !== 'Ausfall' ? document.getElementById('besonderheiten').value : ''
       };
 
-      entries.unshift(newEntry);
-      localStorage.setItem('narkose_entries_v2', JSON.stringify(entries));
+      if (editingId) {
+        entries = entries.map(item => item.id === editingId ? entryData : item);
+        alert('Änderungen gespeichert!');
+      } else {
+        entries.unshift(entryData);
+        alert('Fall erfolgreich im Logbuch gespeichert!');
+      }
 
-      // Form Reset
-      document.getElementById('initialen').value = '';
-      document.getElementById('geburtsdatum').value = '';
-      document.getElementById('eingriff').value = '';
-      document.getElementById('besonderheiten').value = '';
-      document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-
+      localStorage.setItem('narkose_entries_v3', JSON.stringify(entries));
+      cancelEdit();
       updateUI();
-      alert('Fall erfolgreich im Logbuch gespeichert!');
       switchTab('list');
+    }
+
+    function editEntry(id) {
+      const item = entries.find(e => e.id === id);
+      if (!item) return;
+
+      editingId = id;
+      document.getElementById('form-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-amber-600"></i> Fall bearbeiten`;
+      document.getElementById('submit-btn-text').textContent = 'Änderungen Speichern';
+      document.getElementById('cancel-edit-btn').classList.remove('hidden');
+
+      document.getElementById('datum').value = item.datum;
+      document.getElementById('initialen').value = item.initialen;
+      document.getElementById('geburtsdatum').value = item.geburtsdatum;
+      document.getElementById('asa').value = item.asa || 'ASA 2';
+      document.getElementById('ambulant').checked = !!item.ambulant;
+      document.getElementById('kind_u5').checked = !!item.kind_u5;
+
+      document.getElementById('fachrichtung').value = item.fachrichtung;
+      document.getElementById('eingriff').value = item.eingriff;
+
+      document.getElementById('cat_sectio').checked = !!item.cat_sectio;
+      document.getElementById('cat_pdk_geb').checked = !!item.cat_pdk_geb;
+      document.getElementById('cat_kopf_hals').checked = !!item.cat_kopf_hals;
+      document.getElementById('cat_thorax').checked = !!item.cat_thorax;
+      document.getElementById('cat_intrakraniell').checked = !!item.cat_intrakraniell;
+
+      const radio = document.querySelector(`input[name="anesthesietyp"][value="${item.anesthesietyp || 'Vollnarkose'}"]`);
+      if (radio) radio.checked = true;
+      toggleNarkoseDetails(item.anesthesietyp !== 'Ausfall');
+
+      document.getElementById('verfahren').value = item.verfahren || 'Allgemeinanästhesie (ITN)';
+      document.getElementById('ra_rm_nah').checked = !!item.ra_rm_nah;
+      document.getElementById('ra_peripher').checked = !!item.ra_peripher;
+      document.getElementById('tech_fiberoptik').checked = !!item.tech_fiberoptik;
+      document.getElementById('tech_videolarynx').checked = !!item.tech_videolarynx;
+      document.getElementById('tech_sono_gefaess').checked = !!item.tech_sono_gefaess;
+      document.getElementById('besonderheiten').value = item.besonderheiten || '';
+
+      switchTab('add');
+      lucide.createIcons();
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      document.getElementById('narkose-form').reset();
+      document.getElementById('datum').valueAsDate = new Date();
+      document.getElementById('form-title').innerHTML = `<i data-lucide="file-plus" class="w-5 h-5 text-sky-700"></i> Fall erfassen`;
+      document.getElementById('submit-btn-text').textContent = 'Fall im Logbuch Speichern';
+      document.getElementById('cancel-edit-btn').classList.add('hidden');
+      toggleNarkoseDetails(true);
+      lucide.createIcons();
     }
 
     function deleteEntry(id) {
       if (confirm('Eintrag wirklich löschen?')) {
         entries = entries.filter(item => item.id !== id);
-        localStorage.setItem('narkose_entries_v2', JSON.stringify(entries));
+        localStorage.setItem('narkose_entries_v3', JSON.stringify(entries));
         updateUI();
         renderEntries();
       }
@@ -488,7 +611,7 @@
         e.eingriff.toLowerCase().includes(search) ||
         e.fachrichtung.toLowerCase().includes(search) ||
         e.verfahren.toLowerCase().includes(search) ||
-        e.asa.toLowerCase().includes(search)
+        (e.anesthesietyp && e.anesthesietyp.toLowerCase().includes(search))
       );
 
       if (filtered.length === 0) {
@@ -522,15 +645,24 @@
                   <span class="px-1.5 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold rounded">
                     ${item.asa}
                   </span>
+                  <span class="px-1.5 py-0.5 ${item.anesthesietyp === 'Vollnarkose' ? 'bg-sky-600 text-white' : item.anesthesietyp === 'Reine RA' ? 'bg-indigo-600 text-white' : 'bg-slate-500 text-white'} text-[10px] font-bold rounded">
+                    ${item.anesthesietyp || 'Vollnarkose'}
+                  </span>
                 </div>
                 <h3 class="font-bold text-slate-800 text-base leading-tight">${item.eingriff}</h3>
               </div>
-              <button onclick="deleteEntry(${item.id})" class="text-slate-300 hover:text-rose-500 p-1">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              
+              <!-- Buttons: Edit & Delete -->
+              <div class="flex items-center gap-1">
+                <button onclick="editEntry(${item.id})" class="text-slate-400 hover:text-sky-600 p-1.5 rounded-lg hover:bg-slate-100" title="Bearbeiten">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteEntry(${item.id})" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-100" title="Löschen">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
             </div>
 
-            <!-- Tags -->
             ${tags.length > 0 ? `
               <div class="flex flex-wrap gap-1">
                 ${tags.map(t => `<span class="px-1.5 py-0.5 bg-sky-50 text-sky-700 text-[10px] font-medium rounded border border-sky-100">${t}</span>`).join('')}
@@ -544,9 +676,6 @@
               </div>
               <div class="flex justify-between items-center pt-1 border-t border-slate-200/60">
                 <span><strong>Verfahren:</strong> ${item.verfahren}</span>
-                <span class="${item.narkoseStatt === 'Ja' ? 'text-emerald-600 font-semibold' : 'text-rose-500 font-semibold'}">
-                  ${item.narkoseStatt === 'Ja' ? '✓ Ja' : '✗ Ausfall'}
-                </span>
               </div>
               ${item.besonderheiten ? `<div class="text-slate-600 italic pt-0.5"><strong>Notiz:</strong> ${item.besonderheiten}</div>` : ''}
             </div>
@@ -558,28 +687,51 @@
     }
 
     function renderStats() {
-      const validNarkosen = entries.filter(e => e.narkoseStatt === 'Ja');
+      const valid = entries.filter(e => e.anesthesietyp !== 'Ausfall');
 
       document.getElementById('stat-total').textContent = entries.length;
-      document.getElementById('stat-narkosen').textContent = validNarkosen.length;
+      document.getElementById('stat-vollnarkose').textContent = valid.filter(e => e.anesthesietyp === 'Vollnarkose').length;
+      document.getElementById('stat-reinera').textContent = valid.filter(e => e.anesthesietyp === 'Reine RA').length;
 
-      document.getElementById('stat-ambulant').textContent = validNarkosen.filter(e => e.ambulant).length;
-      document.getElementById('stat-asa3').textContent = validNarkosen.filter(e => ['ASA 3', 'ASA 4', 'ASA 5'].includes(e.asa)).length;
-      document.getElementById('stat-u5').textContent = validNarkosen.filter(e => e.kind_u5).length;
+      document.getElementById('stat-ambulant').textContent = valid.filter(e => e.ambulant).length;
+      document.getElementById('stat-asa3').textContent = valid.filter(e => ['ASA 3', 'ASA 4', 'ASA 5'].includes(e.asa)).length;
+      document.getElementById('stat-u5').textContent = valid.filter(e => e.kind_u5).length;
 
-      document.getElementById('stat-sectio').textContent = validNarkosen.filter(e => e.cat_sectio).length;
-      document.getElementById('stat-pdkgeb').textContent = validNarkosen.filter(e => e.cat_pdk_geb).length;
+      document.getElementById('stat-sectio').textContent = valid.filter(e => e.cat_sectio).length;
+      document.getElementById('stat-pdkgeb').textContent = valid.filter(e => e.cat_pdk_geb).length;
 
-      document.getElementById('stat-rmnah').textContent = validNarkosen.filter(e => e.ra_rm_nah).length;
-      document.getElementById('stat-peripher').textContent = validNarkosen.filter(e => e.ra_peripher).length;
+      document.getElementById('stat-rmnah').textContent = valid.filter(e => e.ra_rm_nah).length;
+      document.getElementById('stat-peripher').textContent = valid.filter(e => e.ra_peripher).length;
 
-      document.getElementById('stat-kopfhals').textContent = validNarkosen.filter(e => e.cat_kopf_hals).length;
-      document.getElementById('stat-thorax').textContent = validNarkosen.filter(e => e.cat_thorax).length;
-      document.getElementById('stat-intrakraniell').textContent = validNarkosen.filter(e => e.cat_intrakraniell).length;
+      document.getElementById('stat-kopfhals').textContent = valid.filter(e => e.cat_kopf_hals).length;
+      document.getElementById('stat-thorax').textContent = valid.filter(e => e.cat_thorax).length;
+      document.getElementById('stat-intrakraniell').textContent = valid.filter(e => e.cat_intrakraniell).length;
 
-      document.getElementById('stat-fiberoptik').textContent = validNarkosen.filter(e => e.tech_fiberoptik).length;
-      document.getElementById('stat-videolarynx').textContent = validNarkosen.filter(e => e.tech_videolarynx).length;
-      document.getElementById('stat-sonogefaess').textContent = validNarkosen.filter(e => e.tech_sono_gefaess).length;
+      document.getElementById('stat-fiberoptik').textContent = valid.filter(e => e.tech_fiberoptik).length;
+      document.getElementById('stat-videolarynx').textContent = valid.filter(e => e.tech_videolarynx).length;
+      document.getElementById('stat-sonogefaess').textContent = valid.filter(e => e.tech_sono_gefaess).length;
+    }
+
+    function saveGSheetsUrl() {
+      const url = document.getElementById('gsheets-url').value.trim();
+      localStorage.setItem('gsheets_url', url);
+    }
+
+    function checkBackupReminder() {
+      const lastBackup = localStorage.getItem('last_backup_date');
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+      if (entries.length > 0 && (!lastBackup || (now - parseInt(lastBackup)) > sevenDays)) {
+        document.getElementById('backup-reminder').classList.remove('hidden');
+      } else {
+        document.getElementById('backup-reminder').classList.add('hidden');
+      }
+    }
+
+    function recordBackupDone() {
+      localStorage.setItem('last_backup_date', Date.now().toString());
+      checkBackupReminder();
     }
 
     function exportCSV() {
@@ -587,7 +739,7 @@
       const headers = [
         'Datum', 'Initialen', 'Geburtsdatum', 'ASA', 'Ambulant', 'Kind <= 5J',
         'Fachrichtung', 'Eingriff', 'Sectio', 'PDK Geb.', 'Kopf/Hals', 'Thorax', 'Intrakraniell',
-        'Narkose Stattgefunden', 'Verfahren', 'RM-Nah', 'RA-Peripher',
+        'Anaesthesie Typ', 'Verfahren', 'RM-Nah', 'RA-Peripher',
         'Fiberoptik', 'Videolaryngoskopie', 'Sono Gefaesspunktion', 'Notizen'
       ];
 
@@ -595,7 +747,7 @@
         `"${e.datum}"`, `"${e.initialen}"`, `"${e.geburtsdatum}"`, `"${e.asa}"`, e.ambulant ? 'Ja' : 'Nein', e.kind_u5 ? 'Ja' : 'Nein',
         `"${e.fachrichtung}"`, `"${e.eingriff}"`, e.cat_sectio ? 'Ja' : 'Nein', e.cat_pdk_geb ? 'Ja' : 'Nein',
         e.cat_kopf_hals ? 'Ja' : 'Nein', e.cat_thorax ? 'Ja' : 'Nein', e.cat_intrakraniell ? 'Ja' : 'Nein',
-        `"${e.narkoseStatt}"`, `"${e.verfahren}"`, e.ra_rm_nah ? 'Ja' : 'Nein', e.ra_peripher ? 'Ja' : 'Nein',
+        `"${e.anesthesietyp || 'Vollnarkose'}"`, `"${e.verfahren}"`, e.ra_rm_nah ? 'Ja' : 'Nein', e.ra_peripher ? 'Ja' : 'Nein',
         e.tech_fiberoptik ? 'Ja' : 'Nein', e.tech_videolarynx ? 'Ja' : 'Nein', e.tech_sono_gefaess ? 'Ja' : 'Nein',
         `"${e.besonderheiten || ''}"`
       ]);
@@ -605,6 +757,30 @@
       a.href = encodeURI(csv);
       a.download = `Anästhesie_Logbuch_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
+      recordBackupDone();
+    }
+
+    async function sendToGoogleSheets() {
+      const url = localStorage.getItem('gsheets_url');
+      if (!url) {
+        alert('Bitte trage zuerst im Einstellungen-Tab (Zahnrad) deine Google Webhook URL ein!');
+        switchTab('settings');
+        return;
+      }
+      if (entries.length === 0) return alert('Keine Einträge vorhanden.');
+
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entries)
+        });
+        recordBackupDone();
+        alert('Daten wurden erfolgreich an Google Sheets gesendet!');
+      } catch (err) {
+        alert('Fehler beim Senden: ' + err.message);
+      }
     }
   </script>
 </body>
