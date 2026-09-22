@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Anästhesie Logbuch">
     <meta name="format-detection" content="telephone=no">
     <meta id="meta-theme-color" name="theme-color" content="#f8fafc">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFKElEQVR4nO3dy1LjMBBAUQX4TvbDB7GH76TKsxDlGMctS7Yc9eOe7TAQqm/adsjjNk1TutLbx/el3z+4n8/367757Yo4CGKI7qH0jIMmlOhVSZ84yEKh84mcjYMslDuTyPE4yMKQY4kciYMsjGpN5KX1B1CGXa2za4uDMqxrmmDtYYUsnKk5xFRtDsrwp2am+3FQhle7k92JgzJ8K8+3FAdlRFCYcvOlLOIQ42BtxCHNejsOyohmc+IbcVBGTI9z55wDonUcrI3IVtNnc0D0Jw7WBpYNsDkgusfB2kA2l8DmgOg3DtYGlnIPbA6IiAOi2zRNHFOwic0BEXFARBwQ3V7/fY2+DVCKzQERcUBEHBARB0TEARFxQEQcEBEHRMQBEXFARBwQEQdExAERcUBEHBARB0TEARFxQEQcEBEHRMQB0dvoG3BXeKt2f6/JM/HLKopjFGlOeoY0Stw4dj9TYv6CsJVEjKP106zy1wdMJFYcZz4qMWAiga5WunwU76UfD65NlDg6DjVOHyHi6D7OIH34j+OiQUbow3kcl47QfR+er1bqh/d4DVL5f38+3x1fv3iOY1dhrvM/uV8PBW4PK7tDrbzH736Zw43rcxlHWdCxwfOAo8xlH+d58YNjl/+J1efiMA12Ei+PwMSLgwcVhHEOWvMsji8M4Ck7e+6Mtj1hxoAlxQEQcEBEHRMQBEXFAFCuOk49GuHwwo8BhHEMejXD5EIjDOMoO3/ujrY0UMA7U8xlH97+wd38OgAk+49jV1EfAA0rmNo5eT+/r9XRDi0I/wbjwOvqw22LJcxxvH9+91kPhRxz7jya4Paxklw7PdxnJfRzpshG6LyNFiCNdMMgIZaQgcaSu4wxSRooTR+o01DhlJN9XK4/yaI9dm4TKIru9/vsafRvGOPMa/CCUxvHM93B92vuQmnhj2qVYh5VNOgejQaATUrQiDoiIAyLigEhpHIWTRKN/TDd3qZLUxgENiAMi4oDIZBzmTjvM3eBMbxxqT9P60vxr6o0Dw1mNw9CiNnRTV1THoXnldqH8F1QdR5mJe6SJGykxHAeupj0O0286bv3l19rj2KW2D7U3rJ6BOPTfww4w8UsZiGOXwvuowpt0gI04bH1ckpt3bbARR7LTh5sykqE4agzvY/gN6MtSHDX3uYHjqfnRhtZGshVHUtyHvzKSuTiSyj5clpHUvhxyV+X4rx6JkptxEecvh8zDu2I2zs49N1ndHKl9PL0SGfVzn89wHKn3O22svtvqywK+q4ftOLIzG/7M27nUfGfTPMSR9J0BOCgjWbyU3aRqGKpuzBlONsds7Apxk0XmZHPMBo7HWRnJ3+aYPXOF+MsicxtHdnUiXrPInMeRcaV6TIg4ZucridDEzPnfVlbm0Wp7XEQnb1cr6Ig4IAoax7FTh1AnHClsHKgRN47WNRBtbaTIcWBX6Djql0HAtZGiPQgmsfj2wk9AHHflpwkGRBwQhT7nQBlxQEQcEL3w90lI2BwQEQdExAHRS+JpUdjy8/nO5oCIOCD6jYMjC5ZyD2wOiO5xsDyQzSWwOSD6EwfLA8sG2BwQreNgeUS2mj6bA6KNOFgeMT3OfXtz0Ec0mxMXDyv0EYc0a845ICrFwfKIoDDlnc1BH76V57t/WKEPr3YnW3XOQR/+1Mz0Nk1T/Xfk5aMO1N/V265WWCHWNU2w+VKWPuxqnV3bYWWJQ4whx+7Sx+PISES5M5v+bBwZiSh0/gSgTxwZiSjR67ywZxwzKhmi+7XCf2E32QYwOe1OAAAAAElFTkSuQmCC">
     <title>Anästhesie Logbuch</title>
 
     <!-- Tailwind CSS -->
@@ -86,7 +88,24 @@
             background-color: var(--bg-page);
             min-height: 100%;
         }
-        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            /* Verhindert, dass das "Pull-to-refresh"/Gummiband-Verhalten von
+               Safari auf dem iPhone die App wie eine Webseite statt wie eine
+               App wirken lässt. */
+            overscroll-behavior-y: none;
+        }
+        /* #app nutzt 100dvh statt (nur) 100vh: dvh berücksichtigt die
+           ein-/ausblendende Safari-Adressleiste, sodass die Mindesthöhe der
+           App nicht springt, wenn die Leiste beim Scrollen verschwindet. */
+        #app { min-height: 100vh; }
+        @supports (min-height: 100dvh) {
+            #app { min-height: 100dvh; }
+        }
+        /* Sperrt den Hintergrund-Scroll, während ein Modal offen ist (iOS
+           Safari scrollt sonst gerne den Hintergrund mit). */
+        body.modal-open { overflow: hidden; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -100,6 +119,24 @@
             input, select, textarea { font-size: 0.875rem; }
         }
         button, .checkbox-card, [role="button"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        /* Größere, unsichtbare Tippfläche für reine Icon-Buttons (Bearbeiten,
+           Löschen, Schließen, Theme-Umschalter, Opioid entfernen) - erfüllt
+           Apples Empfehlung von mind. 44x44pt, ohne die sichtbare Größe zu
+           verändern. */
+        button[aria-label] {
+            position: relative;
+        }
+        button[aria-label]::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: max(100%, 44px);
+            height: max(100%, 44px);
+            transform: translate(-50%, -50%);
+        }
+        /* Scrollbare Modal- und Tabellen-Bereiche: sanftes Momentum-Scrolling auf iOS. */
+        .overflow-y-auto, .overflow-x-auto { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
         input, select, textarea {
             background-color: #ffffff;
@@ -847,6 +884,7 @@
             });
             const m = $('modal-dialog');
             m.classList.remove('hidden'); m.classList.add('flex');
+            document.body.classList.add('modal-open');
             setTimeout(() => {
                 if (opts.input) inp.focus();
                 else if (box.lastElementChild) box.lastElementChild.focus();
@@ -857,6 +895,7 @@
     function closeDialog(value) {
         const m = $('modal-dialog');
         m.classList.add('hidden'); m.classList.remove('flex');
+        if ($('modal-vorwert').classList.contains('hidden')) document.body.classList.remove('modal-open');
         const r = dialogResolve;
         dialogResolve = null;
         if (r) r({ value: value, text: $('dialog-input').value });
@@ -1748,12 +1787,14 @@
         });
         const m = $('modal-vorwert');
         m.classList.remove('hidden'); m.classList.add('flex');
+        document.body.classList.add('modal-open');
         setTimeout(() => $('vw-name').focus(), 0);
     }
 
     function closeVorwertModal() {
         const m = $('modal-vorwert');
         m.classList.add('hidden'); m.classList.remove('flex');
+        if ($('modal-dialog').classList.contains('hidden')) document.body.classList.remove('modal-open');
         editingVorwertId = null;
     }
 
