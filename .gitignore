@@ -1,0 +1,15 @@
+# Verhindert, dass Backups/Exporte der Anästhesie-Logbuch-App versehentlich
+# ins Repository committet werden (enthalten Patienteninitialen,
+# Geburtsdaten und Eingriffsdetails).
+
+# Alle Backup-/Export-Dateitypen der App
+*.json
+*.csv
+*.xlsx
+*.pdf
+*.txt
+
+# Zur Sicherheit zusätzlich die konkreten Dateinamens-Muster der App
+anaesthesie-logbuch-backup_*
+anaesthesie-logbuch_*
+btm-erfassung_*
