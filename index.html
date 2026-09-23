@@ -142,6 +142,12 @@
             background-color: #ffffff;
             color: #0f172a; /* slate-900: kräftiger Text für ausreichend Kontrast im hellen Modus */
         }
+        /* iOS Safari gibt dem nativen type="date"-Steuerelement eine eigene
+           intrinsische Breite, die breiter sein kann als sein Grid-Feld
+           (z. B. breiter als das benachbarte Initialen-Feld). min-width: 0
+           erlaubt dem Input, unter seine intrinsische Breite zu schrumpfen
+           und sich exakt wie die übrigen Felder an die Zellenbreite zu halten. */
+        input[type="date"] { min-width: 0; width: 100%; box-sizing: border-box; }
         input::placeholder, textarea::placeholder { color: #64748b; } /* slate-500 */
         .dark input, .dark select, .dark textarea {
             background-color: rgba(51, 65, 85, 0.5);
@@ -174,6 +180,20 @@
             height: 1rem;
             accent-color: #0284c7;
         }
+
+        /* Segmented-Pill-Buttons (ASA, OP-Saal, BTM-Anzahl): Hover-Feedback
+           nur für Geräte mit echtem Zeiger/Maus, gezielt statt über
+           Tailwinds ungeschütztes hover: (das auf iOS Safari nach einem Tap
+           "hängen" bleibt und dann den per JS gesetzten aktiven Zustand
+           optisch überdeckt, bis ein anderes Element berührt wird - daher
+           der gemeldete "erst beim zweiten Tippen richtig ausgewählt"
+           Effekt). Der aktive Zustand wird ausschließlich per JS-Klasse
+           gesetzt und ist hiervon unabhängig. */
+        @media (hover: hover) and (pointer: fine) {
+            .pill-option:not(.bg-brand-600):hover { background-color: #f1f5f9; }
+            .dark .pill-option:not(.bg-brand-600):hover { background-color: #334155; }
+        }
+        .btm-count-pills { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 
         #print-report { display: none; }
         @media print {
@@ -264,9 +284,9 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
+                <div class="min-w-0">
                     <label for="input-date" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Datum *</label>
-                    <input type="date" id="input-date" required class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    <input type="date" id="input-date" required class="w-full min-w-0 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
                 <div>
                     <label for="input-initials" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Patient Initialen *</label>
@@ -278,13 +298,16 @@
                     <p id="dob-hint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Format: TT.MM.JJ oder TT.MM.JJJJ</p>
                 </div>
                 <div>
-                    <label for="input-asa" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">ASA *</label>
-                    <select id="input-asa" required class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                        <option value="">-- wählen --</option>
-                        <option value="1">ASA I</option><option value="2">ASA II</option>
-                        <option value="3">ASA III</option><option value="4">ASA IV</option>
-                        <option value="5">ASA V</option><option value="6">ASA VI</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">ASA *</label>
+                    <div id="asa-pills" class="flex flex-wrap gap-1.5">
+                        <button type="button" data-pill data-value="1" onclick="selectPillOption(this.parentElement, 'input-asa', '1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">I</button>
+                        <button type="button" data-pill data-value="2" onclick="selectPillOption(this.parentElement, 'input-asa', '2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">II</button>
+                        <button type="button" data-pill data-value="3" onclick="selectPillOption(this.parentElement, 'input-asa', '3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">III</button>
+                        <button type="button" data-pill data-value="4" onclick="selectPillOption(this.parentElement, 'input-asa', '4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">IV</button>
+                        <button type="button" data-pill data-value="5" onclick="selectPillOption(this.parentElement, 'input-asa', '5')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">V</button>
+                        <button type="button" data-pill data-value="6" onclick="selectPillOption(this.parentElement, 'input-asa', '6')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">VI</button>
+                    </div>
+                    <input type="hidden" id="input-asa" value="">
                 </div>
             </div>
 
@@ -295,39 +318,25 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="input-department" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Fachrichtung *</label>
-                    <select id="input-department" required onchange="handleDepartmentChange(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                        <option value="">-- Fachrichtung wählen --</option>
-                        <option value="Allg. & Viszeralchirurgie">Allgemein- & Viszeralchirurgie</option>
-                        <option value="Unfallchirurgie / Orthopädie">Unfallchirurgie & Orthopädie</option>
-                        <option value="Gynäkologie">Gynäkologie</option>
-                        <option value="Geburtshilfe">Geburtshilfe</option>
-                        <option value="HNO / Augen">HNO / Augenheilkunde</option>
-                        <option value="Neurochirurgie">Neurochirurgie</option>
-                        <option value="Urologie">Urologie</option>
-                        <option value="Gefäßchirurgie">Gefäßchirurgie</option>
-                        <option value="Thoraxchirurgie">Thoraxchirurgie</option>
-                        <option value="Plastische Chirurgie">Plastische / Ästhetische Chirurgie</option>
-                        <option value="Mund-Kiefer-Gesicht">Mund-Kiefer-Gesichtschirurgie</option>
-                        <option value="Sonstige">Sonstige Fachrichtung</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">OP-Saal *</label>
+                    <div id="opsaal-pills" class="flex flex-wrap gap-1.5">
+                        <button type="button" data-pill data-value="OP 1" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 1</button>
+                        <button type="button" data-pill data-value="OP 2" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 2</button>
+                        <button type="button" data-pill data-value="OP 3" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 3</button>
+                        <button type="button" data-pill data-value="OP 4" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 4</button>
+                    </div>
+                    <input type="hidden" id="input-opsaal" value="">
                 </div>
                 <div>
                     <label for="input-procedure" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Eingriff *</label>
-                    <div class="flex gap-2">
-                        <select id="input-procedure" required onchange="handleProcedureChange(this.value)" class="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                            <option value="">-- Fachrichtung zuerst wählen --</option>
-                        </select>
-                        <button type="button" onclick="promptCustomProcedure()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium whitespace-nowrap">
-                            + Eigener
-                        </button>
-                    </div>
+                    <input type="text" id="input-procedure" list="procedure-datalist" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …" oninput="handleProcedureInput(this.value)" onchange="handleProcedureInput(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    <datalist id="procedure-datalist"></datalist>
                 </div>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-2">Eingriffsart & Besonderheiten</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     <label class="checkbox-card"><input type="checkbox" id="check-abdominell"><span>Abdomineller Eingriff</span></label>
                     <label class="checkbox-card"><input type="checkbox" id="check-kopf-hals"><span>Eingriff Kopf / Hals</span></label>
                     <label class="checkbox-card"><input type="checkbox" id="check-intrathorakal"><span>Intrathorakaler Eingriff</span></label>
@@ -362,40 +371,31 @@
                 <div id="periphere-ra-container" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
                     <label for="select-periphere-verfahren" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Peripheres RA-Verfahren</label>
                     <select id="select-periphere-verfahren" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
-                        <optgroup label="Obere Extremität">
-                            <option value="Interskalenusblockade (ISB)">Interskalenusblockade (ISB)</option>
-                            <option value="Supraclaviculäre Blockade">Supraclaviculäre Blockade</option>
-                            <option value="Infraclaviculäre Blockade">Infraclaviculäre Blockade</option>
-                            <option value="Axilläre Plexusblockade">Axilläre Plexusblockade</option>
-                            <option value="Suprascapularisblockade">Suprascapularisblockade</option>
-                            <option value="Distale Blockade (N. medianus/ulnaris/radialis)">Distale Blockade (N. medianus/ulnaris/radialis)</option>
-                        </optgroup>
-                        <optgroup label="Untere Extremität">
-                            <option value="Femoralisnerv / FICB">Femoralisnerv / FICB</option>
-                            <option value="Adduktorenkanalblock (Saphenus)">Adduktorenkanalblock (Saphenus)</option>
-                            <option value="Ischiadicus-Blockade (proximal)">Ischiadicus-Blockade (proximal)</option>
-                            <option value="Ischiadicus-Blockade (popliteal)">Ischiadicus-Blockade (popliteal)</option>
-                            <option value="IPACK-Block (Knie)">IPACK-Block (Knie)</option>
-                            <option value="Fußblock (Ankle Block)">Fußblock (Ankle Block)</option>
-                        </optgroup>
-                        <optgroup label="Rumpf / Abdomen">
-                            <option value="TAP-Block">TAP-Block</option>
-                            <option value="Rectus-Sheath-Block">Rectus-Sheath-Block</option>
-                            <option value="Erector Spinae (ESP) Block">Erector Spinae Plane Block</option>
-                            <option value="PECS-Block (I/II)">PECS-Block (I/II)</option>
-                            <option value="Serratus-Plane-Block">Serratus-Plane-Block</option>
-                            <option value="Quadratus-Lumborum-Block">Quadratus-Lumborum-Block</option>
-                            <option value="Interkostalblockade">Interkostalblockade</option>
-                            <option value="Paravertebralblockade">Paravertebralblockade</option>
-                        </optgroup>
-                        <optgroup label="Kopf / Hals">
-                            <option value="Zervikaler Plexusblock (oberflächlich)">Zervikaler Plexusblock (oberflächlich)</option>
-                            <option value="Zervikaler Plexusblock (tief)">Zervikaler Plexusblock (tief)</option>
-                        </optgroup>
-                        <optgroup label="Sonstige">
-                            <option value="Peniswurzelblock">Peniswurzelblock</option>
-                            <option value="Sonstiger peripherer Block">Sonstiger peripherer Block</option>
-                        </optgroup>
+                        <option value="">-- Verfahren wählen --</option>
+                        <option value="Interskalenusblockade (ISB)">Interskalenusblockade (ISB) - obere Extremität</option>
+                        <option value="Supraclaviculäre Blockade">Supraclaviculäre Blockade - obere Extremität</option>
+                        <option value="Infraclaviculäre Blockade">Infraclaviculäre Blockade - obere Extremität</option>
+                        <option value="Axilläre Plexusblockade">Axilläre Plexusblockade - obere Extremität</option>
+                        <option value="Suprascapularisblockade">Suprascapularisblockade - obere Extremität</option>
+                        <option value="Distale Blockade (N. medianus/ulnaris/radialis)">Distale Blockade (N. medianus/ulnaris/radialis) - obere Extremität</option>
+                        <option value="Femoralisnerv / FICB">Femoralisnerv / FICB - untere Extremität</option>
+                        <option value="Adduktorenkanalblock (Saphenus)">Adduktorenkanalblock (Saphenus) - untere Extremität</option>
+                        <option value="Ischiadicus-Blockade (proximal)">Ischiadicus-Blockade (proximal) - untere Extremität</option>
+                        <option value="Ischiadicus-Blockade (popliteal)">Ischiadicus-Blockade (popliteal) - untere Extremität</option>
+                        <option value="IPACK-Block (Knie)">IPACK-Block (Knie) - untere Extremität</option>
+                        <option value="Fußblock (Ankle Block)">Fußblock (Ankle Block) - untere Extremität</option>
+                        <option value="TAP-Block">TAP-Block - Rumpf/Abdomen</option>
+                        <option value="Rectus-Sheath-Block">Rectus-Sheath-Block - Rumpf/Abdomen</option>
+                        <option value="Erector Spinae (ESP) Block">Erector Spinae Plane Block - Rumpf/Abdomen</option>
+                        <option value="PECS-Block (I/II)">PECS-Block (I/II) - Rumpf/Abdomen</option>
+                        <option value="Serratus-Plane-Block">Serratus-Plane-Block - Rumpf/Abdomen</option>
+                        <option value="Quadratus-Lumborum-Block">Quadratus-Lumborum-Block - Rumpf/Abdomen</option>
+                        <option value="Interkostalblockade">Interkostalblockade - Rumpf/Abdomen</option>
+                        <option value="Paravertebralblockade">Paravertebralblockade - Rumpf/Abdomen</option>
+                        <option value="Zervikaler Plexusblock (oberflächlich)">Zervikaler Plexusblock (oberflächlich) - Kopf/Hals</option>
+                        <option value="Zervikaler Plexusblock (tief)">Zervikaler Plexusblock (tief) - Kopf/Hals</option>
+                        <option value="Peniswurzelblock">Peniswurzelblock - Sonstige</option>
+                        <option value="Sonstiger peripherer Block">Sonstiger peripherer Block - Sonstige</option>
                     </select>
                 </div>
             </div>
@@ -475,9 +475,9 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 dark:border-slate-700/50 pb-3">
                 <div>
                     <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <i data-lucide="lock" class="w-5 h-5 text-brand-600"></i> BTM-Übersicht
+                        <i data-lucide="lock" class="w-5 h-5 text-brand-600"></i> BTM-Erfassung
                     </h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Für die tägliche Eintragung ins BTM-Buch: Initialen, Geburtsdatum und verbrauchte Ampullen je Fall.</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Für die tägliche Eintragung ins BTM-Buch: Initialen, Geburtsdatum und Anzahl verbrauchter Ampullen je Fall.</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <button onclick="exportBtmTxt()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5">
@@ -496,21 +496,7 @@
                 <button type="button" onclick="clearBtmFilter()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg">Alle Tage</button>
             </div>
 
-            <div class="overflow-x-auto -mx-2 sm:mx-0">
-                <table class="w-full text-sm border-collapse" id="btm-overview-table">
-                    <thead>
-                        <tr class="text-left text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                            <th class="py-2 px-2">Datum</th>
-                            <th class="py-2 px-2">Initialen</th>
-                            <th class="py-2 px-2">Geburtsdatum</th>
-                            <th class="py-2 px-2">Opioid</th>
-                            <th class="py-2 px-2 text-right">Anzahl (Amp.)</th>
-                            <th class="py-2 px-2 text-right">Gesamtmenge</th>
-                        </tr>
-                    </thead>
-                    <tbody id="btm-overview-body"></tbody>
-                </table>
-            </div>
+            <div id="btm-overview-list" class="space-y-3"></div>
             <div id="btm-overview-empty" class="hidden py-10 text-center text-slate-400 space-y-2">
                 <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
                 <p class="text-sm">Keine BTM-Einträge für diesen Zeitraum.</p>
@@ -614,8 +600,8 @@
                 </div>
 
                 <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                    <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">BTM-Dokumentation</h3>
-                    <p class="text-xs text-slate-500">Opioid-Verbrauch je Fall inkl. Gesamtmenge (auch im eigenen Tab „BTM“ verfügbar).</p>
+                    <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">BTM-Erfassung</h3>
+                    <p class="text-xs text-slate-500">Initialen, Geburtsdatum und Ampullenzahl je Fall (auch im eigenen Tab „BTM“ verfügbar).</p>
                     <div class="flex gap-2 mt-2">
                         <button onclick="exportBtmTxt()" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
                             <i data-lucide="file-text" class="w-4 h-4"></i> TXT
@@ -715,7 +701,7 @@
             <thead>
                 <tr>
                     <th>Datum</th><th>Initialen</th><th>Geburtsdatum</th>
-                    <th>Fachrichtung</th><th>Eingriff</th><th>Erfüllte Kriterien</th>
+                    <th>OP-Saal</th><th>Eingriff</th><th>Erfüllte Kriterien</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -936,7 +922,11 @@
     let editingCaseId = null;
     let editingVorwertId = null;
 
-    const proceduresByDept = {
+    // Rohdaten je Fachrichtung. Werden nur noch intern verwendet, um die
+    // flache Eingriffsliste und die flache Eingriffsart-Zuordnung
+    // (procedureFlags) aufzubauen — im Formular gibt es keine
+    // Fachrichtungs-Auswahl mehr, nur noch OP-Saal.
+    const PROCEDURE_GROUPS = {
         "Allg. & Viszeralchirurgie": [
             "Appendektomie", "Cholezystektomie", "Hernien-OP (inguinal/umbilikal)", "Narbenhernien-OP",
             "Explorativlaparotomie", "Sigmaresektion", "Hemikolektomie", "Rektumresektion",
@@ -1007,7 +997,7 @@
         sec: 'check-sectio'
     };
 
-    const departmentDefaultFlags = {
+    const DEPARTMENT_DEFAULT_FLAGS = {
         "Allg. & Viszeralchirurgie": ['abd'],
         "HNO / Augen": ['kh'],
         "Mund-Kiefer-Gesicht": ['kh'],
@@ -1015,7 +1005,7 @@
         "Thoraxchirurgie": ['thx']
     };
 
-    const procedureFlagOverrides = {
+    const PROCEDURE_FLAG_OVERRIDES = {
         // Allg. & Viszeralchirurgie: Hals-Eingriffe trotz Fachrichtung nicht abdominell
         "Schilddrüsenresektion": { abd: false, kh: true },
         "Nebenschilddrüsen-OP": { abd: false, kh: true },
@@ -1041,6 +1031,23 @@
         // Thoraxchirurgie: Ösophagusresektion oft kombiniert thorakal/abdominal
         "Ösophagusresektion": { thx: true, abd: true }
     };
+
+    // Flache, fachrichtungsübergreifende Eingriffsliste (dedupliziert, alphabetisch)
+    // für das Eingriff-Kombifeld (Datalist).
+    const allProcedures = Array.from(new Set(Object.values(PROCEDURE_GROUPS).flat())).sort((a, b) => a.localeCompare(b, 'de'));
+
+    // Flache Zuordnung Eingriff -> Eingriffsart-Flags. Ersetzt das frühere
+    // zweistufige System (Fachrichtungs-Standardwert + Eingriffs-Ausnahme):
+    // für jeden Eingriff wird der Standardwert seiner ursprünglichen
+    // Fachrichtung mit einer eventuellen eingriffsspezifischen Ausnahme
+    // zusammengeführt, sodass die gleiche medizinische Logik erhalten bleibt.
+    const procedureFlags = {};
+    Object.entries(PROCEDURE_GROUPS).forEach(([dept, procs]) => {
+        const base = Object.fromEntries((DEPARTMENT_DEFAULT_FLAGS[dept] || []).map((k) => [k, true]));
+        procs.forEach((p) => {
+            procedureFlags[p] = { ...base, ...(PROCEDURE_FLAG_OVERRIDES[p] || {}) };
+        });
+    });
 
     function applyCategoryFlags(flags) {
         Object.entries(CATEGORY_CHECKBOX).forEach(([key, id]) => {
@@ -1134,16 +1141,41 @@
         return (Math.round(n * 100) / 100).toString().replace('.', ',');
     }
 
-    function updateBtmRowTotal(row) {
-        const opt = btmById[row.querySelector('.btm-substance').value];
-        const count = parseInt(row.querySelector('.btm-count').value, 10) || 0;
-        const totalEl = row.querySelector('.btm-total');
-        totalEl.textContent = opt ? `= ${fmtAmount(opt.amount * count)} ${opt.unit}` : '';
-    }
-
     function updateBtmEmptyHint() {
         const has = $('btm-rows-container').children.length > 0;
         $('btm-empty-hint').classList.toggle('hidden', has);
+    }
+
+    // Anzahl-Kurzwahl für BTM-Zeilen: eine horizontal scrollbare Reihe
+    // antippbarer Zahlen-Pills (1-10, wie eine iPhone-Scroll-Auswahl) über
+    // dem Zahlenfeld. Das Zahlenfeld selbst bleibt bestehen und ist weiter
+    // die "Quelle der Wahrheit" für handleCaseSubmit/collectBtmEntries -
+    // die Pills schreiben nur in genau dieses Feld hinein, sodass beim
+    // Speichern nichts anders gelesen werden muss. Für Ampullenzahlen > 10
+    // kann weiterhin direkt in das Zahlenfeld getippt werden.
+    const BTM_COUNT_QUICK_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    function btmCountPillsHtml() {
+        return BTM_COUNT_QUICK_VALUES.map((n) => `<button type="button" data-count-pill data-value="${n}" class="btm-count-pill shrink-0 w-7 h-7 rounded-md border text-xs font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600" aria-label="${n} Ampulle${n === 1 ? '' : 'n'}">${n}</button>`).join('');
+    }
+
+    // Markiert im übergebenen BTM-Zeilenelement das zum aktuellen
+    // Zahlenfeld-Wert passende Pill als aktiv (falls 1-10) und alle
+    // anderen als inaktiv.
+    function syncBtmCountPills(row) {
+        const val = row.querySelector('.btm-count').value;
+        Array.from(row.querySelectorAll('[data-count-pill]')).forEach((btn) => {
+            const active = btn.dataset.value === String(val);
+            btn.classList.toggle('bg-brand-600', active);
+            btn.classList.toggle('border-brand-600', active);
+            btn.classList.toggle('text-white', active);
+            btn.classList.toggle('bg-white', !active);
+            btn.classList.toggle('dark:bg-slate-700/50', !active);
+            btn.classList.toggle('text-slate-600', !active);
+            btn.classList.toggle('dark:text-slate-300', !active);
+            btn.classList.toggle('border-slate-300', !active);
+            btn.classList.toggle('dark:border-slate-600', !active);
+        });
     }
 
     function addBtmRow(substanceId, count) {
@@ -1154,8 +1186,12 @@
             <select class="btm-substance flex-1 min-w-[180px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
                 ${btmSelectOptionsHtml()}
             </select>
-            <input type="number" min="1" step="1" value="1" inputmode="numeric" class="btm-count w-16 px-2 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm text-center" aria-label="Anzahl Ampullen (ganze Zahl)">
-            <span class="btm-total text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap min-w-[68px]"></span>
+            <div class="flex flex-col gap-1">
+                <div class="btm-count-pills flex gap-1 overflow-x-auto max-w-[13rem] px-0.5" role="group" aria-label="Anzahl Ampullen (Kurzwahl)">
+                    ${btmCountPillsHtml()}
+                </div>
+                <input type="number" min="1" step="1" value="1" inputmode="numeric" class="btm-count w-20 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm text-center" aria-label="Anzahl Ampullen (ganze Zahl, auch über 10 möglich)">
+            </div>
             <button type="button" data-action="remove-btm" class="ml-auto p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg shrink-0" aria-label="Opioid entfernen" title="Entfernen">
                 <i data-lucide="x" class="w-4 h-4 pointer-events-none"></i>
             </button>`;
@@ -1171,14 +1207,19 @@
             row.remove();
             updateBtmEmptyHint();
         });
-        row.querySelector('.btm-substance').addEventListener('change', () => updateBtmRowTotal(row));
         row.querySelector('.btm-count').addEventListener('input', (e) => {
             // Nur ganze Zahlen zulassen (keine Kommastellen, kein Minus).
             e.target.value = e.target.value.replace(/[^\d]/g, '');
-            updateBtmRowTotal(row);
+            syncBtmCountPills(row);
         });
+        Array.from(row.querySelectorAll('[data-count-pill]')).forEach((btn) => {
+            btn.addEventListener('click', () => {
+                row.querySelector('.btm-count').value = btn.dataset.value;
+                syncBtmCountPills(row);
+            });
+        });
+        syncBtmCountPills(row);
 
-        updateBtmRowTotal(row);
         updateBtmEmptyHint();
         refreshIcons();
     }
@@ -1224,53 +1265,54 @@
         renderBtmOverview();
     }
 
-    function btmOverviewRows(filterDate) {
-        const rows = [];
-        sortedCasesAsc().forEach((c) => {
-            if (filterDate && c.date !== filterDate) return;
-            (c.btm || []).forEach((e) => rows.push({ case: c, entry: e }));
-        });
-        return rows;
+    // Nur die Anzahl verwendeter Ampullen - keine ausgerechnete Dosis, denn
+    // nur die Ampullenzahl muss ins BTM-Buch eingetragen werden.
+    function btmEntryCountLabel(e) {
+        return `${e.label.split(' (')[0]} × ${fmtAmount(e.count)} Amp.`;
+    }
+
+    function btmOverviewCases(filterDate) {
+        return sortedCasesAsc().filter((c) => c.btm && c.btm.length > 0 && (!filterDate || c.date === filterDate));
     }
 
     function renderBtmOverview() {
         const dateEl = $('btm-filter-date');
         if (!dateEl) return;
         const filterDate = dateEl.value;
-        const rows = btmOverviewRows(filterDate);
-        const body = $('btm-overview-body');
+        const list = btmOverviewCases(filterDate);
+        const container = $('btm-overview-list');
         const empty = $('btm-overview-empty');
-        const table = $('btm-overview-table');
 
-        if (rows.length === 0) {
-            body.innerHTML = '';
-            table.classList.add('hidden');
+        if (list.length === 0) {
+            container.innerHTML = '';
             empty.classList.remove('hidden');
             $('btm-overview-totals').innerHTML = '';
             return;
         }
-        table.classList.remove('hidden');
         empty.classList.add('hidden');
 
-        body.innerHTML = rows.map((r) => `
-            <tr class="border-b border-slate-100 dark:border-slate-700/50 ${r.case.isDemo ? 'opacity-60' : ''}">
-                <td class="py-2 px-2 whitespace-nowrap">${esc(formatDate(r.case.date))}</td>
-                <td class="py-2 px-2 font-semibold whitespace-nowrap">${esc(r.case.initials)}${r.case.isDemo ? ' <span class="text-[10px] font-normal text-amber-600">(Demo)</span>' : ''}</td>
-                <td class="py-2 px-2 whitespace-nowrap">${esc(r.case.dob)}</td>
-                <td class="py-2 px-2">${esc(r.entry.label.split(' (')[0])}</td>
-                <td class="py-2 px-2 text-right">${fmtAmount(r.entry.count)}</td>
-                <td class="py-2 px-2 text-right whitespace-nowrap">${fmtAmount(r.entry.total)} ${esc(r.entry.unit)}</td>
-            </tr>`).join('');
+        container.innerHTML = list.map((c) => `
+            <div class="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 ${c.isDemo ? 'opacity-70' : ''}">
+                <div class="flex items-center flex-wrap gap-2 mb-1">
+                    <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
+                    ${c.isDemo ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Demo</span>' : ''}
+                    <span class="text-xs text-slate-400">${esc(formatDate(c.date))}</span>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">geb. ${esc(c.dob)}</p>
+                <div class="flex gap-1.5 flex-wrap">
+                    ${c.btm.map((e) => `<span class="text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full">${esc(btmEntryCountLabel(e))}</span>`).join('')}
+                </div>
+            </div>`).join('');
 
         const sums = {};
         const order = [];
-        rows.forEach((r) => {
-            const key = r.entry.label;
-            if (!sums[key]) { sums[key] = { unit: r.entry.unit, amount: 0 }; order.push(key); }
-            sums[key].amount += r.entry.total;
-        });
+        list.forEach((c) => c.btm.forEach((e) => {
+            const key = e.label;
+            if (!sums[key]) { sums[key] = 0; order.push(key); }
+            sums[key] += e.count;
+        }));
         $('btm-overview-totals').innerHTML = '<strong>Summe' + (filterDate ? ' ' + esc(formatDate(filterDate)) : ' (alle Tage)') + ':</strong> ' +
-            order.map((k) => `${esc(k.split(' (')[0])}: ${fmtAmount(sums[k].amount)} ${esc(sums[k].unit)}`).join(' · ');
+            order.map((k) => `${esc(k.split(' (')[0])}: ${fmtAmount(sums[k])} Amp.`).join(' · ');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1315,6 +1357,7 @@
 
         $('btm-filter-date').value = todayStr();
 
+        populateProcedureDatalist();
         buildVorwertModalInputs();
         refreshAll();
         refreshIcons();
@@ -1412,43 +1455,54 @@
         refreshDobFeedback();
     }
 
-    function handleDepartmentChange(dept) {
-        const sel = $('input-procedure');
-        sel.innerHTML = '';
-        const first = document.createElement('option');
-        first.value = '';
-        first.textContent = dept ? '-- Eingriff wählen --' : '-- Fachrichtung zuerst wählen --';
-        sel.appendChild(first);
-        (proceduresByDept[dept] || []).forEach((p) => {
-            const o = document.createElement('option');
-            o.value = p; o.textContent = p;
-            sel.appendChild(o);
+    // Minimale Segmented-Button-Gruppen (ASA, OP-Saal): markiert den
+    // geklickten Button als aktiv und schreibt den Wert in das zugehörige
+    // versteckte Eingabefeld.
+    function selectPillOption(groupEl, hiddenInputId, value) {
+        Array.from(groupEl.querySelectorAll('[data-pill]')).forEach((btn) => {
+            const active = btn.dataset.value === String(value);
+            btn.classList.toggle('bg-brand-600', active);
+            btn.classList.toggle('border-brand-600', active);
+            btn.classList.toggle('text-white', active);
+            btn.classList.toggle('bg-white', !active);
+            btn.classList.toggle('dark:bg-slate-700/50', !active);
+            btn.classList.toggle('text-slate-600', !active);
+            btn.classList.toggle('dark:text-slate-300', !active);
+            btn.classList.toggle('border-slate-300', !active);
+            btn.classList.toggle('dark:border-slate-600', !active);
         });
-
-        // Automatische Erkennung: Fachrichtungs-Standardwert vorschlagen
-        // (z.B. Neurochirurgie -> Intrakraniell, Allg. & Viszeralchirurgie -> Abdominell).
-        // Wird beim Wählen des konkreten Eingriffs ggf. korrigiert.
-        resetCategoryFlags();
-        applyCategoryFlags(Object.fromEntries((departmentDefaultFlags[dept] || []).map((k) => [k, true])));
+        $(hiddenInputId).value = value;
     }
 
-    function handleProcedureChange(val) {
-        const override = procedureFlagOverrides[val];
-        if (override) applyCategoryFlags(override);
+    function resetPillGroup(groupId) {
+        const groupEl = $(groupId);
+        if (!groupEl) return;
+        Array.from(groupEl.querySelectorAll('[data-pill]')).forEach((btn) => {
+            btn.classList.remove('bg-brand-600', 'border-brand-600', 'text-white');
+            btn.classList.add('bg-white', 'dark:bg-slate-700/50', 'text-slate-600', 'dark:text-slate-300', 'border-slate-300', 'dark:border-slate-600');
+        });
     }
 
-    async function promptCustomProcedure() {
-        const val = await askText('Bitte eigenen Eingriff eingeben:', { title: 'Eigener Eingriff', placeholder: 'z. B. Fremdkörperentfernung' });
-        if (!val) return;
-        const sel = $('input-procedure');
-        let opt = Array.from(sel.options).find((o) => o.value === val);
-        if (!opt) {
-            opt = document.createElement('option');
-            opt.value = val; opt.textContent = val;
-            sel.appendChild(opt);
+    // Eingriff-Kombifeld: einmalig alle Eingriffe (fachrichtungsübergreifend)
+    // als Datalist-Optionen bereitstellen, damit getippt und ausgewählt
+    // werden kann oder frei Text für einen eigenen Eingriff eingegeben wird.
+    function populateProcedureDatalist() {
+        const list = $('procedure-datalist');
+        if (!list) return;
+        list.innerHTML = allProcedures.map((p) => `<option value="${esc(p)}"></option>`).join('');
+    }
+
+    // Automatische Erkennung der Eingriffsart anhand des eingegebenen/
+    // ausgewählten Eingriffs. Bei bekanntem Eingriff werden die Checkboxen
+    // gemäß der flachen procedureFlags-Zuordnung gesetzt; bei einem
+    // unbekannten/eigenen Eingriff bleiben die Checkboxen unverändert und
+    // müssen manuell gesetzt werden.
+    function handleProcedureInput(val) {
+        const flags = procedureFlags[val];
+        if (flags) {
+            resetCategoryFlags();
+            applyCategoryFlags(flags);
         }
-        sel.value = val;
-        handleProcedureChange(val);
     }
 
     function syncSectio(el) {
@@ -1468,7 +1522,11 @@
     function resetCaseForm() {
         $('case-form').reset();
         $('input-date').value = todayStr();
-        handleDepartmentChange('');
+        $('input-asa').value = '';
+        $('input-opsaal').value = '';
+        resetPillGroup('asa-pills');
+        resetPillGroup('opsaal-pills');
+        resetCategoryFlags();
         toggleSpaPdk(false);
         togglePeriphere(false);
         clearBtmRows();
@@ -1507,6 +1565,19 @@
             return;
         }
 
+        // OP-Saal und ASA sind Segmented-Button-Gruppen ohne natives
+        // required-Attribut (ein required auf einem versteckten Feld würde
+        // die native Validierung stillschweigend blockieren) - daher hier
+        // manuell geprüft, analog zur Geburtsdatum-Prüfung unten.
+        if (!$('input-opsaal').value) {
+            showToast('Bitte einen OP-Saal auswählen.', 'error');
+            return;
+        }
+        if (!$('input-asa').value) {
+            showToast('Bitte eine ASA-Klassifikation auswählen.', 'error');
+            return;
+        }
+
         const dob = normalizeDob($('input-dob').value);
         if (!dob) {
             showToast('Bitte ein gültiges Geburtsdatum eingeben (TT.MM.JJ).', 'error');
@@ -1526,7 +1597,7 @@
             initials: $('input-initials').value,
             dob: dob.str,
             asa: $('input-asa').value,
-            department: $('input-department').value,
+            opSaal: $('input-opsaal').value,
             procedure: $('input-procedure').value,
             spaPdkType: '',
             peripherType: '',
@@ -1576,17 +1647,14 @@
         $('input-date').value = c.date || todayStr();
         $('input-initials').value = c.initials || '';
         $('input-dob').value = c.dob || '';
+        resetPillGroup('asa-pills');
+        resetPillGroup('opsaal-pills');
         $('input-asa').value = c.asa || '';
-        $('input-department').value = c.department || '';
-        handleDepartmentChange(c.department || '');
+        if (c.asa) selectPillOption($('asa-pills'), 'input-asa', c.asa);
+        $('input-opsaal').value = c.opSaal || '';
+        if (c.opSaal) selectPillOption($('opsaal-pills'), 'input-opsaal', c.opSaal);
 
-        const procSel = $('input-procedure');
-        if (c.procedure && !Array.from(procSel.options).some((o) => o.value === c.procedure)) {
-            const o = document.createElement('option');
-            o.value = c.procedure; o.textContent = c.procedure;
-            procSel.appendChild(o);
-        }
-        procSel.value = c.procedure || '';
+        $('input-procedure').value = c.procedure || '';
 
         FLAG_FIELDS.forEach(([key, id2]) => { $(id2).checked = !!c[key]; });
 
@@ -1657,7 +1725,7 @@
 
         let list = cases.filter((c) => {
             if (!q) return true;
-            return [c.initials, c.procedure, c.department, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '', btmCaseLine(c)]
+            return [c.initials, c.procedure, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
                 .some((v) => String(v || '').toLowerCase().includes(q));
         });
 
@@ -1680,8 +1748,6 @@
                 `<span class="text-[10px] bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
             const flags = caseFlagChips(c).map((t) =>
                 `<span class="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-600/50 dark:text-slate-200 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
-            const btmChips = (c.btm || []).map((e) =>
-                `<span class="text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full">${esc(btmEntrySummary(e))}</span>`).join('');
             return `
                 <div class="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between gap-4 transition hover:shadow-sm">
                     <div class="min-w-0">
@@ -1693,9 +1759,9 @@
                         </div>
                         <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">${esc(c.procedure)}</p>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            ${esc(c.department)} · geb. ${esc(c.dob)}${age !== null ? ` (${age} J.)` : ''}${c.notes ? ' — <i>' + esc(c.notes) + '</i>' : ''}
+                            ${esc(c.opSaal)} · geb. ${esc(c.dob)}${age !== null ? ` (${age} J.)` : ''}${c.notes ? ' — <i>' + esc(c.notes) + '</i>' : ''}
                         </p>
-                        <div class="mt-2 flex gap-1.5 flex-wrap">${chips}${flags}${btmChips}</div>
+                        <div class="mt-2 flex gap-1.5 flex-wrap">${chips}${flags}</div>
                     </div>
                     <div class="flex items-start sm:items-center justify-end gap-2 shrink-0">
                         <button type="button" data-action="edit" data-id="${esc(c.id)}" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-lg transition" title="Bearbeiten" aria-label="Bearbeiten">
@@ -1950,7 +2016,7 @@
     // Gemeinsame Tabelle für CSV und Excel
     function caseExportTable() {
         const yn = (b) => (b ? 'ja' : '');
-        const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'Fachrichtung', 'Eingriff',
+        const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'OP-Saal', 'Eingriff',
             'Allgemeinanästhesie', 'Rückenmarksnahe RA', 'Art RM-RA', 'Periphere RA', 'Art periphere RA', 'Analgosedierung',
             'Abdominell', 'Kopf/Hals', 'Intrathorakal', 'Intrakraniell', 'Sectio', 'Ambulant',
             'Fiberoptik', 'Videolaryngoskopie', 'Sono-Gefäßpunktion', 'Erfüllte Kriterien',
@@ -1958,7 +2024,7 @@
         const rows = sortedCasesAsc().map((c) => {
             const age = caseAge(c);
             return [formatDate(c.date), c.initials, yn(c.isDemo), c.dob, age === null ? '' : age, c.asa ? Number(c.asa) : '',
-                c.department, c.procedure,
+                c.opSaal, c.procedure,
                 yn(c.isVollnarkose), yn(c.isSpaPdk), c.spaPdkType || '', yn(c.isPeripher), c.peripherType || '', yn(c.isSedierung),
                 yn(c.isAbdominell), yn(c.isKopfHals), yn(c.isIntrathorakal), yn(c.isIntrakraniell), yn(c.isSectio), yn(c.isAmbulant),
                 yn(c.isFiberoptik), yn(c.isVideo), yn(c.isSonoGefaess),
@@ -2034,15 +2100,16 @@
     function computeBtmTotals() {
         const totals = {};
         const order = [];
-        BTM_OPTIONS.forEach((o) => { totals[o.id] = { label: o.label, unit: o.unit, amount: 0 }; order.push(o.id); });
+        BTM_OPTIONS.forEach((o) => { totals[o.id] = { label: o.label, unit: o.unit, amount: 0, count: 0 }; order.push(o.id); });
         cases.forEach((c) => {
             (c.btm || []).forEach((e) => {
                 let key = e.substanceId;
                 if (!totals[key]) {
                     key = 'legacy:' + e.substanceId;
-                    if (!totals[key]) { totals[key] = { label: e.label + ' (nicht mehr im Dropdown)', unit: e.unit, amount: 0 }; order.push(key); }
+                    if (!totals[key]) { totals[key] = { label: e.label + ' (nicht mehr im Dropdown)', unit: e.unit, amount: 0, count: 0 }; order.push(key); }
                 }
                 totals[key].amount += e.total;
+                totals[key].count += e.count;
             });
         });
         return order.map((k) => totals[k]);
@@ -2054,16 +2121,16 @@
 
         const totals = computeBtmTotals();
         const lines = [];
-        lines.push('BTM-DOKUMENTATION - Anästhesie Logbuch');
+        lines.push('BTM-ERFASSUNG - Anästhesie Logbuch');
         lines.push('Erstellt am: ' + new Date().toLocaleDateString('de-DE'));
         lines.push('');
-        lines.push('GESAMTVERBRAUCH (alle erfassten Fälle)');
+        lines.push('SUMME AMPULLEN (alle erfassten Fälle)');
         lines.push('-'.repeat(60));
         let anyTotal = false;
         totals.forEach((t) => {
-            if (t.amount > 0) {
+            if (t.count > 0) {
                 anyTotal = true;
-                lines.push(t.label.padEnd(34) + fmtAmount(t.amount) + ' ' + t.unit);
+                lines.push(t.label.split(' (')[0].padEnd(34) + fmtAmount(t.count) + ' Amp.');
             }
         });
         if (!anyTotal) lines.push('(keine Einträge)');
@@ -2073,9 +2140,9 @@
 
         [...withBtm].sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach((c) => {
             lines.push('');
-            lines.push(formatDate(c.date) + '  ' + c.initials + (c.isDemo ? ' (Demo)' : '') + '  ASA ' + (c.asa || '?') + '  |  ' + c.department + ' - ' + c.procedure);
+            lines.push(formatDate(c.date) + '  ' + c.initials + (c.isDemo ? ' (Demo)' : '') + '  geb. ' + c.dob);
             c.btm.forEach((e) => {
-                lines.push('  - ' + e.label.split(' (')[0] + ': ' + fmtAmount(e.count) + ' Amp./Durchstechfl. = ' + fmtAmount(e.total) + ' ' + e.unit);
+                lines.push('  - ' + btmEntryCountLabel(e));
             });
         });
 
@@ -2084,7 +2151,7 @@
         lines.push('Hinweis: Diese Übersicht ist eine persönliche Zusammenfassung und ersetzt');
         lines.push('nicht das gesetzlich vorgeschriebene BTM-Buch.');
 
-        saveFile(`btm-dokumentation_${todayStr()}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
+        saveFile(`btm-erfassung_${todayStr()}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
     }
 
     // Standard-PDF-Schriften kennen nur Latin-1: Sonderzeichen ersetzen
@@ -2158,12 +2225,12 @@
 
             const sorted = sortedCasesAsc();
             const head = anonymize
-                ? ['Datum', 'Fachrichtung', 'Eingriff', 'Erfüllte Kriterien']
-                : ['Datum', 'Initialen', 'Geburtsdatum', 'Fachrichtung', 'Eingriff', 'Erfüllte Kriterien'];
+                ? ['Datum', 'OP-Saal', 'Eingriff', 'Erfüllte Kriterien']
+                : ['Datum', 'Initialen', 'Geburtsdatum', 'OP-Saal', 'Eingriff', 'Erfüllte Kriterien'];
             const body = sorted.length
                 ? sorted.map((c) => anonymize
-                    ? [S(formatDate(c.date)), S(c.department), S(c.procedure), S(caseCriteriaLabels(c).join(', '))]
-                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob), S(c.department), S(c.procedure), S(caseCriteriaLabels(c).join(', '))])
+                    ? [S(formatDate(c.date)), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))]
+                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))])
                 : [[{ content: 'Keine Fälle erfasst.', colSpan: anonymize ? 4 : 6, styles: { halign: 'center' } }]];
 
             doc.autoTable({
@@ -2226,17 +2293,17 @@
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(16);
             doc.setTextColor(navy[0], navy[1], navy[2]);
-            doc.text(S('BTM-Dokumentation'), M, 16);
+            doc.text(S('BTM-Erfassung'), M, 16);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(90);
             doc.text(S(`Erstellt am ${new Date().toLocaleDateString('de-DE')}`), M, 22);
 
-            const totals = computeBtmTotals().filter((t) => t.amount > 0);
+            const totals = computeBtmTotals().filter((t) => t.count > 0);
             doc.autoTable({
                 startY: 27,
-                head: [['Substanz', 'Gesamtmenge'].map(S)],
-                body: totals.length ? totals.map((t) => [S(t.label), `${fmtAmount(t.amount)} ${t.unit}`]) : [[{ content: 'Keine Einträge.', colSpan: 2, styles: { halign: 'center' } }]],
+                head: [['Substanz', 'Anzahl (Amp.)'].map(S)],
+                body: totals.length ? totals.map((t) => [S(t.label.split(' (')[0]), fmtAmount(t.count)]) : [[{ content: 'Keine Einträge.', colSpan: 2, styles: { halign: 'center' } }]],
                 theme: 'grid',
                 styles: { font: 'helvetica', fontSize: 9, cellPadding: 2 },
                 headStyles: { fillColor: brand, textColor: 255 },
@@ -2256,20 +2323,20 @@
                 c.btm.forEach((e) => {
                     detailRows.push([
                         S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob),
-                        S(e.label.split(' (')[0]), fmtAmount(e.count), `${fmtAmount(e.total)} ${e.unit}`
+                        S(e.label.split(' (')[0]), fmtAmount(e.count)
                     ]);
                 });
             });
 
             doc.autoTable({
                 startY: y + 3,
-                head: [['Datum', 'Initialen', 'Geburtsdatum', 'Substanz', 'Anzahl (Amp.)', 'Gesamtmenge'].map(S)],
+                head: [['Datum', 'Initialen', 'Geburtsdatum', 'Substanz', 'Anzahl (Amp.)'].map(S)],
                 body: detailRows,
                 theme: 'grid',
                 styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
                 headStyles: { fillColor: brand, textColor: 255 },
                 alternateRowStyles: { fillColor: [244, 247, 250] },
-                columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' } },
+                columnStyles: { 4: { halign: 'right' } },
                 margin: { left: M, right: M, bottom: 14 },
                 rowPageBreak: 'avoid'
             });
@@ -2280,7 +2347,7 @@
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
                 doc.setTextColor(120);
-                doc.text(S('BTM-Dokumentation'), M, pageH - 6);
+                doc.text(S('BTM-Erfassung'), M, pageH - 6);
                 doc.text(`Seite ${i} von ${n}`, pageW - M, pageH - 6, { align: 'right' });
             }
 
@@ -2290,7 +2357,7 @@
             doc.setPage(1);
             doc.text(S('Hinweis: Diese Übersicht ist eine persönliche Zusammenfassung und ersetzt nicht das gesetzlich vorgeschriebene BTM-Buch.'), M, pageH - 12);
 
-            saveFile(`btm-dokumentation_${todayStr()}.pdf`, doc.output('blob'), 'application/pdf');
+            saveFile(`btm-erfassung_${todayStr()}.pdf`, doc.output('blob'), 'application/pdf');
         } catch (e) {
             showToast('PDF konnte nicht erstellt werden.', 'error');
         }
@@ -2434,7 +2501,7 @@
                     <td>${esc(formatDate(c.date))}</td>
                     <td>${esc(c.initials)}${c.isDemo ? ' (Demo)' : ''}</td>
                     <td>${esc(c.dob)}</td>
-                    <td>${esc(c.department)}</td>
+                    <td>${esc(c.opSaal)}</td>
                     <td>${esc(c.procedure)}</td>
                     <td>${esc(caseCriteriaLabels(c).join(', '))}</td>
                 </tr>`).join('')
@@ -2528,7 +2595,7 @@
                 initials,
                 dob: `${pad(dob.getDate())}.${pad(dob.getMonth() + 1)}.${dob.getFullYear()}`,
                 asa: String(t[2]),
-                department: t[0],
+                opSaal: `OP ${(i % 4) + 1}`,
                 procedure: t[1],
                 isAbdominell: has('abd'),
                 isKopfHals: has('kh'),
