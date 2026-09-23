@@ -87,6 +87,14 @@
         html, body {
             background-color: var(--bg-page);
             min-height: 100%;
+            /* Sperrt das seitliche Scrollen/Wischen der gesamten Seite auf
+               dem iPhone (bessere Stabilität beim vertikalen Scrollen,
+               kein versehentliches horizontales Gummiband). Bewusst
+               horizontal scrollbare Bereiche (Tab-Leiste, BTM-Anzahl-Pills,
+               ggf. Tabellen-Wrapper) setzen ihr eigenes overflow-x: auto
+               und bleiben davon unberührt, da sie einen eigenen
+               Scroll-Container bilden. */
+            overflow-x: hidden;
         }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -95,11 +103,12 @@
                Safari auf dem iPhone die App wie eine Webseite statt wie eine
                App wirken lässt. */
             overscroll-behavior-y: none;
+            width: 100%;
         }
         /* #app nutzt 100dvh statt (nur) 100vh: dvh berücksichtigt die
            ein-/ausblendende Safari-Adressleiste, sodass die Mindesthöhe der
            App nicht springt, wenn die Leiste beim Scrollen verschwindet. */
-        #app { min-height: 100vh; }
+        #app { min-height: 100vh; max-width: 100%; overflow-x: hidden; }
         @supports (min-height: 100dvh) {
             #app { min-height: 100dvh; }
         }
@@ -113,10 +122,15 @@
 
         /* iPhone/iOS: verhindert automatisches Hineinzoomen beim Fokus auf
            Formularfelder (passiert bei Schriftgröße < 16px) und macht
-           Taps auf Buttons/Karten reaktionsschneller. */
-        input, select, textarea { font-size: 16px; }
+           Taps auf Buttons/Karten reaktionsschneller. !important ist hier
+           nötig, weil Tailwinds Utility-Klassen (z. B. text-sm = 14px) auf
+           denselben Feldern eine höhere Selektor-Spezifität haben als ein
+           einfacher Typ-Selektor (input, select, textarea) und die 16px
+           sonst überschreiben würden - betrifft u. a. Datum, Initialen,
+           Geburtsdatum und Eingriff. */
+        input, select, textarea { font-size: 16px !important; }
         @media (min-width: 640px) {
-            input, select, textarea { font-size: 0.875rem; }
+            input, select, textarea { font-size: 0.875rem !important; }
         }
         button, .checkbox-card, [role="button"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         /* Größere, unsichtbare Tippfläche für reine Icon-Buttons (Bearbeiten,
@@ -284,21 +298,22 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="min-w-0">
-                    <label for="input-date" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Datum *</label>
-                    <input type="date" id="input-date" required class="w-full min-w-0 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                <div>
+                    <label for="input-date-display" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Datum *</label>
+                    <input type="text" id="input-date-display" inputmode="numeric" placeholder="23.09.26" required oninput="formatDateLive(this)" onblur="handleDateBlur(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    <input type="hidden" id="input-date">
                 </div>
                 <div>
                     <label for="input-initials" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Patient Initialen *</label>
                     <input type="text" id="input-initials" placeholder="z. B. MM" required maxlength="6" onblur="formatInitials(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm uppercase focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
                 <div>
-                    <label for="input-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geburtsdatum *</label>
+                    <label for="input-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geburtsdatum * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kinder" data-cat-prefix="≤5J: "></span></label>
                     <input type="text" id="input-dob" inputmode="numeric" placeholder="15.05.64" required oninput="formatDobLive(this)" onblur="handleSmartDobInput(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
                     <p id="dob-hint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Format: TT.MM.JJ oder TT.MM.JJJJ</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">ASA *</label>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">ASA * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="asa3" data-cat-prefix="ab III: "></span></label>
                     <div id="asa-pills" class="flex flex-wrap gap-1.5">
                         <button type="button" data-pill data-value="1" onclick="selectPillOption(this.parentElement, 'input-asa', '1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">I</button>
                         <button type="button" data-pill data-value="2" onclick="selectPillOption(this.parentElement, 'input-asa', '2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">II</button>
@@ -327,22 +342,28 @@
                     </div>
                     <input type="hidden" id="input-opsaal" value="">
                 </div>
-                <div>
-                    <label for="input-procedure" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Eingriff *</label>
-                    <input type="text" id="input-procedure" list="procedure-datalist" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …" oninput="handleProcedureInput(this.value)" onchange="handleProcedureInput(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                    <datalist id="procedure-datalist"></datalist>
+                <div class="relative">
+                    <label for="input-procedure" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Eingriff * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="sectio" data-cat-prefix="Sectio: "></span></label>
+                    <input type="text" id="input-procedure" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …"
+                        oninput="handleProcedureInput(this.value); renderProcedureDropdown(this.value)"
+                        onfocus="renderProcedureDropdown(this.value)"
+                        onkeydown="if (event.key === 'Escape') hideProcedureDropdown()"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    <div id="procedure-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-30 max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-lg"></div>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-2">Eingriffsart & Besonderheiten</label>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-2">
+                    <i data-lucide="list-checks" class="w-4 h-4 text-brand-600"></i> Eingriffsart & Besonderheiten
+                </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <label class="checkbox-card"><input type="checkbox" id="check-abdominell"><span>Abdomineller Eingriff</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-kopf-hals"><span>Eingriff Kopf / Hals</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-intrathorakal"><span>Intrathorakaler Eingriff</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-intrakraniell"><span>Intrakranieller Eingriff</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-sectio" onchange="syncSectio(this)"><span>Sectio Caesarea</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-ambulant"><span>Ambulante Anästhesie</span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span>Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span>Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span>Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span>Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span>Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span>Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
                 </div>
             </div>
 
@@ -351,15 +372,14 @@
                     <i data-lucide="syringe" class="w-4 h-4 text-brand-600"></i> Anästhesieverfahren
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-vollnarkose" checked><span>Allgemeinanästhesie</span></label>
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked)"><span>Rückenmarksnahe RA</span></label>
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked)"><span>Periphere RA</span></label>
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-sedierung"><span class="text-slate-600 dark:text-slate-400">Analgosedierung</span></label>
+                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-vollnarkose" onchange="updateLiveEvalBadges()"><span>Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
+                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span>Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
+                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span>Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
                 </div>
 
                 <div id="spa-pdk-container" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
                     <label for="select-spa-pdk" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Verfahren *</label>
-                    <select id="select-spa-pdk" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
+                    <select id="select-spa-pdk" onchange="autoDetectSectio()" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
                         <option value="">-- Verfahren wählen --</option>
                         <option value="SPA">SPA</option>
                         <option value="PDK">PDK</option>
@@ -405,9 +425,9 @@
                     <i data-lucide="shield-alert" class="w-4 h-4 text-brand-600"></i> Atemwegs- & Gefäßinterventionen
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label class="checkbox-card"><input type="checkbox" id="check-fiberoptik"><span>Fiberoptische Intubation</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-videolaryngo"><span>Videolaryngoskopie</span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-sono-gefaess"><span>Sonografische Gefäßpunktion</span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span>Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-videolaryngo" onchange="updateLiveEvalBadges()"><span>Videolaryngoskopie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="video"></span></span></label>
+                    <label class="checkbox-card"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span>Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
                 </div>
             </div>
 
@@ -524,6 +544,15 @@
             <button onclick="deleteDemoData()" class="px-3 py-1.5 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-medium rounded-lg whitespace-nowrap">Demo-Daten löschen</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="baek-grid"></div>
+
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-3">
+            <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i data-lucide="layers" class="w-5 h-5 text-brand-600"></i> Unterteilung nach Eingriff
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Anzahl erfasster Fälle je Eingriff (Logbuch-Fälle, ohne Vorwerte) – häufigste zuerst.</p>
+            <div id="procedure-breakdown-list" class="space-y-1.5"></div>
+            <p id="procedure-breakdown-empty" class="hidden text-xs text-slate-400 italic">Noch keine Fälle erfasst.</p>
+        </div>
     </main>
 
     <!-- TAB: EINSTELLUNGEN -->
@@ -692,6 +721,14 @@
         <table id="print-summary-table">
             <thead>
                 <tr><th>Kategorie</th><th>Ziel (BÄK)</th><th>Aktuell (Logbuch + Vorwerte)</th><th>Fortschritt</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Unterteilung nach Eingriff</h2>
+        <table id="print-procedure-table">
+            <thead>
+                <tr><th>Eingriff</th><th>Anzahl</th></tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -928,58 +965,94 @@
     // Fachrichtungs-Auswahl mehr, nur noch OP-Saal.
     const PROCEDURE_GROUPS = {
         "Allg. & Viszeralchirurgie": [
-            "Appendektomie", "Cholezystektomie", "Hernien-OP (inguinal/umbilikal)", "Narbenhernien-OP",
+            "Appendektomie", "Cholezystektomie", "Hernien-OP (inguinal/umbilikal)",
+            "TAPP/TEP (laparoskopische Leistenhernien-OP)", "Narbenhernien-OP",
             "Explorativlaparotomie", "Sigmaresektion", "Hemikolektomie", "Rektumresektion",
             "Ileostoma-/Kolostoma-Anlage", "Schilddrüsenresektion", "Nebenschilddrüsen-OP",
             "Splenektomie", "Lebersegmentresektion", "Whipple-OP (Pankreaskopfresektion)",
-            "Fundoplicatio", "Bariatrische Chirurgie (Bypass/Sleeve)", "Proktologischer Eingriff"
+            "Fundoplicatio", "Bariatrische Chirurgie (Bypass/Sleeve)", "Proktologischer Eingriff",
+            "Magenresektion / Gastrektomie", "Ileus-OP", "Adhäsiolyse",
+            "Ulkusperforation-Übernähung", "Rektumprolaps-OP", "PEG-Anlage",
+            "Portimplantation (Port-Anlage)", "ZVK-Anlage (isoliert)",
+            "Drainagen-Anlage (perkutan)", "Hämorrhoiden-OP"
         ],
         "Unfallchirurgie / Orthopädie": [
             "TEP Hüfte", "TEP Knie", "TEP Schulter", "Osteosynthese obere Extremität",
             "Osteosynthese untere Extremität", "Arthroskopie Knie", "Arthroskopie Schulter",
             "Wirbelsäulen-OP (Spondylodese)", "Bandscheiben-OP (Orthopädie)", "Amputation",
-            "Metallentfernung", "Weichteil-/Sehnen-OP", "Polytrauma-Versorgung"
+            "Metallentfernung", "Weichteil-/Sehnen-OP", "Polytrauma-Versorgung",
+            "Sprunggelenk-OP (OSG-Osteosynthese)", "Handgelenk-/Radius-OP", "Fingerreplantation",
+            "Kreuzband-OP (VKB-Plastik)", "Meniskus-OP",
+            "Schulter-Arthroskopie mit Rotatorenmanschettennaht", "TEP-Wechsel Hüfte (Revision)",
+            "TEP-Wechsel Knie (Revision)", "Klavikula-Osteosynthese", "Beckenfraktur-Versorgung",
+            "Fixateur externe-Anlage", "Débridement bei offener Fraktur",
+            "Humerusfraktur-Osteosynthese", "Tibiakopffraktur-Versorgung",
+            "Wirbelkörperfraktur (Kyphoplastie/Vertebroplastie)"
         ],
         "Gynäkologie": [
             "Hysterektomie (abdominal/vaginal)", "Laparoskopie (Gyn)", "Abrasio",
-            "Mamma-PE / Ablatio", "Ovarial-OP", "Konisation", "Deszensus-OP"
+            "Mamma-PE / Ablatio", "Ovarial-OP", "Konisation", "Deszensus-OP",
+            "Myomenukleation", "Vulva-OP", "Bartholin-Zysten-OP", "Hysteroskopie",
+            "Diagnostische Laparoskopie (Gyn)", "Sterilisation (Tubenligatur)", "Portio-PE",
+            "Uterusexstirpation laparoskopisch (LASH/TLH)"
         ],
         "Geburtshilfe": [
             "Sectio Caesarea", "Manuelle Plazentalösung", "Curettage p.p.",
-            "Cerclage", "Geburtseinleitung (Analgesie)"
+            "Cerclage", "Geburtseinleitung (Analgesie)", "PDK Kreissaal",
+            "Dammriss-Versorgung / Episiotomie-Naht", "Vaginal-operative Entbindung (Zange/Vakuum)"
         ],
         "HNO / Augen": [
             "Tonsillektomie", "Adenotomie", "Septumplastik", "Parotidektomie",
             "Neck Dissection", "Laryngektomie", "Mastoidektomie", "Nasennebenhöhlen-OP (FESS)",
-            "Tracheotomie", "Katarakt-OP", "Vitrektomie", "Schieloperation"
+            "Tracheotomie", "Katarakt-OP", "Vitrektomie", "Schieloperation",
+            "Panendoskopie", "Ohrmuschel-OP", "Stapesplastik", "Cochlea-Implantat-OP",
+            "Glaukom-OP", "Netzhaut-OP (Ablatio-Chirurgie)", "Lidkorrektur-OP", "Tympanoplastik"
         ],
         "Neurochirurgie": [
             "Kraniotomie (Tumor)", "Bohrlochtrepanation", "Aneurysma-Clipping",
             "VP-Shunt-Anlage", "Bandscheiben-OP (Neurochirurgie)", "Wirbelsäulen-Stabilisierung",
-            "Tiefe Hirnstimulation (DBS)"
+            "Tiefe Hirnstimulation (DBS)", "Spinale Dekompression (Laminektomie)",
+            "Liquordrainage-Anlage (Lumbaldrainage)", "Karpaltunnel-OP",
+            "Schädel-Hirn-Trauma-Versorgung", "Stereotaktische Hirnbiopsie"
         ],
         "Urologie": [
             "TUR-P / TUR-B", "Zirkumzision", "Ureterorenoskopie (URS)", "Nierenbeckenplastik",
-            "Nephrektomie", "Radikale Prostatektomie", "Zystektomie", "Hydrozelen-OP"
+            "Nephrektomie", "Radikale Prostatektomie", "Zystektomie", "Hydrozelen-OP",
+            "Perkutane Nephrolitholapaxie (PCNL)", "Extrakorporale Stoßwellenlithotripsie (ESWL)",
+            "Varikozelen-OP", "Orchidopexie", "Harnröhrenschlitzung (Urethrotomia interna)",
+            "Zystoskopie mit Harnleiterschienung (DJ-Einlage)"
         ],
         "Gefäßchirurgie": [
             "Karotis-TEA", "Aortenaneurysma offen (AAA)", "EVAR (endovaskulär)",
             "Femoro-poplitealer Bypass", "Femoralis-TEA", "Shunt-Anlage (Dialyse)",
-            "Amputation (Gefäß-bedingt)", "Varizen-OP"
+            "Amputation (Gefäß-bedingt)", "Varizen-OP", "Dialyseshunt-Revision",
+            "Periphere Amputation (Zehen/Vorfuß)", "Thrombektomie (akuter Extremitätenverschluss)"
         ],
         "Thoraxchirurgie": [
             "VATS", "Lobektomie", "Pneumonektomie", "Mediastinoskopie",
-            "Ösophagusresektion", "Thoraxdrainage-Anlage"
+            "Ösophagusresektion", "Thoraxdrainage-Anlage", "Pleurektomie", "Bullektomie",
+            "Thymektomie", "Perikardfensterung", "Pleurodese"
         ],
         "Plastische Chirurgie": [
             "Lappenplastik", "Mammareduktion", "Mammaaugmentation", "Hauttransplantation",
-            "Verbrennungs-Débridement", "Replantation (Extremität)"
+            "Verbrennungs-Débridement", "Replantation (Extremität)", "Narbenkorrektur",
+            "Dekubitus-Débridement", "Freier Lappentransfer (Mikrochirurgie)",
+            "Liposuktion (Fettabsaugung)", "Abdominoplastik (Bauchdeckenstraffung)"
         ],
         "Mund-Kiefer-Gesicht": [
             "Zahnsanierung (ITN)", "Weisheitszahn-OP", "Kieferumstellung (Osteotomie)",
-            "Tumorresektion MKG", "Abszessspaltung MKG", "Frakturversorgung Mittelgesicht"
+            "Tumorresektion MKG", "Abszessspaltung MKG", "Frakturversorgung Mittelgesicht",
+            "Zystektomie MKG (odontogene Zyste)", "Implantatchirurgie (Zahnimplantate)",
+            "LKG-Spalt-OP (Lippen-Kiefer-Gaumenspalte)", "Osteosynthese Unterkieferfraktur"
         ],
-        "Sonstige": ["Sonstiger Eingriff", "Schockraum", "Reanimation", "Interventionelle Radiologie", "Gastro-/Koloskopie (Sedierung)"]
+        "Sonstige": [
+            "Sonstiger Eingriff", "Schockraum", "Reanimation", "Interventionelle Radiologie",
+            "Gastro-/Koloskopie (Sedierung)", "Elektive Kardioversion", "Bronchoskopie, starre",
+            "Bronchoskopie, flexible (Sedierung)", "Fremdkörperentfernung Atemwege",
+            "Strahlentherapie in Anästhesie (Kinder)", "Schrittmacher-/ICD-Implantation",
+            "MRT/CT in Sedierung", "Zahnsanierung ohne ITN (Sedierung)",
+            "Elektrokrampftherapie (EKT) in Anästhesie"
+        ]
     };
 
     // Automatische Erkennung der Eingriffsart
@@ -988,7 +1061,8 @@
     // der Fachrichtung). Ebene 2: eingriffsspezifische Ausnahmen/Ergänzungen,
     // die beim Wählen des konkreten Eingriffs die Voreinstellung korrigieren
     // (z. B. Schilddrüse ist trotz "Allg. & Viszeralchirurgie" Kopf/Hals,
-    // Sectio setzt zusätzlich "Sectio" und "Abdominell").
+    // Sectio Caesarea setzt "Geburtshilfe Eingriff" (sec), aber NICHT
+    // "Abdominell").
     const CATEGORY_CHECKBOX = {
         abd: 'check-abdominell',
         kh: 'check-kopf-hals',
@@ -998,6 +1072,16 @@
     };
 
     const DEPARTMENT_DEFAULT_FLAGS = {
+        // "abd" (abdominell) ist als grobe Fachrichtungs-Voreinstellung hier
+        // bewusst gesetzt, wird aber für alle Allg.-&-Viszeralchirurgie-
+        // Eingriffe, die üblicherweise NICHT laparoskopisch mit
+        // CO2-Kapnoperitoneum durchgeführt werden (offene OPs, große
+        // onkologische Resektionen etc.), unten in PROCEDURE_FLAG_OVERRIDES
+        // wieder auf false korrigiert. "Abdominell" im Sinne der
+        // aekn-Richtzahl zählt hier nur ein tatsächliches Kapnoperitoneum,
+        // nicht jeder anatomisch abdominale Eingriff (z. B. ist eine offene
+        // Sectio oder Explorativlaparotomie NICHT "abdominell" in diesem
+        // Sinne).
         "Allg. & Viszeralchirurgie": ['abd'],
         "HNO / Augen": ['kh'],
         "Mund-Kiefer-Gesicht": ['kh'],
@@ -1006,35 +1090,343 @@
     };
 
     const PROCEDURE_FLAG_OVERRIDES = {
-        // Allg. & Viszeralchirurgie: Hals-Eingriffe trotz Fachrichtung nicht abdominell
-        "Schilddrüsenresektion": { abd: false, kh: true },
-        "Nebenschilddrüsen-OP": { abd: false, kh: true },
+        // Allg. & Viszeralchirurgie: Hals-Eingriffe trotz Fachrichtung nicht abdominell.
+        // Schilddrüsen-/Nebenschilddrüsenchirurgie erfolgt praktisch immer in
+        // Allgemeinanästhesie (ga: true).
+        "Schilddrüsenresektion": { abd: false, kh: true, ga: true },
+        "Nebenschilddrüsen-OP": { abd: false, kh: true, ga: true },
         "Proktologischer Eingriff": { abd: false },
-        // Neurochirurgie: nur intrakranielle Eingriffe zählen als "Intrakraniell"
-        "Bandscheiben-OP (Neurochirurgie)": { kra: false },
-        "Wirbelsäulen-Stabilisierung": { kra: false },
-        "VP-Shunt-Anlage": { kra: false },
-        // Geburtshilfe: nur Sectio zählt als Sectio/abdominell
-        "Sectio Caesarea": { abd: true, sec: true },
-        "Manuelle Plazentalösung": { abd: false, sec: false },
-        "Curettage p.p.": { abd: false, sec: false },
-        "Cerclage": { abd: false, sec: false },
-        "Geburtseinleitung (Analgesie)": { abd: false, sec: false },
-        // Gefäßchirurgie: Hals- bzw. Abdominal-/periphere Eingriffe unterscheiden
+        // Allg. & Viszeralchirurgie: Eingriffe, die typischerweise OFFEN
+        // (Laparotomie, kein CO2-Kapnoperitoneum) durchgeführt werden, oder
+        // bei denen der Zugangsweg uneinheitlich/nicht sicher laparoskopisch
+        // ist - Vorsicht vor falsch-positiver "abdominell"-Vorbelegung.
+        // Appendektomie, Cholezystektomie, Fundoplicatio und bariatrische
+        // Eingriffe bleiben dagegen über die Fachrichtungs-Voreinstellung
+        // "abd: true", da sie heute Standard laparoskopisch erfolgen (und
+        // damit ebenfalls "ga: true", siehe unten). Fast alle Eingriffe
+        // dieser Gruppe (große/offene Bauchchirurgie) erfordern praktisch
+        // immer eine Allgemeinanästhesie - Ausnahme: Hernien-OP (inguinal/
+        // umbilikal) und Proktologischer Eingriff werden in der Praxis auch
+        // regelmäßig unter Regional-/Lokalanästhesie durchgeführt, daher hier
+        // bewusst kein "ga: true".
+        "Hernien-OP (inguinal/umbilikal)": { abd: false },
+        "Narbenhernien-OP": { abd: false, ga: true },
+        "Explorativlaparotomie": { abd: false, ga: true },
+        "Sigmaresektion": { abd: false, ga: true },
+        "Hemikolektomie": { abd: false, ga: true },
+        "Rektumresektion": { abd: false, ga: true },
+        "Ileostoma-/Kolostoma-Anlage": { abd: false, ga: true },
+        "Splenektomie": { abd: false, ga: true },
+        "Lebersegmentresektion": { abd: false, ga: true },
+        "Whipple-OP (Pankreaskopfresektion)": { abd: false, ga: true },
+        "Appendektomie": { ga: true },
+        "Cholezystektomie": { ga: true },
+        "Fundoplicatio": { ga: true },
+        "Bariatrische Chirurgie (Bypass/Sleeve)": { ga: true },
+        // Unfallchirurgie/Orthopädie: die meisten Eingriffe dieser Gruppe
+        // werden regelmäßig auch (oder überwiegend) unter alleiniger
+        // Spinal-/Peridural- oder Plexusanästhesie durchgeführt - bewusst
+        // KEIN automatisches "ga: true" (siehe TEP Hüfte/Knie/Schulter,
+        // Arthroskopien, Osteosynthesen, Amputation, Metallentfernung,
+        // Weichteil-/Sehnen-OP). Ausnahmen: lang dauernde
+        // Wirbelsäulen-Instrumentierung in Bauchlage sowie die offene
+        // Bandscheibenchirurgie erfolgen praktisch immer in
+        // Allgemeinanästhesie; die Polytrauma-Versorgung ebenso (instabile,
+        // meist bereits intubierte Patienten mit multiplen Verletzungen).
+        "Wirbelsäulen-OP (Spondylodese)": { ga: true },
+        "Bandscheiben-OP (Orthopädie)": { ga: true },
+        "Polytrauma-Versorgung": { ga: true },
+        // Gynäkologie: laparoskopischer Eingriff mit CO2-Kapnoperitoneum
+        // erfordert praktisch immer Allgemeinanästhesie. Abrasio
+        // (Ausschabung) wird im deutschen Klinikalltag praktisch immer in
+        // kurzer Allgemeinanästhesie durchgeführt. Ovarial-OP (Adnex-
+        // Eingriffe) ebenfalls praktisch immer in Allgemeinanästhesie.
+        // Hysterektomie (abdominal/vaginal), Mamma-PE/Ablatio, Konisation
+        // und Deszensus-OP bleiben bewusst unmarkiert, da hier je nach
+        // Zugangsweg/Umfang regelmäßig auch Regional-/Lokalanästhesie zum
+        // Einsatz kommt.
+        "Laparoskopie (Gyn)": { abd: true, ga: true },
+        "Abrasio": { ga: true },
+        "Ovarial-OP": { ga: true },
+        // Geburtshilfe: alle Eingriffe dieser Gruppe setzen automatisch die
+        // Checkbox "Geburtshilfe Eingriff" (Feld/Flag-Key weiterhin intern
+        // "sec" bzw. "isSectio" - siehe autoDetectSectio()), da diese
+        // Checkbox mittlerweile bewusst breit "dies war ein
+        // geburtshilflicher Fall" bedeutet und nicht mehr eng nur "Sectio".
+        // Für die separate, engere aekn-Teilmenge "davon: Kaiserschnitte"
+        // wird NICHT diese Checkbox ausgewertet, sondern direkt der
+        // Eingriffsname "Sectio Caesarea" geprüft (siehe caseCategoryIds()).
+        // Keiner dieser Eingriffe ist "abdominell" im Sinne der Richtzahl
+        // (kein laparoskopisches CO2-Kapnoperitoneum). Geburtshilfliche
+        // Eingriffe erfolgen im modernen Setting ganz überwiegend in
+        // rückenmarksnaher Regionalanästhesie, nicht in Allgemeinanästhesie
+        // (auch eine Sectio wird nur im Notfall in ITN durchgeführt) -
+        // daher bewusst kein "ga: true" für die gesamte Gruppe.
+        "Sectio Caesarea": { abd: false, sec: true },
+        "Manuelle Plazentalösung": { abd: false, sec: true },
+        "Curettage p.p.": { abd: false, sec: true },
+        "Cerclage": { abd: false, sec: true },
+        "Geburtseinleitung (Analgesie)": { abd: false, sec: true },
+        "PDK Kreissaal": { abd: false, sec: true },
+        // HNO/Augen: Eingriffe mit geteiltem Atemweg bzw. Manipulation im
+        // Bereich der Atemwege erfordern praktisch immer eine
+        // Allgemeinanästhesie mit gesichertem Atemweg. Katarakt-OP und
+        // Vitrektomie werden bei Erwachsenen im Regelfall in
+        // Lokal-/Tropfanästhesie mit leichter Sedierung durchgeführt - GA
+        // ist hier die Ausnahme, nicht die Regel, daher bewusst kein
+        // "ga: true". Schieloperationen betreffen ganz überwiegend Kinder
+        // (fehlende Kooperationsfähigkeit) bzw. werden auch bei Erwachsenen
+        // praktisch immer in Allgemeinanästhesie durchgeführt.
+        // Tracheotomie bleibt unmarkiert, da perkutane Dilatationstracheo-
+        // tomien (z. B. auf der Intensivstation) regelmäßig auch unter
+        // Analgosedierung erfolgen.
+        "Tonsillektomie": { ga: true },
+        "Adenotomie": { ga: true },
+        "Septumplastik": { ga: true },
+        "Parotidektomie": { ga: true },
+        "Neck Dissection": { ga: true },
+        "Laryngektomie": { ga: true },
+        "Mastoidektomie": { ga: true },
+        "Nasennebenhöhlen-OP (FESS)": { ga: true },
+        "Schieloperation": { ga: true },
+        // Neurochirurgie: nur intrakranielle Eingriffe zählen als "Intrakraniell".
+        // Kraniotomie, Aneurysma-Clipping und VP-Shunt-Anlage erfordern
+        // praktisch immer Allgemeinanästhesie. Bohrlochtrepanation bleibt
+        // bewusst unmarkiert, da z. B. die Entlastung eines chronischen
+        // Subduralhämatoms bei multimorbiden/älteren Patienten auch unter
+        // Lokalanästhesie mit Sedierung durchgeführt werden kann. Tiefe
+        // Hirnstimulation (DBS) bleibt bewusst unmarkiert, da die
+        // Elektrodenimplantation zur intraoperativen Testung häufig wach
+        // bzw. nur sediert (ohne Allgemeinanästhesie) erfolgt.
+        "Kraniotomie (Tumor)": { ga: true },
+        "Aneurysma-Clipping": { ga: true },
+        "VP-Shunt-Anlage": { kra: false, ga: true },
+        "Bandscheiben-OP (Neurochirurgie)": { kra: false, ga: true },
+        "Wirbelsäulen-Stabilisierung": { kra: false, ga: true },
+        // Urologie: TUR-P/TUR-B, Zirkumzision, Ureterorenoskopie und
+        // Hydrozelen-OP bleiben bewusst unmarkiert, da diese Eingriffe je
+        // nach Klinik/Patient regelmäßig auch unter Spinalanästhesie bzw.
+        // (bei Zirkumzision/Hydrozele) Lokalanästhesie durchgeführt werden.
+        // Große onkologische Resektionen (Nephrektomie, radikale
+        // Prostatektomie, Zystektomie) sowie die rekonstruktive
+        // Nierenbeckenplastik erfolgen dagegen praktisch immer in
+        // Allgemeinanästhesie (offen, laparoskopisch oder roboterassistiert
+        // - immer mit Beatmung/Muskelrelaxation).
+        "Nierenbeckenplastik": { ga: true },
+        "Nephrektomie": { abd: false, ga: true },
+        "Radikale Prostatektomie": { abd: false, ga: true },
+        "Zystektomie": { abd: false, ga: true },
+        // Gefäßchirurgie: Hals-Eingriff separat; AAA offen und EVAR (rein
+        // endovaskulär/perkutan, kein Kapnoperitoneum) sind NICHT "abdominell".
+        // Offene AAA-Chirurgie (große, oft lange retroperitoneale/
+        // transabdominale OP) erfordert praktisch immer Allgemeinanästhesie.
+        // EVAR, Karotis-TEA, Femoro-poplitealer/Femoralis-Bypass,
+        // Shunt-Anlage, Amputation und Varizen-OP bleiben bewusst
+        // unmarkiert, da diese je nach Klinik/Patient regelmäßig unter
+        // Regional-/Lokalanästhesie erfolgen.
         "Karotis-TEA": { kh: true },
-        "Aortenaneurysma offen (AAA)": { abd: true },
-        "EVAR (endovaskulär)": { abd: true },
-        // Urologie: nur die großen offenen/abdominalen Eingriffe
-        "Nephrektomie": { abd: true },
-        "Radikale Prostatektomie": { abd: true },
-        "Zystektomie": { abd: true },
-        // Thoraxchirurgie: Ösophagusresektion oft kombiniert thorakal/abdominal
-        "Ösophagusresektion": { thx: true, abd: true }
+        "Aortenaneurysma offen (AAA)": { abd: false, ga: true },
+        "EVAR (endovaskulär)": { abd: false },
+        // Thoraxchirurgie: alle Eingriffe dieser Gruppe erfordern praktisch
+        // immer Allgemeinanästhesie - bei Lobektomie/Pneumonektomie/VATS/
+        // Ösophagusresektion zusätzlich mit Lungenseparation
+        // (Ein-Lungen-Ventilation); auch die (kürzere) Mediastinoskopie
+        // erfolgt aufgrund der Atemwegsnähe standardmäßig in ITN.
+        // Thoraxdrainage-Anlage bleibt bewusst unmarkiert, da diese meist
+        // am Bett/im Schockraum unter Lokalanästhesie erfolgt.
+        "VATS": { ga: true },
+        "Lobektomie": { ga: true },
+        "Pneumonektomie": { ga: true },
+        "Mediastinoskopie": { ga: true },
+        // Plastische Chirurgie: Mammareduktion/-augmentation, ausgedehntes
+        // Verbrennungs-Débridement und mikrochirurgische Replantationen
+        // (lange OP-Dauer, absolute Immobilität erforderlich) erfolgen
+        // praktisch immer in Allgemeinanästhesie. Lappenplastik und
+        // Hauttransplantation bleiben bewusst unmarkiert, da Umfang und
+        // Zugangsweg hier sehr variabel sind (von kleiner Lokal-Lappenplastik
+        // bis zu langer mikrochirurgischer Rekonstruktion).
+        "Mammareduktion": { ga: true },
+        "Mammaaugmentation": { ga: true },
+        "Verbrennungs-Débridement": { ga: true },
+        "Replantation (Extremität)": { ga: true },
+        // Mund-Kiefer-Gesicht: "Zahnsanierung (ITN)" ist per Namen bereits
+        // eine Intubationsnarkose. Kieferumstellung, Tumorresektion und
+        // Frakturversorgung Mittelgesicht sind größere Eingriffe, die
+        // praktisch immer in Allgemeinanästhesie erfolgen. Abszessspaltung
+        // MKG betrifft im OP-Setting meist tiefe, ausgedehnte odontogene
+        // Logenabszesse mit Kieferklemme, die eine Allgemeinanästhesie
+        // erfordern. Weisheitszahn-OP bleibt bewusst unmarkiert, da diese
+        // je nach Befund auch ambulant unter Lokalanästhesie erfolgt.
+        "Zahnsanierung (ITN)": { ga: true },
+        "Kieferumstellung (Osteotomie)": { ga: true },
+        "Tumorresektion MKG": { ga: true },
+        "Abszessspaltung MKG": { ga: true },
+        "Frakturversorgung Mittelgesicht": { ga: true },
+        // Thoraxchirurgie: Ösophagusresektion (z. B. Ivor-Lewis) meist mit
+        // offenem oder hybridem, nicht durchgehend laparoskopischem
+        // Zugangsweg - konservativ nicht "abdominell" vorbelegt, aber
+        // (thorakoabdominell, Ein-Lungen-Ventilation) praktisch immer in
+        // Allgemeinanästhesie.
+        "Ösophagusresektion": { thx: true, abd: false, ga: true },
+
+        // --- Erweiterung (Eingriffsliste-Ausbau) ---------------------------
+        // Allg. & Viszeralchirurgie: neu ergänzte Eingriffe. TAPP/TEP ist
+        // per Definition laparoskopisch mit Kapnoperitoneum (abd: true) und
+        // erfolgt praktisch immer in Allgemeinanästhesie. Magenresektion/
+        // Gastrektomie, Ileus-OP, Ulkusperforation-Übernähung und
+        // Rektumprolaps-OP sind großteils offene/notfallmäßige Eingriffe
+        // (konservativ nicht "abd"), aber praktisch immer in
+        // Allgemeinanästhesie. Adhäsiolyse bleibt bei "abd" bewusst
+        // unmarkiert, da der Zugangsweg (laparoskopisch vs. offen) stark
+        // vom Einzelfall abhängt; ga: true, da praktisch immer Vollnarkose.
+        // PEG-Anlage, Portimplantation, ZVK-Anlage (isoliert) und
+        // Drainagen-Anlage (perkutan) sind typischerweise kurze Eingriffe in
+        // Lokalanästhesie/Analgosedierung, keine Vollnarkose-Standardindikation
+        // -> bewusst kein "ga: true". Hämorrhoiden-OP wird je nach Klinik
+        // regelmäßig auch in Spinalanästhesie durchgeführt -> unmarkiert.
+        "TAPP/TEP (laparoskopische Leistenhernien-OP)": { abd: true, ga: true },
+        "Magenresektion / Gastrektomie": { abd: false, ga: true },
+        "Ileus-OP": { abd: false, ga: true },
+        "Adhäsiolyse": { abd: false, ga: true },
+        "Ulkusperforation-Übernähung": { abd: false, ga: true },
+        "Rektumprolaps-OP": { abd: false, ga: true },
+        "PEG-Anlage": { abd: false },
+        "Portimplantation (Port-Anlage)": { abd: false },
+        "ZVK-Anlage (isoliert)": { abd: false },
+        "Drainagen-Anlage (perkutan)": { abd: false },
+        "Hämorrhoiden-OP": { abd: false },
+
+        // Unfallchirurgie/Orthopädie: gleiche Grundhaltung wie oben - die
+        // meisten Extremitäten-/Gelenkeingriffe werden regelmäßig auch unter
+        // alleiniger Regionalanästhesie (Spinal-/Plexusanästhesie)
+        // durchgeführt, daher bewusst KEIN automatisches "ga: true"
+        // (Sprunggelenk-OP, Handgelenk-/Radius-OP, Kreuzband-OP,
+        // Meniskus-OP, Schulter-Arthroskopie, TEP-Wechsel, Klavikula-
+        // Osteosynthese, Fixateur externe, Débridement bei offener Fraktur,
+        // Humerusfraktur-Osteosynthese, Tibiakopffraktur-Versorgung).
+        // Ausnahmen: Fingerreplantation (mikrochirurgisch, lange OP-Dauer,
+        // absolute Immobilität erforderlich) und Beckenfraktur-Versorgung
+        // (großer, oft instabiler Trauma-Eingriff) erfolgen praktisch immer
+        // in Allgemeinanästhesie. Wirbelkörperfraktur (Kyphoplastie/
+        // Vertebroplastie) bleibt unmarkiert, da dies häufig auch in
+        // Lokalanästhesie mit Sedierung durchgeführt wird.
+        "Fingerreplantation": { ga: true },
+        "Beckenfraktur-Versorgung": { ga: true },
+
+        // Gynäkologie: Diagnostische Laparoskopie und laparoskopische
+        // Uterusexstirpation (LASH/TLH) sind Kapnoperitoneum-Eingriffe
+        // (abd: true) mit praktisch immer Allgemeinanästhesie. Sterilisation
+        // (Tubenligatur) erfolgt ebenfalls laparoskopisch, ebenso praktisch
+        // immer in Allgemeinanästhesie. Myomenukleation (unabhängig vom
+        // genauen Zugangsweg) erfolgt praktisch immer in Allgemeinanästhesie.
+        // Vulva-OP, Bartholin-Zysten-OP, Hysteroskopie und Portio-PE bleiben
+        // bewusst unmarkiert, da Umfang/Anästhesieverfahren hier stark
+        // variieren (von kurzer Lokalanästhesie bis Vollnarkose).
+        "Myomenukleation": { ga: true },
+        "Diagnostische Laparoskopie (Gyn)": { abd: true, ga: true },
+        "Sterilisation (Tubenligatur)": { abd: true, ga: true },
+        "Uterusexstirpation laparoskopisch (LASH/TLH)": { abd: true, ga: true },
+
+        // Geburtshilfe: wie alle Eingriffe dieser Gruppe automatisch "sec:
+        // true" (siehe Kommentar oben); nicht abdominell; keine Vollnarkose-
+        // Standardindikation (überwiegend Spontangeburt-nahe Versorgung
+        // unter bereits liegender PDA oder ohne Anästhesieverfahren).
+        "Dammriss-Versorgung / Episiotomie-Naht": { abd: false, sec: true },
+        "Vaginal-operative Entbindung (Zange/Vakuum)": { abd: false, sec: true },
+
+        // HNO/Augen: Panendoskopie (Atemwegs-/Ösophagusspiegelung in Narkose
+        // zum Tumor-Staging) und Cochlea-Implantat-OP erfordern praktisch
+        // immer Allgemeinanästhesie. Ohrmuschel-OP, Stapesplastik, Glaukom-
+        // OP, Netzhaut-OP (Ablatio-Chirurgie), Lidkorrektur-OP und
+        // Tympanoplastik bleiben bewusst unmarkiert, da diese je nach
+        // Klinik/Patient regelmäßig auch in Lokal-/Regionalanästhesie mit
+        // Sedierung durchgeführt werden (uneinheitliche Praxis).
+        "Panendoskopie": { kh: true, ga: true },
+        "Cochlea-Implantat-OP": { kh: true, ga: true },
+
+        // Neurochirurgie: Spinale Dekompression (Laminektomie) und Schädel-
+        // Hirn-Trauma-Versorgung erfordern praktisch immer Allgemein-
+        // anästhesie (Schädel-Hirn-Trauma zusätzlich meist intrakraniell).
+        // Liquordrainage-Anlage (Lumbaldrainage), Karpaltunnel-OP und
+        // stereotaktische Hirnbiopsie bleiben bewusst unmarkiert, da diese
+        // regelmäßig auch in Lokalanästhesie/Sedierung durchgeführt werden.
+        "Spinale Dekompression (Laminektomie)": { kra: false, ga: true },
+        "Schädel-Hirn-Trauma-Versorgung": { kra: true, ga: true },
+
+        // Urologie: Perkutane Nephrolitholapaxie (PCNL) erfordert wegen der
+        // Bauchlage praktisch immer Allgemeinanästhesie. Orchidopexie
+        // betrifft ganz überwiegend Kinder (fehlende Kooperationsfähigkeit)
+        // und erfolgt praktisch immer in Allgemeinanästhesie. ESWL,
+        // Varikozelen-OP, Harnröhrenschlitzung und Zystoskopie mit DJ-
+        // Einlage bleiben bewusst unmarkiert, da diese je nach Klinik/
+        // Patient regelmäßig auch unter Sedierung bzw. Spinal-/
+        // Lokalanästhesie durchgeführt werden.
+        "Perkutane Nephrolitholapaxie (PCNL)": { ga: true },
+        "Orchidopexie": { ga: true },
+
+        // Thoraxchirurgie: alle neu ergänzten Eingriffe dieser Gruppe
+        // erfordern (analog zu VATS/Lobektomie etc.) praktisch immer
+        // Allgemeinanästhesie mit Lungenseparation bzw. gesichertem
+        // Atemweg - Ausnahme: Pleurodese bleibt unmarkiert, da diese auch
+        // als bettseitige Talkum-Instillation über liegende Thoraxdrainage
+        // ganz ohne Allgemeinanästhesie erfolgen kann.
+        "Pleurektomie": { ga: true },
+        "Bullektomie": { ga: true },
+        "Thymektomie": { ga: true },
+        "Perikardfensterung": { ga: true },
+
+        // Plastische Chirurgie: Freier Lappentransfer (Mikrochirurgie,
+        // lange OP-Dauer, absolute Immobilität erforderlich) und
+        // Abdominoplastik (ausgedehnte Bauchdeckenstraffung) erfolgen
+        // praktisch immer in Allgemeinanästhesie. Narbenkorrektur,
+        // Dekubitus-Débridement und Liposuktion bleiben bewusst
+        // unmarkiert, da Umfang/Anästhesieverfahren hier stark variieren
+        // (von kleiner Lokalanästhesie bis Vollnarkose).
+        "Freier Lappentransfer (Mikrochirurgie)": { ga: true },
+        "Abdominoplastik (Bauchdeckenstraffung)": { ga: true },
+
+        // Mund-Kiefer-Gesicht: LKG-Spalt-OP (Säuglinge/Kleinkinder) und
+        // Osteosynthese Unterkieferfraktur erfordern praktisch immer
+        // Allgemeinanästhesie. Zystektomie MKG und Implantatchirurgie
+        // bleiben bewusst unmarkiert, da diese je nach Befund häufig auch
+        // in Lokalanästhesie erfolgen.
+        "LKG-Spalt-OP (Lippen-Kiefer-Gaumenspalte)": { ga: true },
+        "Osteosynthese Unterkieferfraktur": { ga: true },
+
+        // Sonstige: Bronchoskopie (starre) und Fremdkörperentfernung
+        // Atemwege erfordern wegen des starren Instrumentariums bzw. der
+        // Atemwegssicherung praktisch immer Allgemeinanästhesie, ebenso
+        // die Strahlentherapie in Anästhesie bei Kindern (Immobilität
+        // erforderlich, keine Kooperation möglich) und die
+        // Elektrokrampftherapie (EKT), die standardmäßig in kurzer
+        // Allgemeinanästhesie mit Muskelrelaxation durchgeführt wird.
+        // Elektive Kardioversion, Bronchoskopie (flexibel), Schrittmacher-/
+        // ICD-Implantation und MRT/CT in Sedierung bleiben bewusst
+        // unmarkiert, da diese im Regelfall als (Analgo-)Sedierung ohne
+        // gesicherten Atemweg und nicht als klassische Allgemeinanästhesie
+        // durchgeführt werden.
+        "Bronchoskopie, starre": { ga: true },
+        "Fremdkörperentfernung Atemwege": { ga: true },
+        "Strahlentherapie in Anästhesie (Kinder)": { ga: true },
+        "Elektrokrampftherapie (EKT) in Anästhesie": { ga: true }
     };
 
     // Flache, fachrichtungsübergreifende Eingriffsliste (dedupliziert, alphabetisch)
     // für das Eingriff-Kombifeld (Datalist).
     const allProcedures = Array.from(new Set(Object.values(PROCEDURE_GROUPS).flat())).sort((a, b) => a.localeCompare(b, 'de'));
+
+    // Eigene, vom Nutzer frei eingetippte Eingriffe, die noch nicht in der
+    // festen Grundliste (allProcedures) enthalten sind. Werden beim
+    // Speichern eines Falls automatisch ergänzt (siehe handleCaseSubmit) und
+    // dauerhaft gespeichert, damit sie bei künftigen Fällen wieder
+    // vorgeschlagen werden können.
+    let customProcedures = loadList('customProcedures');
+
+    // Grundliste + eigene Eingriffe zusammengeführt, dedupliziert und
+    // alphabetisch sortiert - Grundlage für die Datalist-Optionen.
+    function allProcedureNames() {
+        return Array.from(new Set(allProcedures.concat(customProcedures))).sort((a, b) => a.localeCompare(b, 'de'));
+    }
 
     // Flache Zuordnung Eingriff -> Eingriffsart-Flags. Ersetzt das frühere
     // zweistufige System (Fachrichtungs-Standardwert + Eingriffs-Ausnahme):
@@ -1053,42 +1445,102 @@
         Object.entries(CATEGORY_CHECKBOX).forEach(([key, id]) => {
             if (Object.prototype.hasOwnProperty.call(flags, key)) $(id).checked = !!flags[key];
         });
+        // Allgemeinanästhesie (ga): bewusst NUR automatisches Ankreuzen, nie
+        // automatisches Entfernen des Hakens - anders als die übrigen
+        // Kategorie-Checkboxen oben. Die Checkbox startet ungecheckt (kein
+        // "checked"-Attribut mehr im Formular) und wird nur bei Eingriffen
+        // gesetzt, bei denen nach Standard der deutschen Anästhesiologie
+        // (fast) immer eine Allgemeinanästhesie erforderlich ist (siehe
+        // ga:true in PROCEDURE_FLAG_OVERRIDES). Ein falsch-negativer Fall
+        // (Nutzer muss selbst ankreuzen) ist unkritisch - ein
+        // automatisches, falsch-positives Entfernen des manuell gesetzten
+        // Hakens würde dagegen die aekn-Richtzahlen 1.800/300/100
+        // verfälschen, daher hier explizit kein "else uncheck".
+        if (flags.ga === true) {
+            $('proc-vollnarkose').checked = true;
+        }
     }
 
     function resetCategoryFlags() {
         Object.values(CATEGORY_CHECKBOX).forEach((id) => { $(id).checked = false; });
     }
 
+    // Basiert auf den offiziellen Richtzahlen der Ärztekammer Niedersachsen
+    // (aekn) für das Logbuch Anästhesiologie. "davon:"-Einträge sind
+    // Teilmengen der jeweils vorstehenden Kategorie (z. B. sind Abdominell
+    // und ASA ≥ III Teilmengen von "Anästhesieverfahren gesamt", Sectio ist
+    // Teilmenge von "Geburtshilfe"). "Kardiovaskuläre Anästhesie" hat laut
+    // aekn keine Richtzahl (nur Kenntnisnachweis) und wird ohne Zielwert /
+    // Fortschrittsbalken rein informativ gezeigt.
     const baekCategories = [
         { id: 'total', label: 'Anästhesieverfahren gesamt', short: 'Gesamt', target: 1800, icon: 'activity' },
-        { id: 'abdominell', label: 'Abdominelle Eingriffe', short: 'Abdominell', target: 300, icon: 'stethoscope' },
-        { id: 'kopf_hals', label: 'Eingriffe Kopf/Hals', short: 'Kopf/Hals', target: 100, icon: 'user' },
-        { id: 'intrathorakal', label: 'Intrathorakale Eingriffe', short: 'Intrathorakal', target: 25, icon: 'wind' },
-        { id: 'intrakraniell', label: 'Intrakranielle Eingriffe', short: 'Intrakraniell', target: 25, icon: 'brain' },
-        { id: 'kinder', label: 'Kinder ≤ 5 Jahre', short: 'Kind ≤ 5 J.', target: 50, icon: 'baby' },
-        { id: 'sectio', label: 'Sectio caesarea', short: 'Sectio', target: 50, icon: 'heart' },
-        { id: 'regional_zentral', label: 'Rückenmarksnahe RA (SPA/PDK)', short: 'RM-RA', target: 200, icon: 'syringe' },
-        { id: 'regional_peripher', label: 'Periphere RA', short: 'Periphere RA', target: 100, icon: 'syringe' },
-        { id: 'fiberoptik_video', label: 'Alternative Atemwegssicherung', short: 'Alt. Atemweg', target: 25, icon: 'video' },
-        { id: 'gefaess', label: 'ZVK / Arterie (Sonografisch)', short: 'ZVK/Arterie sono', target: 50, icon: 'droplets' }
+        { id: 'abdominell', label: 'davon: Abdominelle Eingriffe', short: 'Abdominell', target: 300, icon: 'stethoscope' },
+        { id: 'asa3', label: 'davon: Patienten ab ASA III', short: 'ASA ≥ III', target: 100, icon: 'alert-triangle' },
+        { id: 'fiberoptik', label: 'Fiberoptische Techniken (inkl. fiberoptischer Intubation)', short: 'Fiberoptik', target: 25, icon: 'camera' },
+        { id: 'video', label: 'Videoassistierte Intubationsverfahren', short: 'Video-Intubation', target: 20, icon: 'monitor-play' },
+        { id: 'ultraschall', label: 'Anästhesierelevante Ultraschallverfahren', short: 'Ultraschall', target: 50, icon: 'waves' },
+        { id: 'intrakraniell', label: 'Mitwirkung: Intrakranielle Eingriffe', short: 'Intrakraniell', target: 25, icon: 'brain' },
+        { id: 'kinder', label: 'Säuglinge & Kleinkinder (≤ 5 Jahre)', short: 'Kind ≤ 5 J.', target: 50, icon: 'baby' },
+        { id: 'geburtshilfe', label: 'Anästhesieverfahren in der Geburtshilfe', short: 'Geburtshilfe', target: 50, icon: 'venus' },
+        { id: 'sectio', label: 'davon: Kaiserschnitte (Sectio)', short: 'Sectio', target: 25, icon: 'scissors' },
+        { id: 'intrathorakal', label: 'Mitwirkung: Intrathorakale Eingriffe', short: 'Intrathorakal', target: 25, icon: 'wind' },
+        { id: 'kopf_hals', label: 'Eingriffe Kopf-Hals-Bereich', short: 'Kopf/Hals', target: 100, icon: 'user' },
+        { id: 'regional_zentral', label: 'Rückenmarksnahe Regionalanästhesien', short: 'RM-RA', target: 50, icon: 'syringe' },
+        { id: 'regional_peripher', label: 'Periphere Regionalanästhesieverfahren', short: 'Periphere RA', target: 50, icon: 'syringe' },
+        { id: 'ambulant', label: 'Anästhesien bei ambulanten Eingriffen', short: 'Ambulant', target: 50, icon: 'door-open' }
     ];
     const catById = {};
     baekCategories.forEach((c) => { catById[c.id] = c; });
 
+    // Eingriffe der (nicht mehr im Formular wählbaren) ehemaligen
+    // Fachrichtung "Geburtshilfe" - dient zusammen mit der (bewusst breit
+    // gefassten) Checkbox "Geburtshilfe Eingriff" (Feld c.isSectio) als
+    // automatische Erkennung für die Richtzahl-Kategorie "Geburtshilfe",
+    // da es dafür kein eigenes Formularfeld gibt. Die engere Teilmenge
+    // "davon: Kaiserschnitte" wird separat direkt über den Eingriffsnamen
+    // "Sectio Caesarea" erfasst (siehe caseCategoryIds()).
+    const GEBURTSHILFE_PROCEDURES = PROCEDURE_GROUPS['Geburtshilfe'] || [];
+
+    function caseAsaAtLeast3(c) {
+        const n = parseInt(c.asa, 10);
+        return !isNaN(n) && n >= 3;
+    }
+
+    function isGeburtshilfeCase(c) {
+        return !!c.isSectio || GEBURTSHILFE_PROCEDURES.includes(c.procedure);
+    }
+
     // Welche Auswertungs-Kategorien ein Fall erfüllt.
     // Gemeinsame Grundlage für Zähler, Tabellen-Export und PDF.
     function caseCategoryIds(c) {
-        const ids = ['total'];
-        if (c.isAbdominell) ids.push('abdominell');
+        const ids = [];
+        // "Anästhesieverfahren gesamt" (1.800) sowie die beiden "davon"-
+        // Teilmengen (Abdominell 300, ASA >= III 100) beziehen sich laut
+        // Logbuch ausdrücklich nur auf Allgemeinanästhesien - reine
+        // Regionalanästhesie-/Sedierungsfälle ohne Allgemeinanästhesie
+        // zählen hier nicht mit (werden aber weiterhin in ihren eigenen
+        // Kategorien wie "Rückenmarksnahe RA" erfasst).
+        if (c.isVollnarkose) {
+            ids.push('total');
+            if (c.isAbdominell) ids.push('abdominell');
+            if (caseAsaAtLeast3(c)) ids.push('asa3');
+        }
+        if (c.isFiberoptik) ids.push('fiberoptik');
+        if (c.isVideo) ids.push('video');
+        if (c.isSonoGefaess) ids.push('ultraschall');
         if (c.isKopfHals) ids.push('kopf_hals');
         if (c.isIntrathorakal) ids.push('intrathorakal');
         if (c.isIntrakraniell) ids.push('intrakraniell');
         if (isChildCase(c)) ids.push('kinder');
-        if (c.isSectio) ids.push('sectio');
+        if (isGeburtshilfeCase(c)) ids.push('geburtshilfe');
+        // Die engere Teilmenge "davon: Kaiserschnitte" wird bewusst NICHT
+        // über die (mittlerweile breiter gefasste) Checkbox "Geburtshilfe
+        // Eingriff" (c.isSectio) ermittelt, sondern direkt über den
+        // Eingriffsnamen - nur ein tatsächlicher Kaiserschnitt zählt hier.
+        if (c.procedure === 'Sectio Caesarea') ids.push('sectio');
         if (c.isSpaPdk) ids.push('regional_zentral');
         if (c.isPeripher) ids.push('regional_peripher');
-        if (c.isFiberoptik || c.isVideo) ids.push('fiberoptik_video');
-        if (c.isSonoGefaess) ids.push('gefaess');
+        if (c.isAmbulant) ids.push('ambulant');
         return ids;
     }
 
@@ -1107,7 +1559,6 @@
         ['isVollnarkose', 'proc-vollnarkose'],
         ['isSpaPdk', 'proc-spa-pdk'],
         ['isPeripher', 'proc-periphere-ra'],
-        ['isSedierung', 'proc-sedierung'],
         ['isFiberoptik', 'check-fiberoptik'],
         ['isVideo', 'check-videolaryngo'],
         ['isSonoGefaess', 'check-sono-gefaess']
@@ -1316,8 +1767,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        $('input-date').value = todayStr();
-        $('input-date').addEventListener('change', refreshDobFeedback);
+        setDateField(todayStr());
         $('theme-toggle').addEventListener('click', () => {
             const root = document.documentElement;
             root.classList.toggle('dark');
@@ -1357,7 +1807,6 @@
 
         $('btm-filter-date').value = todayStr();
 
-        populateProcedureDatalist();
         buildVorwertModalInputs();
         refreshAll();
         refreshIcons();
@@ -1371,6 +1820,7 @@
         renderDemoStatus();
         renderBtmOverview();
         checkBackupReminder();
+        updateLiveEvalBadges();
     }
 
     // ---------------------------------------------------------------
@@ -1412,6 +1862,7 @@
     }
 
     function refreshDobFeedback() {
+        updateLiveEvalBadges();
         const alertBox = $('child-age-alert');
         const raw = $('input-dob').value.trim();
         if (!raw) {
@@ -1455,6 +1906,84 @@
         refreshDobFeedback();
     }
 
+    // ---------------------------------------------------------------
+    // Datum-Feld (Falldatum)
+    // ---------------------------------------------------------------
+    // iOS Safari gibt dem nativen <input type="date"> eine eigene, per CSS
+    // nicht zuverlässig überschreibbare intrinsische Breite (das Feld blieb
+    // trotz width:100%/min-width:0/box-sizing sichtbar breiter als z. B. das
+    // Initialen-Feld). Das Geburtsdatum-Feld umgeht dieses Problem bereits
+    // erfolgreich mit einem normalen Text-Eingabefeld samt Live-Formatierung
+    // (formatDobLive) - dasselbe Muster wird hier für das Datum übernommen:
+    // #input-date-display ist ein ganz normales, exakt wie alle anderen
+    // Textfelder breites Textfeld; der intern/überall gelesene und
+    // geschriebene Wert bleibt unverändert im (nun versteckten) Feld
+    // #input-date im ISO-Format (YYYY-MM-DD), damit Sortierung, Filterung
+    // und Export unverändert weiterfunktionieren.
+    function parseGermanDate(raw) {
+        raw = (raw || '').trim();
+        if (!raw) return null;
+        let d, m, y;
+        const parts = raw.split(/\D+/).filter(Boolean);
+        if (parts.length === 3) {
+            [d, m, y] = parts;
+        } else if (parts.length === 1 && (parts[0].length === 6 || parts[0].length === 8)) {
+            const s = parts[0];
+            d = s.slice(0, 2); m = s.slice(2, 4); y = s.slice(4);
+        } else {
+            return null;
+        }
+        d = +d; m = +m;
+        let yn = +y;
+        if (String(y).length === 2) {
+            yn = yn <= (new Date().getFullYear() % 100) ? 2000 + yn : 1900 + yn;
+        } else if (String(y).length !== 4) {
+            return null;
+        }
+        const date = new Date(yn, m - 1, d);
+        if (date.getFullYear() !== yn || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
+        return { date, iso: `${yn}-${pad(m)}-${pad(d)}`, str: `${pad(d)}.${pad(m)}.${yn}` };
+    }
+
+    // Setzt sowohl das sichtbare (formatierte) als auch das versteckte
+    // (ISO) Datum-Feld - zentrale Stelle für Initialwert/Reset/Bearbeiten,
+    // damit beide Felder garantiert synchron bleiben.
+    function setDateField(iso) {
+        $('input-date').value = iso || '';
+        $('input-date-display').value = iso ? formatDate(iso) : '';
+    }
+
+    // Überträgt den sichtbaren, getippten Wert ins versteckte ISO-Feld,
+    // sobald er ein gültiges Datum ergibt (sonst bleibt das versteckte Feld
+    // leer, was die native/eigene Pflichtfeld-Prüfung beim Speichern greifen
+    // lässt) und aktualisiert die Alter/Kind-Anzeige.
+    function syncDateFromDisplay(normalizeVisible) {
+        const el = $('input-date-display');
+        const n = parseGermanDate(el.value);
+        if (n) {
+            $('input-date').value = n.iso;
+            if (normalizeVisible) el.value = n.str;
+        } else {
+            $('input-date').value = '';
+        }
+        refreshDobFeedback();
+    }
+
+    // Setzt beim Tippen automatisch Punkte im Format TT.MM.JJ(JJ) - siehe
+    // formatDobLive; das Datum-Feld nutzt dieselbe Logik für Konsistenz.
+    function formatDateLive(el) {
+        const digits = el.value.replace(/\D/g, '').slice(0, 8);
+        let out = digits;
+        if (digits.length > 4) out = digits.slice(0, 2) + '.' + digits.slice(2, 4) + '.' + digits.slice(4);
+        else if (digits.length > 2) out = digits.slice(0, 2) + '.' + digits.slice(2);
+        el.value = out;
+        syncDateFromDisplay(false);
+    }
+
+    function handleDateBlur(el) {
+        syncDateFromDisplay(true);
+    }
+
     // Minimale Segmented-Button-Gruppen (ASA, OP-Saal): markiert den
     // geklickten Button als aktiv und schreibt den Wert in das zugehörige
     // versteckte Eingabefeld.
@@ -1472,6 +2001,7 @@
             btn.classList.toggle('dark:border-slate-600', !active);
         });
         $(hiddenInputId).value = value;
+        updateLiveEvalBadges();
     }
 
     function resetPillGroup(groupId) {
@@ -1483,14 +2013,66 @@
         });
     }
 
-    // Eingriff-Kombifeld: einmalig alle Eingriffe (fachrichtungsübergreifend)
-    // als Datalist-Optionen bereitstellen, damit getippt und ausgewählt
-    // werden kann oder frei Text für einen eigenen Eingriff eingegeben wird.
-    function populateProcedureDatalist() {
-        const list = $('procedure-datalist');
-        if (!list) return;
-        list.innerHTML = allProcedures.map((p) => `<option value="${esc(p)}"></option>`).join('');
+    // Eingriff-Kombifeld: eigenes Such-Dropdown statt nativer Datalist
+    // (auf iOS Safari ist die native Datalist-Autovervollständigung
+    // unzuverlässig). Beim Fokussieren und bei jeder Eingabe wird eine
+    // Trefferliste passend zum eingegebenen Text unterhalb des Feldes
+    // eingeblendet; ein Tippen auf einen Treffer übernimmt den Eingriff
+    // und stößt dieselbe Flag-Erkennung an wie bisher. Freitext für einen
+    // neuen/eigenen Eingriff bleibt weiterhin uneingeschränkt möglich.
+    function renderProcedureDropdown(rawVal) {
+        const dd = $('procedure-dropdown');
+        if (!dd) return;
+        const val = (rawVal || '').trim();
+        const query = val.toLowerCase();
+        const all = allProcedureNames();
+        const matches = query
+            ? all.filter((p) => p.toLowerCase().includes(query))
+            : all;
+
+        let html = '';
+        if (matches.length) {
+            html += matches.slice(0, 200).map((p) => `
+                <button type="button"
+                    class="procedure-option w-full text-left px-3 py-2.5 min-h-[44px] text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-slate-600 active:bg-brand-100 dark:active:bg-slate-600 border-b border-slate-100 dark:border-slate-600/60 last:border-b-0"
+                    onmousedown="event.preventDefault()"
+                    onclick="selectProcedureOption('${esc(p).replace(/'/g, "\\'")}')">${esc(p)}</button>
+            `).join('');
+        }
+        if (val && !all.some((p) => p.toLowerCase() === query)) {
+            html += `<div class="px-3 py-2 text-xs text-slate-400 dark:text-slate-400 italic border-t border-slate-100 dark:border-slate-600/60">„${esc(val)}" wird als neuer Eingriff übernommen</div>`;
+        }
+        if (!html) {
+            html = `<div class="px-3 py-2.5 text-sm text-slate-400 dark:text-slate-400">Keine Treffer</div>`;
+        }
+        dd.innerHTML = html;
+        showProcedureDropdown();
     }
+
+    function showProcedureDropdown() {
+        const dd = $('procedure-dropdown');
+        if (dd) dd.classList.remove('hidden');
+    }
+
+    function hideProcedureDropdown() {
+        const dd = $('procedure-dropdown');
+        if (dd) dd.classList.add('hidden');
+    }
+
+    function selectProcedureOption(name) {
+        const input = $('input-procedure');
+        input.value = name;
+        hideProcedureDropdown();
+        handleProcedureInput(name);
+    }
+
+    document.addEventListener('click', (e) => {
+        const input = $('input-procedure');
+        const dd = $('procedure-dropdown');
+        if (!input || !dd) return;
+        if (e.target === input || dd.contains(e.target)) return;
+        hideProcedureDropdown();
+    });
 
     // Automatische Erkennung der Eingriffsart anhand des eingegebenen/
     // ausgewählten Eingriffs. Bei bekanntem Eingriff werden die Checkboxen
@@ -1503,16 +2085,45 @@
             resetCategoryFlags();
             applyCategoryFlags(flags);
         }
+        autoDetectSectio();
+        updateLiveEvalBadges();
+    }
+
+    // Checkbox "Geburtshilfe Eingriff" wird bereits primär über die
+    // eingriffsspezifischen Flags (procedureFlags, sec: true für alle
+    // Eingriffe der Gruppe "Geburtshilfe") automatisch gesetzt, sobald einer
+    // dieser Eingriffe gewählt wird - analog zu den übrigen Kategorie-
+    // Checkboxen (Kopf/Hals, Intrathorakal, Intrakraniell). Zusätzlich gibt
+    // es hier eine spezifischere Kombinations-Erkennung "Sectio Caesarea"
+    // UND Verfahren "SPA Geburtshilfe" (Rückenmarksnahe RA), die auch beim
+    // reinen Ändern des RA-Verfahrens (ohne erneutes Ändern des Eingriffs)
+    // greift. Wie bei der übrigen automatischen Flag-Erkennung bleibt diese
+    // Checkbox weiterhin manuell umschaltbar (kein automatisches
+    // Zurücksetzen). Eine Sectio wird NICHT automatisch als "Abdomineller
+    // Eingriff" gewertet, da sie offen (Laparotomie) und nicht
+    // laparoskopisch mit CO2-Kapnoperitoneum erfolgt.
+    function isSectioCombo() {
+        return $('input-procedure').value === 'Sectio Caesarea' && $('select-spa-pdk').value === 'SPA Geb';
+    }
+
+    function autoDetectSectio() {
+        if (isSectioCombo()) {
+            $('check-sectio').checked = true;
+        }
+        updateLiveEvalBadges();
     }
 
     function syncSectio(el) {
-        if (el.checked) $('check-abdominell').checked = true;
+        // Bewusst kein automatisches Setzen von "Abdomineller Eingriff" mehr:
+        // eine Sectio ist ein offener, kein laparoskopischer Eingriff mit
+        // Kapnoperitoneum und zählt daher nicht als "abdominell".
     }
 
     function toggleSpaPdk(show) {
         $('spa-pdk-container').classList.toggle('hidden', !show);
         $('select-spa-pdk').required = !!show;
         if (!show) $('select-spa-pdk').value = '';
+        autoDetectSectio();
     }
 
     function togglePeriphere(show) {
@@ -1521,7 +2132,8 @@
 
     function resetCaseForm() {
         $('case-form').reset();
-        $('input-date').value = todayStr();
+        hideProcedureDropdown();
+        setDateField(todayStr());
         $('input-asa').value = '';
         $('input-opsaal').value = '';
         resetPillGroup('asa-pills');
@@ -1557,6 +2169,7 @@
         e.preventDefault();
 
         formatInitials($('input-initials'));
+        syncDateFromDisplay(true);
         handleSmartDobInput($('input-dob'));
 
         const form = $('case-form');
@@ -1565,10 +2178,18 @@
             return;
         }
 
-        // OP-Saal und ASA sind Segmented-Button-Gruppen ohne natives
+        // Datum, OP-Saal und ASA: Datum ist ein Textfeld mit eigener
+        // Formatprüfung (das required-Attribut prüft nur, dass irgendetwas
+        // eingegeben wurde, nicht ob es ein gültiges Datum ergibt), OP-Saal
+        // und ASA sind Segmented-Button-Gruppen ohne natives
         // required-Attribut (ein required auf einem versteckten Feld würde
         // die native Validierung stillschweigend blockieren) - daher hier
         // manuell geprüft, analog zur Geburtsdatum-Prüfung unten.
+        if (!$('input-date').value) {
+            showToast('Bitte ein gültiges Datum eingeben (TT.MM.JJ).', 'error');
+            $('input-date-display').focus();
+            return;
+        }
         if (!$('input-opsaal').value) {
             showToast('Bitte einen OP-Saal auswählen.', 'error');
             return;
@@ -1591,6 +2212,12 @@
             return;
         }
 
+        const procName = ($('input-procedure').value || '').trim();
+        if (procName && !allProcedures.includes(procName) && !customProcedures.includes(procName)) {
+            customProcedures.push(procName);
+            storeSet('customProcedures', JSON.stringify(customProcedures));
+        }
+
         const data = {
             id: editingCaseId || Date.now().toString(),
             date: $('input-date').value,
@@ -1598,7 +2225,7 @@
             dob: dob.str,
             asa: $('input-asa').value,
             opSaal: $('input-opsaal').value,
-            procedure: $('input-procedure').value,
+            procedure: procName,
             spaPdkType: '',
             peripherType: '',
             btm: collectBtmEntries(),
@@ -1610,7 +2237,7 @@
         if (data.isSpaPdk) data.spaPdkType = $('select-spa-pdk').value;
         if (data.isPeripher) data.peripherType = $('select-periphere-verfahren').value;
 
-        if (!(data.isVollnarkose || data.isSpaPdk || data.isPeripher || data.isSedierung)) {
+        if (!(data.isVollnarkose || data.isSpaPdk || data.isPeripher)) {
             showToast('Bitte mindestens ein Anästhesieverfahren auswählen.', 'error');
             return;
         }
@@ -1642,9 +2269,10 @@
 
         switchTab('new-case');
         $('case-form').reset();
+        hideProcedureDropdown();
         editingCaseId = id;
 
-        $('input-date').value = c.date || todayStr();
+        setDateField(c.date || todayStr());
         $('input-initials').value = c.initials || '';
         $('input-dob').value = c.dob || '';
         resetPillGroup('asa-pills');
@@ -1708,7 +2336,7 @@
         if (c.isKopfHals) f.push('Kopf/Hals');
         if (c.isIntrathorakal) f.push('Intrathorakal');
         if (c.isIntrakraniell) f.push('Intrakraniell');
-        if (c.isSectio) f.push('Sectio');
+        if (c.isSectio) f.push('Geburtshilfe Eingriff');
         if (c.isAmbulant) f.push('Ambulant');
         if (c.isFiberoptik) f.push('Fiberoptik');
         if (c.isVideo) f.push('Videolaryngoskopie');
@@ -1795,6 +2423,77 @@
         return res;
     }
 
+    // ---------------------------------------------------------------
+    // Live-Auswertungs-Vorschau im Neuer-Fall-Formular
+    // ---------------------------------------------------------------
+    // Liest den aktuellen (noch nicht gespeicherten) Formularzustand aus
+    // und baut ein Objekt in der Form eines gespeicherten Falls, damit es
+    // direkt an caseCategoryIds() übergeben werden kann - dieselbe Logik
+    // wie beim tatsächlichen Speichern in handleCaseSubmit().
+    function buildDraftCaseFromForm() {
+        const g = (id) => { const el = $(id); return el ? el : null; };
+        return {
+            date: g('input-date') ? g('input-date').value : '',
+            dob: g('input-dob') ? g('input-dob').value : '',
+            asa: g('input-asa') ? g('input-asa').value : '',
+            procedure: (g('input-procedure') ? g('input-procedure').value : '').trim(),
+            isVollnarkose: !!(g('proc-vollnarkose') && g('proc-vollnarkose').checked),
+            isAbdominell: !!(g('check-abdominell') && g('check-abdominell').checked),
+            isKopfHals: !!(g('check-kopf-hals') && g('check-kopf-hals').checked),
+            isIntrathorakal: !!(g('check-intrathorakal') && g('check-intrathorakal').checked),
+            isIntrakraniell: !!(g('check-intrakraniell') && g('check-intrakraniell').checked),
+            isSectio: !!(g('check-sectio') && g('check-sectio').checked),
+            isAmbulant: !!(g('check-ambulant') && g('check-ambulant').checked),
+            isFiberoptik: !!(g('check-fiberoptik') && g('check-fiberoptik').checked),
+            isVideo: !!(g('check-videolaryngo') && g('check-videolaryngo').checked),
+            isSonoGefaess: !!(g('check-sono-gefaess') && g('check-sono-gefaess').checked),
+            isSpaPdk: !!(g('proc-spa-pdk') && g('proc-spa-pdk').checked),
+            isPeripher: !!(g('proc-periphere-ra') && g('proc-periphere-ra').checked)
+        };
+    }
+
+    // Wie computeProgress(), zählt aber einen Fall (per ID) nicht mit -
+    // wird beim Bearbeiten eines bestehenden Falls benutzt, damit die
+    // Live-Vorschau dessen alten Stand nicht doppelt mitzählt.
+    function computeProgressExcluding(excludeId) {
+        if (!excludeId) return computeProgress();
+        const res = {};
+        baekCategories.forEach((c) => { res[c.id] = { logbook: 0, vorwerte: 0 }; });
+        cases.forEach((c) => {
+            if (c.id === excludeId) return;
+            caseCategoryIds(c).forEach((id) => { res[id].logbook++; });
+        });
+        vorwerte.forEach((v) => {
+            Object.entries(v.counts || {}).forEach(([id, n]) => {
+                if (res[id]) res[id].vorwerte += (parseInt(n, 10) || 0);
+            });
+        });
+        return res;
+    }
+
+    // Aktualisiert die kleinen "(ist/soll)"-Badges neben den Formularfeldern
+    // im Neuer-Fall-Formular: zeigt live, welchen Stand die jeweilige
+    // Richtzahl-Kategorie hätte, wenn der gerade erfasste Fall so
+    // gespeichert würde (aktueller Logbuch+Vorwerte-Stand + 1, falls das
+    // aktuell im Formular gesetzte Feld für diese Kategorie zählen würde).
+    function updateLiveEvalBadges() {
+        const badges = document.querySelectorAll('.eval-badge[data-cat]');
+        if (!badges.length) return;
+        const base = computeProgressExcluding(editingCaseId);
+        const draft = buildDraftCaseFromForm();
+        const draftIds = caseCategoryIds(draft);
+        badges.forEach((badge) => {
+            const catId = badge.dataset.cat;
+            const cat = catById[catId];
+            const b = base[catId];
+            if (!cat || !b) { badge.textContent = ''; return; }
+            const current = b.logbook + b.vorwerte + (draftIds.includes(catId) ? 1 : 0);
+            const prefix = badge.dataset.catPrefix || '';
+            const hasTarget = typeof cat.target === 'number';
+            badge.textContent = hasTarget ? `${prefix}(${current}/${cat.target})` : `${prefix}(${current})`;
+        });
+    }
+
     function renderEvaluation() {
         const grid = $('baek-grid');
         const prog = computeProgress();
@@ -1802,8 +2501,9 @@
         grid.innerHTML = baekCategories.map((cat) => {
             const p = prog[cat.id];
             const current = p.logbook + p.vorwerte;
-            const percent = Math.min(100, Math.round((current / cat.target) * 100));
-            const done = percent >= 100;
+            const hasTarget = typeof cat.target === 'number';
+            const percent = hasTarget ? Math.min(100, Math.round((current / cat.target) * 100)) : 0;
+            const done = hasTarget && percent >= 100;
             const sub = p.vorwerte > 0 ? `Logbuch ${p.logbook} + Vorwerte ${p.vorwerte}` : `Logbuch ${p.logbook}`;
             return `
                 <div class="bg-white dark:bg-slate-800/90 rounded-xl p-4 shadow-sm border ${done ? 'border-green-200 dark:border-green-900/50' : 'border-slate-200 dark:border-slate-700/60'}">
@@ -1816,19 +2516,53 @@
                         </div>
                         <div class="text-right shrink-0">
                             <span class="text-lg font-bold ${done ? 'text-green-600 dark:text-green-400' : 'text-slate-800 dark:text-slate-100'}">${current}</span>
-                            <span class="text-xs text-slate-400">/ ${cat.target}</span>
+                            ${hasTarget ? `<span class="text-xs text-slate-400">/ ${cat.target}</span>` : ''}
                         </div>
                     </div>
+                    ${hasTarget ? `
                     <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 mb-1.5" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(cat.label)}">
                         <div class="h-1.5 rounded-full ${done ? 'bg-green-500' : 'bg-brand-500'}" style="width: ${percent}%"></div>
                     </div>
                     <div class="flex justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
                         <span>${percent} % · ${sub}</span>
                         ${done ? '<span class="text-green-600 dark:text-green-400">Erfüllt</span>' : `<span>Noch ${cat.target - current}</span>`}
-                    </div>
+                    </div>` : `
+                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <span>Keine Richtzahl (nur Kenntnisnachweis) · ${sub}</span>
+                    </div>`}
                 </div>`;
         }).join('');
+        renderProcedureBreakdown();
         refreshIcons();
+    }
+
+    // ---------------------------------------------------------------
+    // Unterteilung nach Eingriff (Auswertung + PDF-Bericht)
+    // ---------------------------------------------------------------
+    function procedureBreakdown() {
+        const counts = {};
+        cases.forEach((c) => {
+            const key = (c.procedure || '').trim() || 'Ohne Angabe';
+            counts[key] = (counts[key] || 0) + 1;
+        });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
+    }
+
+    function renderProcedureBreakdown() {
+        const container = $('procedure-breakdown-list');
+        const empty = $('procedure-breakdown-empty');
+        if (!container || !empty) return;
+        const rows = procedureBreakdown();
+        empty.classList.toggle('hidden', rows.length > 0);
+        const max = rows.length ? rows[0][1] : 1;
+        container.innerHTML = rows.map(([name, count]) => `
+            <div class="flex items-center gap-2">
+                <span class="flex-1 min-w-0 truncate text-xs text-slate-700 dark:text-slate-200">${esc(name)}</span>
+                <div class="hidden sm:block w-32 bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 shrink-0">
+                    <div class="h-1.5 rounded-full bg-brand-500" style="width:${Math.max(4, Math.round((count / max) * 100))}%"></div>
+                </div>
+                <span class="w-8 text-right text-xs font-semibold text-slate-800 dark:text-slate-100 shrink-0">${count}</span>
+            </div>`).join('');
     }
 
     // ---------------------------------------------------------------
@@ -2009,7 +2743,8 @@
         return baekCategories.map((cat) => {
             const p = prog[cat.id];
             const cur = p.logbook + p.vorwerte;
-            return { cat, logbook: p.logbook, vorwerte: p.vorwerte, cur, pct: Math.min(100, Math.round((cur / cat.target) * 100)) };
+            const hasTarget = typeof cat.target === 'number';
+            return { cat, logbook: p.logbook, vorwerte: p.vorwerte, cur, hasTarget, pct: hasTarget ? Math.min(100, Math.round((cur / cat.target) * 100)) : null };
         });
     }
 
@@ -2018,7 +2753,7 @@
         const yn = (b) => (b ? 'ja' : '');
         const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'OP-Saal', 'Eingriff',
             'Allgemeinanästhesie', 'Rückenmarksnahe RA', 'Art RM-RA', 'Periphere RA', 'Art periphere RA', 'Analgosedierung',
-            'Abdominell', 'Kopf/Hals', 'Intrathorakal', 'Intrakraniell', 'Sectio', 'Ambulant',
+            'Abdominell', 'Kopf/Hals', 'Intrathorakal', 'Intrakraniell', 'Geburtshilfe Eingriff', 'Ambulant',
             'Fiberoptik', 'Videolaryngoskopie', 'Sono-Gefäßpunktion', 'Erfüllte Kriterien',
             'BTM/Opioide (Zusammenfassung)', 'Bemerkungen'];
         const rows = sortedCasesAsc().map((c) => {
@@ -2492,8 +3227,15 @@
         $('print-date').textContent = new Date().toLocaleDateString('de-DE');
 
         $('print-summary-table').querySelector('tbody').innerHTML = summaryRows().map((s) =>
-            `<tr><td>${esc(s.cat.label)}</td><td>${s.cat.target}</td><td>${s.cur} (Logbuch ${s.logbook} + Vorwerte ${s.vorwerte})</td><td>${s.pct} %</td></tr>`
+            `<tr><td>${esc(s.cat.label)}</td><td>${s.hasTarget ? s.cat.target : 'keine Richtzahl'}</td><td>${s.cur} (Logbuch ${s.logbook} + Vorwerte ${s.vorwerte})</td><td>${s.hasTarget ? s.pct + ' %' : '–'}</td></tr>`
         ).join('');
+
+        $('print-procedure-table').querySelector('tbody').innerHTML = (() => {
+            const rows = procedureBreakdown();
+            return rows.length
+                ? rows.map(([name, count]) => `<tr><td>${esc(name)}</td><td>${count}</td></tr>`).join('')
+                : '<tr><td colspan="2">Keine Fälle erfasst.</td></tr>';
+        })();
 
         const sorted = sortedCasesAsc();
         $('print-cases-table').querySelector('tbody').innerHTML = sorted.length
@@ -2628,8 +3370,8 @@
             id: 'demo-vw-' + Date.now(),
             isDemo: true,
             name: 'Demo: Klinik XY 2021-2023',
-            counts: { total: 420, abdominell: 70, kopf_hals: 25, intrathorakal: 4, intrakraniell: 3, kinder: 12,
-                sectio: 10, regional_zentral: 45, regional_peripher: 20, fiberoptik_video: 6, gefaess: 15 }
+            counts: { total: 420, abdominell: 70, asa3: 40, kopf_hals: 25, intrathorakal: 4, intrakraniell: 3, kinder: 12,
+                geburtshilfe: 14, sectio: 10, regional_zentral: 45, regional_peripher: 20, fiberoptik: 4, video: 3, ultraschall: 15, ambulant: 60 }
         }]);
         saveCases();
         storeSet('vorwerte', JSON.stringify(vorwerte));
