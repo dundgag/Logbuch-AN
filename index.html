@@ -2502,46 +2502,6 @@
         refreshIcons();
     }
 
-    // iPhone/iOS Safari: Beim Tippen in ein Feld schiebt Safari die Seite so,
-    // dass das Feld über der Tastatur steht. Beim Schließen der Tastatur
-    // (Häkchen/"Fertig") springt die Seite wieder zurück. Hier wird die
-    // Position beim Schließen gemerkt und kurz gehalten. Greift nicht, wenn
-    // direkt ins nächste Feld gewechselt wird (Tastatur bleibt offen) oder
-    // man selbst wischt.
-    (function keepScrollOnKeyboardClose() {
-        // iOS verschiebt beim Öffnen der Tastatur oft nicht die Seite
-        // (window.scrollY), sondern nur den sichtbaren Ausschnitt
-        // (visualViewport.offsetTop). Beim Schließen wird dieser Ausschnitt
-        // zurückgesetzt - ohne normales Scroll-Ereignis. Daher wird hier die
-        // tatsächlich sichtbare Oberkante (pageTop = scrollY + offsetTop)
-        // gemerkt und während der Schließ-Animation Bild für Bild gehalten.
-        const vv = window.visualViewport;
-        const TEXT_TYPES = ['text', 'search', 'email', 'number', 'tel', 'url', 'password'];
-        const isTextField = (el) => !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && TEXT_TYPES.includes(el.type) && !el.readOnly));
-        const visibleTop = () => (vv ? window.scrollY + vv.offsetTop : window.scrollY);
-        let target = null;
-        let until = 0;
-        let raf = 0;
-        const stop = () => { target = null; if (raf) cancelAnimationFrame(raf); raf = 0; };
-        const hold = () => {
-            raf = 0;
-            if (target === null) return;
-            if (Date.now() > until) { stop(); return; }
-            const offset = vv ? vv.offsetTop : 0;
-            if (Math.abs(visibleTop() - target) > 2) window.scrollTo(0, Math.max(0, target - offset));
-            raf = requestAnimationFrame(hold);
-        };
-        document.addEventListener('focusout', (e) => {
-            if (!isTextField(e.target) || isTextField(e.relatedTarget)) return;
-            target = visibleTop();
-            until = Date.now() + 1200;
-            if (!raf) raf = requestAnimationFrame(hold);
-        });
-        document.addEventListener('focusin', (e) => { if (isTextField(e.target)) stop(); });
-        document.addEventListener('touchstart', stop, { passive: true });
-        document.addEventListener('pointerdown', stop, { passive: true });
-        document.addEventListener('wheel', stop, { passive: true });
-    })();
 
     document.addEventListener('DOMContentLoaded', () => {
         setDateField(todayStr());
