@@ -209,6 +209,31 @@
         }
         .btm-count-pills { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 
+        /* Drag & Drop der Fall-Reihenfolge: verhindert, dass ein Ziehen am
+           Griff-Symbol stattdessen die Seite scrollt (v. a. auf iOS Safari),
+           und dass beim Ziehen versehentlich Text markiert wird. */
+        /* Im Erfassungsformular ausgeblendete Felder (Einstellungen > Erfassungsformular) */
+        .field-off { display: none !important; }
+        .drag-handle { touch-action: none; -webkit-user-select: none; user-select: none; }
+
+        /* Unsichtbares natives Datumsfeld über dem sichtbaren Datum-Textfeld:
+           ein Tippen trifft das native Feld und öffnet den iOS-Kalender. */
+        /* Eigene Regel statt nur Tailwind-"relative": das Overlay muss auch
+           dann auf das Datumsfeld begrenzt bleiben, wenn Tailwind (CDN) nicht
+           lädt - sonst würde es die ganze Seite überdecken. */
+        .date-picker-wrap { position: relative; overflow: hidden; }
+        .date-picker-overlay {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%; min-width: 0;
+            opacity: 0; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; border: 0; margin: 0; padding: 0;
+        }
+        .date-picker-overlay::-webkit-calendar-picker-indicator {
+            position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer;
+        }
+        .case-card.dragging { -webkit-user-select: none; user-select: none; }
+
         #print-report { display: none; }
         @media print {
             body > *:not(#print-report) { display: none !important; }
@@ -234,30 +259,35 @@
 <div id="app" class="min-h-screen flex flex-col max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
 
     <!-- HEADER -->
-    <header class="py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div class="flex items-center space-x-3">
-            <div class="p-2.5 bg-brand-600 text-white rounded-xl shadow-md flex items-center justify-center">
+    <header class="py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center gap-4">
+        <div class="flex items-center space-x-3 min-w-0">
+            <div class="p-2.5 bg-brand-600 text-white rounded-xl shadow-md flex items-center justify-center shrink-0">
                 <i data-lucide="stethoscope" class="w-6 h-6"></i>
             </div>
-            <div>
+            <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Anästhesie Logbuch
                 </h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Elektronische Fallerfassung & Weiterbildungs-Auswertung</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">Elektronische Fallerfassung & Weiterbildungs-Auswertung</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap justify-end">
-            <div class="text-right px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs">
-                <div class="text-slate-500 dark:text-slate-400">Erfasste Fälle</div>
-                <div class="text-base font-bold text-slate-800 dark:text-slate-100" id="header-total-count">0</div>
-            </div>
-            <button id="theme-toggle" type="button" aria-label="Dunkel/Hell Modus umschalten" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Dunkel/Hell Modus">
-                <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
-                <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
-            </button>
-        </div>
+        <button id="theme-toggle" type="button" aria-label="Dunkel/Hell Modus umschalten" class="shrink-0 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Dunkel/Hell Modus">
+            <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+            <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+        </button>
     </header>
+
+    <!-- GESAMTFORTSCHRITT (Banner) -->
+    <div class="mt-3 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs">
+        <div class="flex justify-between items-baseline text-slate-500 dark:text-slate-400 mb-1.5 gap-2">
+            <span class="font-medium">Gesamtfortschritt Weiterbildung</span>
+            <span class="font-bold text-sm text-slate-800 dark:text-slate-100 shrink-0" id="header-progress-pct">0 %</span>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Gesamtfortschritt Weiterbildung" id="header-progress-track">
+            <div class="h-2 rounded-full transition-all" id="header-progress-bar" style="width: 0%"></div>
+        </div>
+    </div>
 
     <!-- BACKUP-ERINNERUNG -->
     <div id="backup-reminder" class="hidden mt-3 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
@@ -269,21 +299,29 @@
     </div>
 
     <!-- NAVIGATION -->
-    <nav class="my-4 flex space-x-1 sm:space-x-2 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-px" aria-label="Tabs">
-        <button onclick="switchTab('new-case')" id="tab-btn-new-case" class="tab-btn active px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-brand-600 text-brand-600 dark:text-brand-400 whitespace-nowrap">
-            <i data-lucide="circle-plus" class="w-4 h-4"></i> Neuer Fall
+    <nav class="my-4 grid grid-cols-5 gap-0.5 sm:flex sm:gap-2 border-b border-slate-200 dark:border-slate-800" aria-label="Tabs">
+        <button onclick="switchTab('new-case')" id="tab-btn-new-case" title="Neuer Fall" class="tab-btn active min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-0.5 sm:px-4 py-2 sm:py-2.5 font-medium text-[10px] sm:text-sm rounded-t-lg border-b-2 border-brand-600 text-brand-600 dark:text-brand-400">
+            <i data-lucide="circle-plus" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate max-w-full leading-tight">Neuer Fall</span>
         </button>
-        <button onclick="switchTab('case-list')" id="tab-btn-case-list" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
-            <i data-lucide="list" class="w-4 h-4"></i> Erfasste Fälle <span id="badge-case-count" class="ml-1 px-2 py-0.5 text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">0</span>
+        <button onclick="switchTab('case-list')" id="tab-btn-case-list" title="Erfasste Fälle" class="tab-btn min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-0.5 sm:px-4 py-2 sm:py-2.5 font-medium text-[10px] sm:text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="list" class="w-4 h-4 shrink-0"></i>
+            <span class="flex items-center gap-1 leading-tight">
+                <span class="truncate max-w-full"><span class="sm:hidden">Fälle</span><span class="hidden sm:inline">Erfasste Fälle</span></span>
+                <span id="badge-case-count" class="shrink-0 px-1.5 py-0.5 text-[9px] sm:text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">0</span>
+            </span>
         </button>
-        <button onclick="switchTab('btm')" id="tab-btn-btm" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
-            <i data-lucide="lock" class="w-4 h-4"></i> BTM
+        <button onclick="switchTab('btm')" id="tab-btn-btm" title="BTM" class="tab-btn min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-0.5 sm:px-4 py-2 sm:py-2.5 font-medium text-[10px] sm:text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="lock" class="w-4 h-4 shrink-0"></i>
+            <span class="leading-tight">BTM</span>
         </button>
-        <button onclick="switchTab('evaluation')" id="tab-btn-evaluation" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
-            <i data-lucide="chart-column" class="w-4 h-4"></i> Auswertung
+        <button onclick="switchTab('evaluation')" id="tab-btn-evaluation" title="Auswertung" class="tab-btn min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-0.5 sm:px-4 py-2 sm:py-2.5 font-medium text-[10px] sm:text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="chart-column" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate max-w-full leading-tight"><span class="sm:hidden">Ausw.</span><span class="hidden sm:inline">Auswertung</span></span>
         </button>
-        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg flex items-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
-            <i data-lucide="settings" class="w-4 h-4"></i> Vorwerte & Einstellungen
+        <button onclick="switchTab('settings')" id="tab-btn-settings" title="Vorwerte & Einstellungen" class="tab-btn min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-0.5 sm:px-4 py-2 sm:py-2.5 font-medium text-[10px] sm:text-sm rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate max-w-full leading-tight"><span class="sm:hidden">Einst.</span><span class="hidden sm:inline">Vorwerte & Einstellungen</span></span>
         </button>
     </nav>
 
@@ -294,33 +332,45 @@
                 <h2 id="case-form-title" class="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i> Patienten- & Falldaten
                 </h2>
-                <span class="text-xs text-slate-400">* Pflichtfelder</span>
+                <div class="flex items-center gap-1">
+                    <span class="text-xs text-slate-400">* Pflichtfelder</span>
+                    <button type="button" onclick="confirmResetCaseForm()" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Formular zurücksetzen" aria-label="Formular zurücksetzen">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 pointer-events-none"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label for="input-date-display" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Datum *</label>
-                    <input type="text" id="input-date-display" inputmode="numeric" placeholder="23.09.26" required oninput="formatDateLive(this)" onblur="handleDateBlur(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    <label for="input-date-native" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Datum *</label>
+                    <!-- Sichtbar ist ein normales Textfeld (gleiche Breite wie alle
+                         anderen Felder); darüber liegt unsichtbar ein natives
+                         Datumsfeld, sodass ein Tippen/Klicken den Kalender öffnet. -->
+                    <div class="date-picker-wrap relative overflow-hidden rounded-lg">
+                        <input type="text" id="input-date-display" readonly tabindex="-1" placeholder="Datum wählen" class="w-full pl-3 pr-9 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm outline-none">
+                        <i data-lucide="calendar" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <input type="date" id="input-date-native" aria-label="Datum über Kalender wählen" oninput="handleNativeDatePick(this)" onchange="handleNativeDatePick(this)" class="date-picker-overlay">
+                    </div>
                     <input type="hidden" id="input-date">
                 </div>
-                <div>
+                <div data-field="initials">
                     <label for="input-initials" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Patient Initialen *</label>
                     <input type="text" id="input-initials" placeholder="z. B. MM" required maxlength="6" onblur="formatInitials(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm uppercase focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
-                <div>
+                <div data-field="dob">
                     <label for="input-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geburtsdatum * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kinder" data-cat-prefix="≤5J: "></span></label>
                     <input type="text" id="input-dob" inputmode="numeric" placeholder="15.05.64" required oninput="formatDobLive(this)" onblur="handleSmartDobInput(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
                     <p id="dob-hint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Format: TT.MM.JJ oder TT.MM.JJJJ</p>
                 </div>
-                <div>
+                <div data-field="asa">
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">ASA * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="asa3" data-cat-prefix="ab III: "></span></label>
                     <div id="asa-pills" class="flex flex-wrap gap-1.5">
-                        <button type="button" data-pill data-value="1" onclick="selectPillOption(this.parentElement, 'input-asa', '1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">I</button>
-                        <button type="button" data-pill data-value="2" onclick="selectPillOption(this.parentElement, 'input-asa', '2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">II</button>
-                        <button type="button" data-pill data-value="3" onclick="selectPillOption(this.parentElement, 'input-asa', '3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">III</button>
-                        <button type="button" data-pill data-value="4" onclick="selectPillOption(this.parentElement, 'input-asa', '4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">IV</button>
-                        <button type="button" data-pill data-value="5" onclick="selectPillOption(this.parentElement, 'input-asa', '5')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">V</button>
-                        <button type="button" data-pill data-value="6" onclick="selectPillOption(this.parentElement, 'input-asa', '6')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">VI</button>
+                        <button type="button" data-pill data-value="1" onclick="togglePillOption(this.parentElement, 'input-asa', '1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">I</button>
+                        <button type="button" data-pill data-value="2" onclick="togglePillOption(this.parentElement, 'input-asa', '2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">II</button>
+                        <button type="button" data-pill data-value="3" onclick="togglePillOption(this.parentElement, 'input-asa', '3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">III</button>
+                        <button type="button" data-pill data-value="4" onclick="togglePillOption(this.parentElement, 'input-asa', '4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">IV</button>
+                        <button type="button" data-pill data-value="5" onclick="togglePillOption(this.parentElement, 'input-asa', '5')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">V</button>
+                        <button type="button" data-pill data-value="6" onclick="togglePillOption(this.parentElement, 'input-asa', '6')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">VI</button>
                     </div>
                     <input type="hidden" id="input-asa" value="">
                 </div>
@@ -331,18 +381,19 @@
                 <span><strong>Erkannt:</strong> Patient ist ≤ 5 Jahre alt.</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">OP-Saal *</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-section>
+                <div data-field="ort">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Ort *</label>
                     <div id="opsaal-pills" class="flex flex-wrap gap-1.5">
-                        <button type="button" data-pill data-value="OP 1" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 1</button>
-                        <button type="button" data-pill data-value="OP 2" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 2</button>
-                        <button type="button" data-pill data-value="OP 3" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 3</button>
-                        <button type="button" data-pill data-value="OP 4" onclick="selectPillOption(this.parentElement, 'input-opsaal', 'OP 4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 4</button>
+                        <button type="button" data-pill data-value="OP 1" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 1')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 1</button>
+                        <button type="button" data-pill data-value="OP 2" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 2')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 2</button>
+                        <button type="button" data-pill data-value="OP 3" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 3</button>
+                        <button type="button" data-pill data-value="OP 4" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 4</button>
+                        <button type="button" data-pill data-value="KRS" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'KRS')" title="Kreißsaal" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">KRS</button>
                     </div>
                     <input type="hidden" id="input-opsaal" value="">
                 </div>
-                <div class="relative">
+                <div class="relative" data-field="procedure">
                     <label for="input-procedure" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Eingriff * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="sectio" data-cat-prefix="Sectio: "></span></label>
                     <input type="text" id="input-procedure" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …"
                         oninput="handleProcedureInput(this.value); renderProcedureDropdown(this.value)"
@@ -353,31 +404,42 @@
                 </div>
             </div>
 
-            <div>
+            <div data-section>
                 <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-2">
                     <i data-lucide="list-checks" class="w-4 h-4 text-brand-600"></i> Eingriffsart & Besonderheiten
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <label class="checkbox-card"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span>Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span>Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span>Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span>Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span>Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span>Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
+                    <label class="checkbox-card" data-field="abd"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span>Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
+                    <label class="checkbox-card" data-field="amb"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span>Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
+                    <label class="checkbox-card" data-field="sectio"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span>Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
+                    <label class="checkbox-card" data-field="kra"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span>Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
+                    <label class="checkbox-card" data-field="thx"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span>Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
+                    <label class="checkbox-card" data-field="kh"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span>Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
                 </div>
             </div>
 
-            <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+            <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700/50" data-section>
                 <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <i data-lucide="syringe" class="w-4 h-4 text-brand-600"></i> Anästhesieverfahren
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-vollnarkose" onchange="updateLiveEvalBadges()"><span>Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span>Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
-                    <label class="checkbox-card font-medium"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span>Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
+                    <!-- Allgemeinanästhesie mit Atemweg-Auswahl direkt in der Kachel -->
+                    <div class="checkbox-card font-medium" data-field="ga" style="flex-direction: column; align-items: stretch; cursor: default;">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="proc-vollnarkose" onchange="toggleAirway(this.checked); updateLiveEvalBadges()"><span>Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
+                        <div id="airway-container" class="hidden" data-field="airway">
+                            <div id="airway-pills" class="grid grid-cols-3 gap-1">
+                                <button type="button" data-pill data-value="ITN" onclick="selectAirway('ITN')" class="pill-option px-1 py-1 rounded-md border text-xs font-medium leading-tight transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">ITN</button>
+                                <button type="button" data-pill data-value="Video-ITN" onclick="selectAirway('Video-ITN')" class="pill-option px-1 py-1 rounded-md border text-xs font-medium leading-tight transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">Video-ITN<span class="eval-badge block text-[10px] font-normal opacity-70" data-cat="video"></span></button>
+                                <button type="button" data-pill data-value="LAMA" onclick="selectAirway('LAMA')" class="pill-option px-1 py-1 rounded-md border text-xs font-medium leading-tight transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">LAMA</button>
+                            </div>
+                            <input type="hidden" id="input-airway" value="">
+                        </div>
+                    </div>
+                    <label class="checkbox-card font-medium" data-field="spa"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span>Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
+                    <label class="checkbox-card font-medium" data-field="peripher"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span>Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
                 </div>
 
-                <div id="spa-pdk-container" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div id="spa-pdk-container" data-field="spa" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
                     <label for="select-spa-pdk" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Verfahren *</label>
                     <select id="select-spa-pdk" onchange="autoDetectSectio()" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
                         <option value="">-- Verfahren wählen --</option>
@@ -388,7 +450,7 @@
                     </select>
                 </div>
 
-                <div id="periphere-ra-container" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div id="periphere-ra-container" data-field="peripher" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
                     <label for="select-periphere-verfahren" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Peripheres RA-Verfahren</label>
                     <select id="select-periphere-verfahren" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
                         <option value="">-- Verfahren wählen --</option>
@@ -420,18 +482,20 @@
                 </div>
             </div>
 
-            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50" data-section>
                 <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     <i data-lucide="shield-alert" class="w-4 h-4 text-brand-600"></i> Atemwegs- & Gefäßinterventionen
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label class="checkbox-card"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span>Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-videolaryngo" onchange="updateLiveEvalBadges()"><span>Videolaryngoskopie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="video"></span></span></label>
-                    <label class="checkbox-card"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span>Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="checkbox-card" data-field="fiberoptik"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span>Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
+                    <!-- Videolaryngoskopie wird jetzt über "Atemweg: Video-ITN" gesetzt;
+                         die Checkbox bleibt versteckt als interner Speicher (isVideo). -->
+                    <input type="checkbox" id="check-videolaryngo" class="hidden" tabindex="-1" aria-hidden="true">
+                    <label class="checkbox-card" data-field="sono"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span>Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
                 </div>
             </div>
 
-            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50" data-field="btm">
                 <div class="flex items-center justify-between gap-2">
                     <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                         <i data-lucide="lock" class="w-4 h-4 text-brand-600"></i> BTM (Opioide)
@@ -445,7 +509,7 @@
                 <p id="btm-empty-hint" class="text-xs text-slate-400 italic">Kein Opioid erfasst.</p>
             </div>
 
-            <div>
+            <div data-field="notes">
                 <label for="input-notes" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Bemerkungen / Details</label>
                 <input type="text" id="input-notes" placeholder="z.B. ZVK V. jug. int. rechts, schwieriger Atemweg..." class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
             </div>
@@ -470,17 +534,26 @@
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
                     <input type="text" id="search-cases" oninput="renderCaseList()" placeholder="Suchen..." aria-label="Fälle durchsuchen" class="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs outline-none focus:ring-1 focus:ring-brand-500">
                 </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
                     <label for="sort-cases" class="text-xs text-slate-500">Sortierung:</label>
                     <select id="sort-cases" onchange="renderCaseList()" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-xs">
                         <option value="date-desc">Neu → Alt</option>
                         <option value="date-asc">Alt → Neu</option>
                         <option value="initials-asc">Initialen A → Z</option>
                     </select>
+                    <button type="button" id="reorder-toggle-btn" onclick="toggleReorderMode()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors" title="Reihenfolge der Fälle je Tag per Drag & Drop ändern">
+                        <i data-lucide="arrow-up-down" id="reorder-toggle-icon" class="w-3.5 h-3.5 pointer-events-none"></i>
+                        <span class="reorder-btn-label pointer-events-none">Reihenfolge</span>
+                    </button>
                 </div>
             </div>
 
-            <div id="case-list-container" class="space-y-3"></div>
+            <div id="reorder-hint" class="hidden p-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-brand-800 dark:text-brand-300">
+                <span class="flex items-center gap-2"><i data-lucide="grip-vertical" class="w-4 h-4 flex-shrink-0"></i> Am Griff-Symbol ziehen, um die Reihenfolge der Fälle je Tag zu ändern. Die Nummerierung wird automatisch angepasst.</span>
+                <button type="button" onclick="toggleReorderMode()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg whitespace-nowrap self-start sm:self-auto">Fertig</button>
+            </div>
+
+            <div id="case-list-container" class="space-y-5"></div>
 
             <div id="empty-cases-placeholder" class="hidden py-12 text-center text-slate-400 space-y-2">
                 <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
@@ -506,20 +579,22 @@
                     <button onclick="exportBtmPdf()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5">
                         <i data-lucide="file-down" class="w-3.5 h-3.5"></i> PDF
                     </button>
+                    <button type="button" id="btm-reorder-toggle-btn" onclick="toggleBtmReorderMode()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors" title="Reihenfolge der Fälle je Tag per Drag & Drop ändern">
+                        <i data-lucide="arrow-up-down" id="btm-reorder-toggle-icon" class="w-3.5 h-3.5 pointer-events-none"></i>
+                        <span class="reorder-btn-label pointer-events-none">Reihenfolge</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-2 items-center">
-                <label for="btm-filter-date" class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tag:</label>
-                <input type="date" id="btm-filter-date" onchange="renderBtmOverview()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm">
-                <button type="button" onclick="setBtmFilterToday()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg">Heute</button>
-                <button type="button" onclick="clearBtmFilter()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg">Alle Tage</button>
+            <div id="btm-reorder-hint" class="hidden p-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-brand-800 dark:text-brand-300">
+                <span class="flex items-center gap-2"><i data-lucide="grip-vertical" class="w-4 h-4 flex-shrink-0"></i> Am Griff-Symbol ziehen, um die Reihenfolge je Tag zu ändern. Gilt auch für „Erfasste Fälle“.</span>
+                <button type="button" onclick="toggleBtmReorderMode()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg whitespace-nowrap self-start sm:self-auto">Fertig</button>
             </div>
 
-            <div id="btm-overview-list" class="space-y-3"></div>
+            <div id="btm-overview-list" class="space-y-5"></div>
             <div id="btm-overview-empty" class="hidden py-10 text-center text-slate-400 space-y-2">
                 <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
-                <p class="text-sm">Keine BTM-Einträge für diesen Zeitraum.</p>
+                <p class="text-sm">Noch keine BTM-Einträge erfasst.</p>
             </div>
 
             <div id="btm-overview-totals" class="pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs text-slate-600 dark:text-slate-300"></div>
@@ -547,6 +622,14 @@
 
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-3">
             <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <i data-lucide="wind" class="w-5 h-5 text-brand-600"></i> Atemwegssicherung
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Persönliche Statistik (nicht Facharzt-relevant): Anteil ITN, Video-ITN und Larynxmaske an allen Allgemeinanästhesien im Logbuch (ohne Vorwerte).</p>
+            <div id="airway-stats" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-3">
+            <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <i data-lucide="layers" class="w-5 h-5 text-brand-600"></i> Unterteilung nach Eingriff
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">Anzahl erfasster Fälle je Eingriff (Logbuch-Fälle, ohne Vorwerte) – häufigste zuerst.</p>
@@ -557,6 +640,30 @@
 
     <!-- TAB: EINSTELLUNGEN -->
     <main id="tab-content-settings" class="tab-content hidden flex-1 pb-12 space-y-6">
+        <!-- DATENSCHUTZ -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
+            <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3">
+                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="shield" class="w-5 h-5 text-brand-600"></i> Datenschutz
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ein exaktes Geburtsdatum ist in Kombination mit OP-Datum und Eingriff fast eindeutig identifizierend. Alternativ kann nur das daraus berechnete Alter gespeichert werden.</p>
+            </div>
+            <label class="checkbox-card items-start">
+                <input type="checkbox" id="privacy-age-only-toggle" onchange="togglePrivacyAgeOnly(this.checked)" class="mt-0.5">
+                <span>
+                    <span class="font-medium">Nur Alter statt genauem Geburtsdatum speichern</span><br>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Das Geburtsdatum wird bei neuen bzw. bearbeiteten Fällen weiterhin abgefragt (u. a. für die ≤5-Jahre-Erkennung), aber nicht mehr gespeichert – nur das daraus berechnete Alter zum Fallzeitpunkt. Hinweis: Im BTM-Tab steht dann kein Geburtsdatum mehr zur eindeutigen Zuordnung zur Verfügung.</span>
+                </span>
+            </label>
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                <p class="text-xs text-slate-600 dark:text-slate-300 mb-2">Bereits gespeicherte Fälle mit exaktem Geburtsdatum nachträglich auf reines Alter umstellen (Geburtsdatum wird dabei unwiderruflich gelöscht):</p>
+                <button type="button" onclick="purgeStoredBirthdates()" class="px-4 py-2 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-xs font-medium rounded-lg flex items-center gap-2 transition-colors">
+                    <i data-lucide="eraser" class="w-4 h-4"></i> Vorhandene Geburtsdaten in Alter umwandeln
+                </button>
+                <p id="birthdate-purge-status" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
+            </div>
+        </div>
+
         <!-- VORWERTE -->
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
             <div class="flex justify-between items-center gap-3 border-b border-slate-100 dark:border-slate-700/50 pb-3">
@@ -666,6 +773,20 @@
 
             </div>
         </div>
+
+        <!-- ERFASSUNGSFORMULAR ANPASSEN -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
+            <div class="flex justify-between items-start gap-3 border-b border-slate-100 dark:border-slate-700/50 pb-3">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="sliders-horizontal" class="w-5 h-5 text-brand-600"></i> Erfassungsformular
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Wähle, was im Formular „Neuer Fall“ angezeigt und erfasst wird. Ausgeblendetes wird bei neuen Fällen nicht erfasst und zählt dann auch nicht für die jeweilige Richtzahl.</p>
+                </div>
+                <button type="button" onclick="showAllFormFields()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg whitespace-nowrap">Alle an</button>
+            </div>
+            <div id="form-field-settings" class="space-y-4"></div>
+        </div>
     </main>
 
 </div>
@@ -737,8 +858,8 @@
         <table id="print-cases-table">
             <thead>
                 <tr>
-                    <th>Datum</th><th>Initialen</th><th>Geburtsdatum</th>
-                    <th>OP-Saal</th><th>Eingriff</th><th>Erfüllte Kriterien</th>
+                    <th>Datum</th><th>Initialen</th><th>Geb./Alter</th>
+                    <th>Ort</th><th>Eingriff</th><th>Erfüllte Kriterien</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -780,6 +901,13 @@
         return m ? `${m[3]}.${m[2]}.${m[1]}` : (iso || '');
     }
 
+    const WEEKDAYS_DE = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    function formatDateWithWeekday(iso) {
+        const d = parseIso(iso);
+        const label = formatDate(iso);
+        return d ? `${WEEKDAYS_DE[d.getDay()]}, ${label}` : (label || 'Ohne Datum');
+    }
+
     // Geburtsdatum: akzeptiert 150564, 15.05.64, 15.5.1964, 15051964 ...
     function normalizeDob(raw) {
         raw = (raw || '').trim();
@@ -819,7 +947,13 @@
         return a;
     }
 
+    // Im Datenschutz-Modus (siehe privacyAgeOnly()) wird bei neuen/bearbeiteten
+    // Fällen kein Geburtsdatum mehr gespeichert, sondern nur c.ageAtCase (das
+    // daraus berechnete Alter zum Fallzeitpunkt) - deutlich weniger
+    // re-identifizierend, da ein exaktes Geburtsdatum in Kombination mit
+    // OP-Datum/Eingriff quasi eindeutig ist, ein reines Alter dagegen nicht.
     function caseAge(c) {
+        if (typeof c.ageAtCase === 'number') return c.ageAtCase;
         const dob = parseDob(c.dob);
         const ref = parseIso(c.date);
         if (!dob || !ref) return null;
@@ -830,6 +964,179 @@
     function isChildCase(c) {
         const a = caseAge(c);
         return a !== null && a <= 5;
+    }
+
+    // Anzeige-Text für Geburtsdatum/Alter in Listen, BTM-Übersicht etc. -
+    // zeigt das Geburtsdatum, falls gespeichert, sonst nur das Alter.
+    function caseBirthLabel(c) {
+        const age = caseAge(c);
+        if (c.dob) return `geb. ${c.dob}` + (age !== null ? ` (${age} J.)` : '');
+        return age !== null ? `Alter bei OP: ${age} J.` : '';
+    }
+
+    function privacyAgeOnly() {
+        return storeGet('privacyAgeOnly') === '1';
+    }
+
+    function togglePrivacyAgeOnly(on) {
+        storeSet('privacyAgeOnly', on ? '1' : '0');
+    }
+
+    // ---------------------------------------------------------------
+    // Erfassungsformular anpassen: einzelne Felder ein-/ausblenden.
+    // key = data-field im Formular; props = zugehörige Felder im Fall
+    // (für ausgeblendete Felder: neue Fälle -> nicht erfasst/Standardwert,
+    // bearbeitete Fälle -> bisheriger Wert bleibt erhalten).
+    // ---------------------------------------------------------------
+    const FORM_FIELDS = [
+        { key: 'initials', label: 'Initialen', group: 'Patient & Eingriff', props: ['initials'] },
+        { key: 'dob', label: 'Geburtsdatum', group: 'Patient & Eingriff', props: [] },
+        { key: 'asa', label: 'ASA', group: 'Patient & Eingriff', props: ['asa'] },
+        { key: 'ort', label: 'Ort', group: 'Patient & Eingriff', props: ['opSaal'] },
+        { key: 'procedure', label: 'Eingriff', group: 'Patient & Eingriff', props: ['procedure'] },
+        { key: 'abd', label: 'Abdomineller Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isAbdominell'] },
+        { key: 'amb', label: 'Ambulante Anästhesie', group: 'Eingriffsart & Besonderheiten', props: ['isAmbulant'] },
+        { key: 'sectio', label: 'Geburtshilfe Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isSectio'] },
+        { key: 'kra', label: 'Intrakranieller Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isIntrakraniell'] },
+        { key: 'thx', label: 'Intrathorakaler Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isIntrathorakal'] },
+        { key: 'kh', label: 'Kopf / Hals Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isKopfHals'] },
+        { key: 'ga', label: 'Allgemeinanästhesie', group: 'Anästhesieverfahren', props: ['isVollnarkose', 'airway', 'isVideo'] },
+        { key: 'airway', label: 'Atemweg (ITN / Video-ITN / LAMA)', group: 'Anästhesieverfahren', props: ['airway', 'isVideo'] },
+        { key: 'spa', label: 'Rückenmarksnahe RA', group: 'Anästhesieverfahren', props: ['isSpaPdk', 'spaPdkType'] },
+        { key: 'peripher', label: 'Periphere RA', group: 'Anästhesieverfahren', props: ['isPeripher', 'peripherType'] },
+        { key: 'fiberoptik', label: 'Fiberoptische Intubation', group: 'Atemwegs- & Gefäßinterventionen', props: ['isFiberoptik'] },
+        { key: 'sono', label: 'Sonografische Gefäßpunktion', group: 'Atemwegs- & Gefäßinterventionen', props: ['isSonoGefaess'] },
+        { key: 'btm', label: 'BTM (Opioide)', group: 'Weitere', props: ['btm'] },
+        { key: 'notes', label: 'Bemerkungen', group: 'Weitere', props: ['notes'] }
+    ];
+
+    function hiddenFormFields() {
+        try {
+            const arr = JSON.parse(storeGet('formHiddenFields') || '[]');
+            return new Set(Array.isArray(arr) ? arr : []);
+        } catch (e) { return new Set(); }
+    }
+
+    function fieldOn(key) {
+        return !hiddenFormFields().has(key);
+    }
+
+    function setFieldOn(key, on) {
+        const hidden = hiddenFormFields();
+        if (on) hidden.delete(key); else hidden.add(key);
+        storeSet('formHiddenFields', JSON.stringify([...hidden]));
+        applyFormConfig();
+    }
+
+    function showAllFormFields() {
+        storeSet('formHiddenFields', '[]');
+        applyFormConfig();
+        renderFormFieldSettings();
+    }
+
+    // Blendet die Felder im Formular entsprechend der Einstellung ein/aus;
+    // Abschnitte, in denen danach kein Feld mehr sichtbar ist, verschwinden
+    // komplett (inkl. Überschrift).
+    function applyFormConfig() {
+        const hidden = hiddenFormFields();
+        document.querySelectorAll('#case-form [data-field]').forEach((el) => {
+            el.classList.toggle('field-off', hidden.has(el.dataset.field));
+        });
+        const sections = document.querySelectorAll('#case-form [data-section]');
+        sections.forEach((sec) => sec.classList.remove('field-off'));
+        sections.forEach((sec) => {
+            // sichtbar = weder das Feld selbst noch ein Eltern-Feld ausgeblendet
+            const anyVisible = Array.from(sec.querySelectorAll('[data-field]')).some((el) => !el.closest('.field-off'));
+            sec.classList.toggle('field-off', !anyVisible);
+        });
+        $('input-initials').required = !hidden.has('initials');
+        $('input-procedure').required = !hidden.has('procedure');
+        if (hidden.has('dob')) $('input-dob').required = false;
+        else if (!editingCaseId) $('input-dob').required = true;
+    }
+
+    function renderFormFieldSettings() {
+        const box = $('form-field-settings');
+        if (!box) return;
+        const hidden = hiddenFormFields();
+        const groups = [];
+        FORM_FIELDS.forEach((f) => { if (!groups.includes(f.group)) groups.push(f.group); });
+        box.innerHTML = groups.map((g) => `
+            <div>
+                <h3 class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">${esc(g)}</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${FORM_FIELDS.filter((f) => f.group === g).map((f) => `
+                        <label class="checkbox-card"><input type="checkbox" ${hidden.has(f.key) ? '' : 'checked'} onchange="setFieldOn('${f.key}', this.checked)"><span>${esc(f.label)}</span></label>`).join('')}
+                </div>
+            </div>`).join('');
+    }
+
+    // Wendet die Formular-Einstellung auf einen gerade gebauten Fall an.
+    function applyHiddenFieldsToCase(data, prevCase) {
+        const hidden = hiddenFormFields();
+        FORM_FIELDS.forEach((f) => {
+            if (!hidden.has(f.key)) return;
+            f.props.forEach((pr) => {
+                if (prevCase) {
+                    if (Object.prototype.hasOwnProperty.call(prevCase, pr)) data[pr] = prevCase[pr];
+                    else delete data[pr];
+                } else if (Array.isArray(data[pr])) {
+                    data[pr] = [];
+                } else if (typeof data[pr] === 'boolean') {
+                    data[pr] = false;
+                } else {
+                    data[pr] = '';
+                }
+            });
+        });
+    }
+
+    // ASA / Ort: erneutes Tippen auf die aktive Auswahl hebt sie auf.
+    function togglePillOption(groupEl, hiddenInputId, value) {
+        if ($(hiddenInputId).value === String(value)) {
+            resetPillGroup(groupEl.id);
+            $(hiddenInputId).value = '';
+            updateLiveEvalBadges();
+        } else {
+            selectPillOption(groupEl, hiddenInputId, value);
+            if (hiddenInputId === 'input-opsaal' && value === 'KRS') setObstetricDefaults('PDK Geb');
+        }
+    }
+
+    async function confirmResetCaseForm() {
+        const wasEditing = !!editingCaseId;
+        const ok = await askConfirm(wasEditing
+            ? 'Bearbeitung abbrechen und alle Eingaben im Formular verwerfen?'
+            : 'Alle Eingaben im Formular verwerfen?', { title: 'Formular zurücksetzen', confirmLabel: 'Zurücksetzen', danger: true });
+        if (!ok) return;
+        resetCaseForm();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('Formular zurückgesetzt');
+    }
+
+    // Wandelt bereits gespeicherte exakte Geburtsdaten nachträglich in das
+    // daraus berechnete Alter zum Fallzeitpunkt um (unwiderruflich) - für
+    // Fälle, die vor Aktivierung des Datenschutz-Modus erfasst wurden.
+    async function purgeStoredBirthdates() {
+        const withDob = cases.filter((c) => c.dob);
+        if (withDob.length === 0) {
+            showToast('Es sind keine Fälle mit gespeichertem Geburtsdatum vorhanden.', 'warn');
+            return;
+        }
+        const ok = await askConfirm(
+            `${withDob.length} ${withDob.length === 1 ? 'Fall enthält' : 'Fälle enthalten'} ein exaktes Geburtsdatum. Es wird durch das berechnete Alter zum Fallzeitpunkt ersetzt - das Geburtsdatum wird dabei unwiderruflich gelöscht.`,
+            { title: 'Geburtsdaten in Alter umwandeln', confirmLabel: 'Umwandeln', danger: true }
+        );
+        if (!ok) return;
+        withDob.forEach((c) => {
+            const age = caseAge(c);
+            delete c.dob;
+            if (age !== null) c.ageAtCase = age;
+        });
+        saveCases();
+        refreshAll();
+        $('birthdate-purge-status').textContent = `${withDob.length} ${withDob.length === 1 ? 'Fall' : 'Fälle'} umgestellt.`;
+        showToast('Geburtsdaten wurden in Alter umgewandelt.');
     }
 
     // ---------------------------------------------------------------
@@ -958,6 +1265,9 @@
     let vorwerte = loadList('vorwerte');
     let editingCaseId = null;
     let editingVorwertId = null;
+    let reorderMode = false;
+    let btmReorderMode = false;
+    let dragCtx = null; // aktiver Drag-Vorgang in der Fall-Liste (Reihenfolge je Tag), s. initReorderDrag()
 
     // Rohdaten je Fachrichtung. Werden nur noch intern verwendet, um die
     // flache Eingriffsliste und die flache Eingriffsart-Zuordnung
@@ -1458,6 +1768,44 @@
         // verfälschen, daher hier explizit kein "else uncheck".
         if (flags.ga === true) {
             $('proc-vollnarkose').checked = true;
+            toggleAirway(true);
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Atemweg bei Allgemeinanästhesie (ITN / Video-ITN / LAMA) - rein
+    // persönliche Statistik. "Video-ITN" setzt zusätzlich das (versteckte)
+    // Videolaryngoskopie-Flag, damit die aekn-Richtzahl weiter mitzählt.
+    // ---------------------------------------------------------------
+    const AIRWAY_OPTIONS = ['ITN', 'Video-ITN', 'LAMA'];
+
+    // Atemweg eines gespeicherten Falls; ältere Fälle ohne Angabe, aber mit
+    // Videolaryngoskopie-Haken werden als Video-ITN gewertet.
+    function caseAirway(c) {
+        if (!c.isVollnarkose) return '';
+        if (c.airway) return c.airway;
+        return c.isVideo ? 'Video-ITN' : '';
+    }
+
+    function selectAirway(value) {
+        // Erneutes Tippen auf die aktive Option hebt die Auswahl wieder auf.
+        if ($('input-airway').value === value) value = '';
+        $('check-videolaryngo').checked = value === 'Video-ITN';
+        if (value) {
+            selectPillOption($('airway-pills'), 'input-airway', value);
+        } else {
+            resetPillGroup('airway-pills');
+            $('input-airway').value = '';
+            updateLiveEvalBadges();
+        }
+    }
+
+    function toggleAirway(show) {
+        $('airway-container').classList.toggle('hidden', !show);
+        if (!show) {
+            resetPillGroup('airway-pills');
+            $('input-airway').value = '';
+            $('check-videolaryngo').checked = false;
         }
     }
 
@@ -1481,7 +1829,7 @@
         { id: 'ultraschall', label: 'Anästhesierelevante Ultraschallverfahren', short: 'Ultraschall', target: 50, icon: 'waves' },
         { id: 'intrakraniell', label: 'Mitwirkung: Intrakranielle Eingriffe', short: 'Intrakraniell', target: 25, icon: 'brain' },
         { id: 'kinder', label: 'Säuglinge & Kleinkinder (≤ 5 Jahre)', short: 'Kind ≤ 5 J.', target: 50, icon: 'baby' },
-        { id: 'geburtshilfe', label: 'Anästhesieverfahren in der Geburtshilfe', short: 'Geburtshilfe', target: 50, icon: 'venus' },
+        { id: 'geburtshilfe', label: 'Anästhesieverfahren in der Geburtshilfe', short: 'Geburtshilfe', target: 50, icon: 'baby' },
         { id: 'sectio', label: 'davon: Kaiserschnitte (Sectio)', short: 'Sectio', target: 25, icon: 'scissors' },
         { id: 'intrathorakal', label: 'Mitwirkung: Intrathorakale Eingriffe', short: 'Intrathorakal', target: 25, icon: 'wind' },
         { id: 'kopf_hals', label: 'Eingriffe Kopf-Hals-Bereich', short: 'Kopf/Hals', target: 100, icon: 'user' },
@@ -1706,33 +2054,47 @@
     // ---------------------------------------------------------------
     // BTM-Übersicht (eigener Tab, für die tägliche Eintragung ins BTM-Buch)
     // ---------------------------------------------------------------
-    function setBtmFilterToday() {
-        $('btm-filter-date').value = todayStr();
-        renderBtmOverview();
-    }
-
-    function clearBtmFilter() {
-        $('btm-filter-date').value = '';
-        renderBtmOverview();
-    }
-
     // Nur die Anzahl verwendeter Ampullen - keine ausgerechnete Dosis, denn
     // nur die Ampullenzahl muss ins BTM-Buch eingetragen werden.
     function btmEntryCountLabel(e) {
         return `${e.label.split(' (')[0]} × ${fmtAmount(e.count)} Amp.`;
     }
 
-    function btmOverviewCases(filterDate) {
-        return sortedCasesAsc().filter((c) => c.btm && c.btm.length > 0 && (!filterDate || c.date === filterDate));
+    // Ampullen-Summen je Substanz über eine Liste von Fällen (Reihenfolge
+    // des ersten Auftretens) als Text "Substanz: n Amp. · ...".
+    function btmSumsLine(list) {
+        const sums = {};
+        const order = [];
+        list.forEach((c) => (c.btm || []).forEach((e) => {
+            const key = e.label.split(' (')[0];
+            if (!(key in sums)) { sums[key] = 0; order.push(key); }
+            sums[key] += e.count;
+        }));
+        return order.map((k) => `${k}: ${fmtAmount(sums[k])} Amp.`).join(' · ');
     }
 
+    function toggleBtmReorderMode() {
+        btmReorderMode = !btmReorderMode;
+        const btn = $('btm-reorder-toggle-btn');
+        btn.classList.toggle('bg-brand-600', btmReorderMode);
+        btn.classList.toggle('hover:bg-brand-700', btmReorderMode);
+        btn.classList.toggle('border-brand-600', btmReorderMode);
+        btn.classList.toggle('text-white', btmReorderMode);
+        btn.querySelector('.reorder-btn-label').textContent = btmReorderMode ? 'Fertig' : 'Reihenfolge';
+        $('btm-reorder-toggle-icon').setAttribute('data-lucide', btmReorderMode ? 'check' : 'arrow-up-down');
+        $('btm-reorder-hint').classList.toggle('hidden', !btmReorderMode);
+        renderBtmOverview();
+        refreshIcons();
+    }
+
+    // Alle BTM-Fälle, nach Tag gruppiert (neuester Tag zuerst), innerhalb
+    // eines Tages in der gespeicherten Reihenfolge mit derselben Tages-Nummer
+    // wie unter "Erfasste Fälle"; je Tag eine Ampullen-Summe fürs BTM-Buch.
     function renderBtmOverview() {
-        const dateEl = $('btm-filter-date');
-        if (!dateEl) return;
-        const filterDate = dateEl.value;
-        const list = btmOverviewCases(filterDate);
         const container = $('btm-overview-list');
         const empty = $('btm-overview-empty');
+        if (!container) return;
+        const list = cases.filter((c) => c.btm && c.btm.length > 0);
 
         if (list.length === 0) {
             container.innerHTML = '';
@@ -1742,32 +2104,48 @@
         }
         empty.classList.add('hidden');
 
-        container.innerHTML = list.map((c) => `
-            <div class="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 ${c.isDemo ? 'opacity-70' : ''}">
-                <div class="flex items-center flex-wrap gap-2 mb-1">
-                    <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
-                    ${c.isDemo ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Demo</span>' : ''}
-                    <span class="text-xs text-slate-400">${esc(formatDate(c.date))}</span>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">geb. ${esc(c.dob)}</p>
-                <div class="flex gap-1.5 flex-wrap">
-                    ${c.btm.map((e) => `<span class="text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full">${esc(btmEntryCountLabel(e))}</span>`).join('')}
-                </div>
-            </div>`).join('');
+        const numbers = dayNumberMap();
+        const byDate = groupCasesByDate(list);
+        const dateKeys = Array.from(byDate.keys()).sort((a, b) => b.localeCompare(a));
 
-        const sums = {};
-        const order = [];
-        list.forEach((c) => c.btm.forEach((e) => {
-            const key = e.label;
-            if (!sums[key]) { sums[key] = 0; order.push(key); }
-            sums[key] += e.count;
-        }));
-        $('btm-overview-totals').innerHTML = '<strong>Summe' + (filterDate ? ' ' + esc(formatDate(filterDate)) : ' (alle Tage)') + ':</strong> ' +
-            order.map((k) => `${esc(k.split(' (')[0])}: ${fmtAmount(sums[k])} Amp.`).join(' · ');
+        container.innerHTML = dateKeys.map((dateKey) => {
+            const dayCases = byDate.get(dateKey);
+            const cards = dayCases.map((c) => `
+                <div class="case-card p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-1 ${c.isDemo ? 'opacity-70' : ''}" data-id="${esc(c.id)}">
+                    ${btmReorderMode ? `<button type="button" class="drag-handle shrink-0 p-2 -ml-2 mt-1 text-slate-400 hover:text-brand-600 cursor-grab active:cursor-grabbing" aria-label="Ziehen zum Verschieben" title="Ziehen zum Verschieben"><i data-lucide="grip-vertical" class="w-4 h-4 pointer-events-none"></i></button>` : ''}
+                    <div class="shrink-0 mt-1 w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center" title="Nummer des Falls an diesem Tag">${numbers.get(c.id)}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center flex-wrap gap-2 mb-1">
+                            <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
+                            ${c.isDemo ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Demo</span>' : ''}
+                            <span class="text-xs text-slate-400">${esc(c.procedure || '')}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">${esc(caseBirthLabel(c))}</p>
+                        <div class="flex gap-1.5 flex-wrap">
+                            ${c.btm.map((e) => `<span class="text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 px-2 py-0.5 rounded-full">${esc(btmEntryCountLabel(e))}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>`).join('');
+            return `
+                <div class="day-group" data-date="${esc(dateKey)}">
+                    <div class="flex items-baseline justify-between gap-2 mb-2 px-1">
+                        <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">${esc(formatDateWithWeekday(dateKey))}</h3>
+                        <span class="text-[11px] text-slate-400 shrink-0">${dayCases.length} ${dayCases.length === 1 ? 'Fall' : 'Fälle'}</span>
+                    </div>
+                    <div class="day-group-list space-y-2">${cards}</div>
+                    <p class="mt-2 px-1 text-[11px] text-slate-600 dark:text-slate-300"><strong>Summe:</strong> ${esc(btmSumsLine(dayCases))}</p>
+                </div>`;
+        }).join('');
+
+        $('btm-overview-totals').innerHTML = '<strong>Summe (alle Tage):</strong> ' + esc(btmSumsLine(list));
+        refreshIcons();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         setDateField(todayStr());
+        $('privacy-age-only-toggle').checked = privacyAgeOnly();
+        applyFormConfig();
+        renderFormFieldSettings();
         $('theme-toggle').addEventListener('click', () => {
             const root = document.documentElement;
             root.classList.toggle('dark');
@@ -1785,6 +2163,8 @@
             if (b.dataset.action === 'edit') editCase(b.dataset.id);
             if (b.dataset.action === 'delete') deleteCase(b.dataset.id);
         });
+        initReorderDrag($('case-list-container'), () => reorderMode);
+        initReorderDrag($('btm-overview-list'), () => btmReorderMode);
         $('vorwerte-list').addEventListener('click', (e) => {
             const b = e.target.closest('[data-action]');
             if (!b) return;
@@ -1804,8 +2184,6 @@
             if (!$('modal-dialog').classList.contains('hidden')) closeDialog(null);
             else if (!$('modal-vorwert').classList.contains('hidden')) closeVorwertModal();
         });
-
-        $('btm-filter-date').value = todayStr();
 
         buildVorwertModalInputs();
         refreshAll();
@@ -1844,8 +2222,42 @@
     }
 
     function updateGlobalCounts() {
-        $('header-total-count').textContent = cases.length;
         $('badge-case-count').textContent = cases.length;
+        updateHeaderProgress();
+    }
+
+    // Gesamtfortschritt im Header: Durchschnitt der Einzel-Fortschritte (%)
+    // über ALLE Richtzahl-Kategorien mit Zielwert (jede Kategorie zählt
+    // gleich viel, unabhängig von ihrer absoluten Zielzahl - sonst würde
+    // "Anästhesieverfahren gesamt" mit 1.800 alle kleineren Kategorien wie
+    // Fiberoptik (25) im Schnitt komplett überdecken). "davon:"-Teilmengen
+    // (Abdominell, ASA >= III, Sectio) zählen bewusst mit, da sie eigene
+    // Richtzahlen mit eigenem Zielwert sind.
+    function updateHeaderProgress() {
+        const bar = $('header-progress-bar');
+        const track = $('header-progress-track');
+        const label = $('header-progress-pct');
+        if (!bar || !label) return;
+        const prog = computeProgress();
+        const withTarget = baekCategories.filter((c) => typeof c.target === 'number');
+        let pct = 0;
+        if (withTarget.length > 0) {
+            const sum = withTarget.reduce((acc, c) => {
+                const p = prog[c.id];
+                const current = p ? (p.logbook + p.vorwerte) : 0;
+                return acc + Math.min(100, (current / c.target) * 100);
+            }, 0);
+            pct = Math.round(sum / withTarget.length);
+        }
+        label.textContent = `${pct} %`;
+        bar.style.width = `${pct}%`;
+        // Farbcodierung: rot (früher Fortschritt) -> gelb -> grün (nah am/am Ziel).
+        const color = pct >= 100 ? 'bg-green-500'
+            : pct >= 66 ? 'bg-brand-500'
+            : pct >= 33 ? 'bg-amber-500'
+            : 'bg-red-500';
+        bar.className = 'h-1.5 rounded-full transition-all ' + color;
+        if (track) track.setAttribute('aria-valuenow', String(pct));
     }
 
     // ---------------------------------------------------------------
@@ -1866,7 +2278,12 @@
         const alertBox = $('child-age-alert');
         const raw = $('input-dob').value.trim();
         if (!raw) {
-            setDobHint('Format: TT.MM.JJ oder TT.MM.JJJJ', false);
+            const editing = editingCaseId ? cases.find((c) => c.id === editingCaseId) : null;
+            if (editing && !editing.dob && typeof editing.ageAtCase === 'number') {
+                setDobHint(`Für diesen Fall ist aus Datenschutzgründen nur das Alter gespeichert (${editing.ageAtCase} ${editing.ageAtCase === 1 ? 'Jahr' : 'Jahre'}). Leer lassen, um das zu behalten, oder ein Geburtsdatum eingeben.`, false);
+            } else {
+                setDobHint('Format: TT.MM.JJ oder TT.MM.JJJJ', false);
+            }
             alertBox.classList.add('hidden');
             return;
         }
@@ -1951,6 +2368,14 @@
     function setDateField(iso) {
         $('input-date').value = iso || '';
         $('input-date-display').value = iso ? formatDate(iso) : '';
+        const nat = $('input-date-native');
+        if (nat) nat.value = iso || '';
+    }
+
+    // Auswahl im nativen Kalender (unsichtbar über dem Datum-Feld) übernehmen.
+    function handleNativeDatePick(el) {
+        setDateField(el.value);
+        refreshDobFeedback();
     }
 
     // Überträgt den sichtbaren, getippten Wert ins versteckte ISO-Feld,
@@ -1967,21 +2392,6 @@
             $('input-date').value = '';
         }
         refreshDobFeedback();
-    }
-
-    // Setzt beim Tippen automatisch Punkte im Format TT.MM.JJ(JJ) - siehe
-    // formatDobLive; das Datum-Feld nutzt dieselbe Logik für Konsistenz.
-    function formatDateLive(el) {
-        const digits = el.value.replace(/\D/g, '').slice(0, 8);
-        let out = digits;
-        if (digits.length > 4) out = digits.slice(0, 2) + '.' + digits.slice(2, 4) + '.' + digits.slice(4);
-        else if (digits.length > 2) out = digits.slice(0, 2) + '.' + digits.slice(2);
-        el.value = out;
-        syncDateFromDisplay(false);
-    }
-
-    function handleDateBlur(el) {
-        syncDateFromDisplay(true);
     }
 
     // Minimale Segmented-Button-Gruppen (ASA, OP-Saal): markiert den
@@ -2085,6 +2495,7 @@
             resetCategoryFlags();
             applyCategoryFlags(flags);
         }
+        if (val === 'Sectio Caesarea') setObstetricDefaults('SPA Geb');
         autoDetectSectio();
         updateLiveEvalBadges();
     }
@@ -2110,6 +2521,21 @@
         if (isSectioCombo()) {
             $('check-sectio').checked = true;
         }
+        updateLiveEvalBadges();
+    }
+
+    // Geburtshilfe-Voreinstellung (Eingriff "Sectio Caesarea" bzw. Ort "KRS"):
+    // hakt "Geburtshilfe Eingriff" und "Rückenmarksnahe RA" an und setzt das
+    // RA-Verfahren - aber nur, wenn dort noch nichts gewählt ist, damit eine
+    // bewusste Wahl (z. B. Sectio über liegenden PDK) nicht überschrieben wird.
+    function setObstetricDefaults(spaType) {
+        $('check-sectio').checked = true;
+        if (!$('proc-spa-pdk').checked) {
+            $('proc-spa-pdk').checked = true;
+            toggleSpaPdk(true);
+        }
+        if (!$('select-spa-pdk').value) $('select-spa-pdk').value = spaType;
+        autoDetectSectio();
         updateLiveEvalBadges();
     }
 
@@ -2141,7 +2567,9 @@
         resetCategoryFlags();
         toggleSpaPdk(false);
         togglePeriphere(false);
+        toggleAirway(false);
         clearBtmRows();
+        $('input-dob').required = fieldOn('dob');
         refreshDobFeedback();
         setEditMode(false);
     }
@@ -2186,28 +2614,42 @@
         // die native Validierung stillschweigend blockieren) - daher hier
         // manuell geprüft, analog zur Geburtsdatum-Prüfung unten.
         if (!$('input-date').value) {
-            showToast('Bitte ein gültiges Datum eingeben (TT.MM.JJ).', 'error');
-            $('input-date-display').focus();
+            showToast('Bitte ein Datum im Kalender auswählen.', 'error');
             return;
         }
-        if (!$('input-opsaal').value) {
-            showToast('Bitte einen OP-Saal auswählen.', 'error');
+        if (fieldOn('ort') && !$('input-opsaal').value) {
+            showToast('Bitte einen Ort auswählen.', 'error');
             return;
         }
-        if (!$('input-asa').value) {
+        if (fieldOn('asa') && !$('input-asa').value) {
             showToast('Bitte eine ASA-Klassifikation auswählen.', 'error');
             return;
         }
 
-        const dob = normalizeDob($('input-dob').value);
-        if (!dob) {
+        // Geburtsdatum: darf nur leer bleiben, wenn bereits ein Fall bearbeitet
+        // wird, der (im Datenschutz-Modus) nur ein gespeichertes Alter ohne
+        // Geburtsdatum hat - dann wird dieses Alter unverändert übernommen.
+        const prevCase = editingCaseId ? cases.find((c) => c.id === editingCaseId) : null;
+        const dobRaw = $('input-dob').value.trim();
+        let dobEntry = null;
+        if (!fieldOn('dob')) {
+            // Geburtsdatum ausgeblendet: nichts prüfen/erfassen (beim
+            // Bearbeiten bleibt der bisherige Stand unten erhalten).
+        } else if (dobRaw) {
+            dobEntry = normalizeDob(dobRaw);
+            if (!dobEntry) {
+                showToast('Bitte ein gültiges Geburtsdatum eingeben (TT.MM.JJ).', 'error');
+                $('input-dob').focus();
+                return;
+            }
+            const ref = parseIso($('input-date').value);
+            if (ref && ageAt(dobEntry.date, ref) < 0) {
+                showToast('Das Geburtsdatum liegt nach dem Falldatum.', 'error');
+                $('input-dob').focus();
+                return;
+            }
+        } else if (!prevCase || (!prevCase.dob && typeof prevCase.ageAtCase !== 'number')) {
             showToast('Bitte ein gültiges Geburtsdatum eingeben (TT.MM.JJ).', 'error');
-            $('input-dob').focus();
-            return;
-        }
-        const ref = parseIso($('input-date').value);
-        if (ref && ageAt(dob.date, ref) < 0) {
-            showToast('Das Geburtsdatum liegt nach dem Falldatum.', 'error');
             $('input-dob').focus();
             return;
         }
@@ -2222,7 +2664,6 @@
             id: editingCaseId || Date.now().toString(),
             date: $('input-date').value,
             initials: $('input-initials').value,
-            dob: dob.str,
             asa: $('input-asa').value,
             opSaal: $('input-opsaal').value,
             procedure: procName,
@@ -2231,13 +2672,30 @@
             btm: collectBtmEntries(),
             notes: $('input-notes').value.trim()
         };
+
+        // Geburtsdatum im Datenschutz-Modus nicht speichern, sondern nur das
+        // daraus berechnete Alter zum Fallzeitpunkt (s. caseAge()); ohne neue
+        // Eingabe wird der bisherige Stand des bearbeiteten Falls übernommen.
+        if (dobEntry) {
+            if (privacyAgeOnly()) {
+                data.ageAtCase = ageAt(dobEntry.date, parseIso(data.date));
+            } else {
+                data.dob = dobEntry.str;
+            }
+        } else if (prevCase) {
+            if (prevCase.dob) data.dob = prevCase.dob;
+            if (typeof prevCase.ageAtCase === 'number') data.ageAtCase = prevCase.ageAtCase;
+        }
+
         FLAG_FIELDS.forEach(([key, id]) => { data[key] = $(id).checked; });
-        const prevCase = editingCaseId ? cases.find((c) => c.id === editingCaseId) : null;
+        data.airway = data.isVollnarkose ? $('input-airway').value : '';
         if (prevCase && prevCase.isDemo) data.isDemo = true;
         if (data.isSpaPdk) data.spaPdkType = $('select-spa-pdk').value;
         if (data.isPeripher) data.peripherType = $('select-periphere-verfahren').value;
 
-        if (!(data.isVollnarkose || data.isSpaPdk || data.isPeripher)) {
+        applyHiddenFieldsToCase(data, prevCase);
+
+        if ((fieldOn('ga') || fieldOn('spa') || fieldOn('peripher')) && !(data.isVollnarkose || data.isSpaPdk || data.isPeripher)) {
             showToast('Bitte mindestens ein Anästhesieverfahren auswählen.', 'error');
             return;
         }
@@ -2275,6 +2733,10 @@
         setDateField(c.date || todayStr());
         $('input-initials').value = c.initials || '';
         $('input-dob').value = c.dob || '';
+        // Nur bei Fällen mit gespeichertem Geburtsdatum weiterhin Pflichtfeld -
+        // bei reinen Alters-Fällen (Datenschutz-Modus) darf es leer bleiben,
+        // damit man den Fall bearbeiten kann, ohne das Alter neu eingeben zu müssen.
+        $('input-dob').required = fieldOn('dob') && !(!c.dob && typeof c.ageAtCase === 'number');
         resetPillGroup('asa-pills');
         resetPillGroup('opsaal-pills');
         $('input-asa').value = c.asa || '';
@@ -2285,6 +2747,10 @@
         $('input-procedure').value = c.procedure || '';
 
         FLAG_FIELDS.forEach(([key, id2]) => { $(id2).checked = !!c[key]; });
+
+        toggleAirway(!!c.isVollnarkose);
+        const aw = caseAirway(c);
+        if (aw) selectAirway(aw);
 
         toggleSpaPdk(!!c.isSpaPdk);
         $('select-spa-pdk').value = c.spaPdkType || '';
@@ -2323,7 +2789,7 @@
     // ---------------------------------------------------------------
     function caseProcedureChips(c) {
         const chips = [];
-        if (c.isVollnarkose) chips.push('Allgemeinanästhesie');
+        if (c.isVollnarkose) chips.push(caseAirway(c) ? `Allgemeinanästhesie (${caseAirway(c)})` : 'Allgemeinanästhesie');
         if (c.isSpaPdk) chips.push(c.spaPdkType || 'Rückenmarksnahe RA');
         if (c.isPeripher) chips.push(c.peripherType || 'Periphere RA');
         if (c.isSedierung) chips.push('Analgosedierung');
@@ -2345,39 +2811,23 @@
         return f;
     }
 
-    function renderCaseList() {
-        const container = $('case-list-container');
-        const emptyState = $('empty-cases-placeholder');
-        const q = $('search-cases').value.trim().toLowerCase();
-        const sortMode = $('sort-cases').value;
-
-        let list = cases.filter((c) => {
-            if (!q) return true;
-            return [c.initials, c.procedure, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
-                .some((v) => String(v || '').toLowerCase().includes(q));
-        });
-
-        list.sort((a, b) => {
-            if (sortMode === 'date-asc') return (a.date || '').localeCompare(b.date || '') || a.id.localeCompare(b.id);
-            if (sortMode === 'initials-asc') return (a.initials || '').localeCompare(b.initials || '');
-            return (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id);
-        });
-
-        container.innerHTML = '';
-        if (list.length === 0) {
-            emptyState.classList.remove('hidden');
-            return;
-        }
-        emptyState.classList.add('hidden');
-
-        container.innerHTML = list.map((c) => {
-            const age = caseAge(c);
-            const chips = caseProcedureChips(c).map((t) =>
-                `<span class="text-[10px] bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
-            const flags = caseFlagChips(c).map((t) =>
-                `<span class="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-600/50 dark:text-slate-200 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
-            return `
-                <div class="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between gap-4 transition hover:shadow-sm">
+    function caseCardHtml(c, number, dragEnabled) {
+        const chips = caseProcedureChips(c).map((t) =>
+            `<span class="text-[10px] bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
+        const flags = caseFlagChips(c).map((t) =>
+            `<span class="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-600/50 dark:text-slate-200 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
+        const handle = dragEnabled
+            ? `<button type="button" class="drag-handle shrink-0 p-2 -ml-2 mt-1 text-slate-400 hover:text-brand-600 cursor-grab active:cursor-grabbing" aria-label="Ziehen zum Verschieben" title="Ziehen zum Verschieben">
+                   <i data-lucide="grip-vertical" class="w-4 h-4 pointer-events-none"></i>
+               </button>`
+            : '';
+        const numberBadge = number != null
+            ? `<div class="shrink-0 mt-1 w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center" title="Reihenfolge an diesem Tag">${number}</div>`
+            : '';
+        return `
+            <div class="case-card p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-1 transition hover:shadow-sm" data-id="${esc(c.id)}" data-date="${esc(c.date)}">
+                ${handle}${numberBadge}
+                <div class="flex-1 min-w-0 flex flex-col sm:flex-row justify-between gap-4">
                     <div class="min-w-0">
                         <div class="flex items-center flex-wrap gap-2 mb-1">
                             <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
@@ -2387,7 +2837,7 @@
                         </div>
                         <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">${esc(c.procedure)}</p>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            ${esc(c.opSaal)} · geb. ${esc(c.dob)}${age !== null ? ` (${age} J.)` : ''}${c.notes ? ' — <i>' + esc(c.notes) + '</i>' : ''}
+                            ${esc(c.opSaal)}${caseBirthLabel(c) ? ' · ' + esc(caseBirthLabel(c)) : ''}${c.notes ? ' — <i>' + esc(c.notes) + '</i>' : ''}
                         </p>
                         <div class="mt-2 flex gap-1.5 flex-wrap">${chips}${flags}</div>
                     </div>
@@ -2399,9 +2849,186 @@
                             <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
                         </button>
                     </div>
+                </div>
+            </div>`;
+    }
+
+    // Fälle nach Tag gruppiert (in der gespeicherten cases-Reihenfolge, die
+    // per Drag & Drop steuerbar ist) - Map<dateIso, Fall[]>.
+    function groupCasesByDate(list) {
+        const map = new Map();
+        list.forEach((c) => {
+            const key = c.date || '';
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push(c);
+        });
+        return map;
+    }
+
+    function toggleReorderMode() {
+        reorderMode = !reorderMode;
+        if (reorderMode) {
+            $('search-cases').value = '';
+            if ($('sort-cases').value === 'initials-asc') $('sort-cases').value = 'date-desc';
+        }
+        $('search-cases').disabled = reorderMode;
+        $('sort-cases').disabled = reorderMode;
+        const btn = $('reorder-toggle-btn');
+        btn.classList.toggle('bg-brand-600', reorderMode);
+        btn.classList.toggle('hover:bg-brand-700', reorderMode);
+        btn.classList.toggle('border-brand-600', reorderMode);
+        btn.classList.toggle('text-white', reorderMode);
+        btn.querySelector('.reorder-btn-label').textContent = reorderMode ? 'Fertig' : 'Reihenfolge';
+        $('reorder-toggle-icon').setAttribute('data-lucide', reorderMode ? 'check' : 'arrow-up-down');
+        $('reorder-hint').classList.toggle('hidden', !reorderMode);
+        renderCaseList();
+        refreshIcons();
+    }
+
+    function renderCaseList() {
+        const container = $('case-list-container');
+        const emptyState = $('empty-cases-placeholder');
+        const q = $('search-cases').value.trim().toLowerCase();
+        const sortMode = $('sort-cases').value;
+        // Tage-Gruppierung mit Nummerierung nur bei Datums-Sortierung ohne
+        // aktive Suche - sonst wäre "Fall Nr. X an diesem Tag" nicht eindeutig
+        // bzw. die Drag-Reihenfolge nicht verlässlich abbildbar.
+        const grouped = sortMode !== 'initials-asc' && !q;
+
+        const list = cases.filter((c) => {
+            if (!q) return true;
+            return [c.initials, c.procedure, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
+                .some((v) => String(v || '').toLowerCase().includes(q));
+        });
+
+        if (list.length === 0) {
+            container.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        if (!grouped) {
+            const flat = list.slice().sort((a, b) => {
+                if (sortMode === 'date-asc') return (a.date || '').localeCompare(b.date || '') || a.id.localeCompare(b.id);
+                if (sortMode === 'initials-asc') return (a.initials || '').localeCompare(b.initials || '');
+                return (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id);
+            });
+            container.innerHTML = flat.map((c) => caseCardHtml(c, null, false)).join('');
+            refreshIcons();
+            return;
+        }
+
+        const byDate = groupCasesByDate(list);
+        const dateKeys = Array.from(byDate.keys())
+            .sort((a, b) => sortMode === 'date-asc' ? a.localeCompare(b) : b.localeCompare(a));
+
+        container.innerHTML = dateKeys.map((dateKey) => {
+            const dayCases = byDate.get(dateKey);
+            const cardsHtml = dayCases.map((c, i) => caseCardHtml(c, i + 1, reorderMode)).join('');
+            return `
+                <div class="day-group" data-date="${esc(dateKey)}">
+                    <div class="flex items-baseline justify-between gap-2 mb-2 px-1">
+                        <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">${esc(formatDateWithWeekday(dateKey))}</h3>
+                        <span class="text-[11px] text-slate-400 shrink-0">${dayCases.length} ${dayCases.length === 1 ? 'Fall' : 'Fälle'}</span>
+                    </div>
+                    <div class="day-group-list space-y-2">${cardsHtml}</div>
                 </div>`;
         }).join('');
         refreshIcons();
+    }
+
+    // Übernimmt eine per Drag & Drop veränderte Reihenfolge in das
+    // cases-Array (bestimmt die Nummerierung) und speichert sie. orderedIds
+    // kann alle Fälle eines Tages (Tab "Erfasste Fälle") oder nur eine
+    // Teilmenge sein (Tab "BTM": nur Fälle mit Opioiden) - die betroffenen
+    // Fälle werden untereinander auf ihre bisherigen Plätze im Array neu
+    // verteilt, alle übrigen Fälle bleiben unverändert an ihrer Stelle.
+    function applyReorder(orderedIds) {
+        const idSet = new Set(orderedIds);
+        const byId = new Map();
+        const indices = [];
+        cases.forEach((c, i) => { if (idSet.has(c.id)) { byId.set(c.id, c); indices.push(i); } });
+        orderedIds.forEach((id, k) => {
+            const c = byId.get(id);
+            if (c && indices[k] !== undefined) cases[indices[k]] = c;
+        });
+        saveCases();
+        renderCaseList();
+        renderBtmOverview();
+    }
+
+    // Nummer jedes Falls innerhalb seines Tages (1, 2, 3 ...) in der
+    // gespeicherten Reihenfolge - identisch in "Erfasste Fälle" und "BTM",
+    // damit ein Fall in beiden Tabs dieselbe Nummer trägt.
+    function dayNumberMap() {
+        const counters = {};
+        const map = new Map();
+        cases.forEach((c) => {
+            const key = c.date || '';
+            counters[key] = (counters[key] || 0) + 1;
+            map.set(c.id, counters[key]);
+        });
+        return map;
+    }
+
+    // Drag & Drop (Maus + Touch via Pointer Events) für die Reihenfolge
+    // innerhalb eines Tages: am Griff-Symbol gedrückt halten und verschieben;
+    // Nachbar-Karten tauschen live den Platz, sobald die Mitte der gezogenen
+    // Karte ihre Mitte überschreitet. Beim Loslassen wird die neue Reihenfolge
+    // aus dem DOM gelesen und in cases[] übernommen.
+    function initReorderDrag(container, isActive) {
+        container.addEventListener('pointerdown', (e) => {
+            const handle = e.target.closest('.drag-handle');
+            if (!handle || !isActive()) return;
+            const card = handle.closest('.case-card');
+            const list = card.parentElement;
+            e.preventDefault();
+            try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+            dragCtx = { pointerId: e.pointerId, card, list, startY: e.clientY };
+            card.classList.add('dragging', 'relative', 'z-30', 'shadow-lg', 'ring-2', 'ring-brand-400', 'dark:ring-brand-500');
+        });
+
+        container.addEventListener('pointermove', (e) => {
+            if (!dragCtx || e.pointerId !== dragCtx.pointerId) return;
+            const dy = e.clientY - dragCtx.startY;
+            dragCtx.card.style.transform = `translateY(${dy}px)`;
+
+            const siblings = Array.from(dragCtx.list.children);
+            const cardIndex = siblings.indexOf(dragCtx.card);
+            const cardRect = dragCtx.card.getBoundingClientRect();
+            const cardCenter = cardRect.top + cardRect.height / 2;
+
+            for (let i = 0; i < siblings.length; i++) {
+                const sib = siblings[i];
+                if (sib === dragCtx.card) continue;
+                const r = sib.getBoundingClientRect();
+                const sibCenter = r.top + r.height / 2;
+                if (i < cardIndex && cardCenter < sibCenter) {
+                    dragCtx.list.insertBefore(dragCtx.card, sib);
+                    dragCtx.startY = e.clientY;
+                    dragCtx.card.style.transform = 'translateY(0px)';
+                    break;
+                } else if (i > cardIndex && cardCenter > sibCenter) {
+                    dragCtx.list.insertBefore(dragCtx.card, sib.nextSibling);
+                    dragCtx.startY = e.clientY;
+                    dragCtx.card.style.transform = 'translateY(0px)';
+                    break;
+                }
+            }
+        });
+
+        const endDrag = (e) => {
+            if (!dragCtx || (e.pointerId !== undefined && e.pointerId !== dragCtx.pointerId)) return;
+            const { card, list } = dragCtx;
+            card.style.transform = '';
+            card.classList.remove('dragging', 'relative', 'z-30', 'shadow-lg', 'ring-2', 'ring-brand-400', 'dark:ring-brand-500');
+            const orderedIds = Array.from(list.children).map((el) => el.dataset.id);
+            dragCtx = null;
+            applyReorder(orderedIds);
+        };
+        container.addEventListener('pointerup', endDrag);
+        container.addEventListener('pointercancel', endDrag);
     }
 
     // ---------------------------------------------------------------
@@ -2533,7 +3160,34 @@
                 </div>`;
         }).join('');
         renderProcedureBreakdown();
+        renderAirwayStats();
         refreshIcons();
+    }
+
+    function renderAirwayStats() {
+        const el = $('airway-stats');
+        if (!el) return;
+        const ga = cases.filter((c) => c.isVollnarkose);
+        if (ga.length === 0) {
+            el.innerHTML = '<p class="text-xs text-slate-400 italic">Noch keine Allgemeinanästhesien erfasst.</p>';
+            return;
+        }
+        const counts = { 'ITN': 0, 'Video-ITN': 0, 'LAMA': 0, '': 0 };
+        ga.forEach((c) => { counts[caseAirway(c)] = (counts[caseAirway(c)] || 0) + 1; });
+        const colors = { 'ITN': 'bg-brand-500', 'Video-ITN': 'bg-violet-500', 'LAMA': 'bg-emerald-500', '': 'bg-slate-400' };
+        const rows = [...AIRWAY_OPTIONS, ''].filter((k) => k !== '' || counts[''] > 0);
+        el.innerHTML = rows.map((k) => {
+            const n = counts[k];
+            const pct = Math.round((n / ga.length) * 100);
+            return `
+                <div class="flex items-center gap-2">
+                    <span class="w-24 shrink-0 text-xs text-slate-700 dark:text-slate-200">${k ? esc(k) : 'ohne Angabe'}</span>
+                    <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+                        <div class="h-2 rounded-full ${colors[k]}" style="width:${pct}%"></div>
+                    </div>
+                    <span class="w-20 shrink-0 text-right text-xs font-semibold text-slate-800 dark:text-slate-100">${n} <span class="font-normal text-slate-400">(${pct} %)</span></span>
+                </div>`;
+        }).join('') + `<p class="text-[11px] text-slate-400 pt-1">Gesamt: ${ga.length} Allgemeinanästhesien</p>`;
     }
 
     // ---------------------------------------------------------------
@@ -2751,8 +3405,8 @@
     // Gemeinsame Tabelle für CSV und Excel
     function caseExportTable() {
         const yn = (b) => (b ? 'ja' : '');
-        const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'OP-Saal', 'Eingriff',
-            'Allgemeinanästhesie', 'Rückenmarksnahe RA', 'Art RM-RA', 'Periphere RA', 'Art periphere RA', 'Analgosedierung',
+        const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'Ort', 'Eingriff',
+            'Allgemeinanästhesie', 'Atemweg', 'Rückenmarksnahe RA', 'Art RM-RA', 'Periphere RA', 'Art periphere RA', 'Analgosedierung',
             'Abdominell', 'Kopf/Hals', 'Intrathorakal', 'Intrakraniell', 'Geburtshilfe Eingriff', 'Ambulant',
             'Fiberoptik', 'Videolaryngoskopie', 'Sono-Gefäßpunktion', 'Erfüllte Kriterien',
             'BTM/Opioide (Zusammenfassung)', 'Bemerkungen'];
@@ -2760,7 +3414,7 @@
             const age = caseAge(c);
             return [formatDate(c.date), c.initials, yn(c.isDemo), c.dob, age === null ? '' : age, c.asa ? Number(c.asa) : '',
                 c.opSaal, c.procedure,
-                yn(c.isVollnarkose), yn(c.isSpaPdk), c.spaPdkType || '', yn(c.isPeripher), c.peripherType || '', yn(c.isSedierung),
+                yn(c.isVollnarkose), caseAirway(c), yn(c.isSpaPdk), c.spaPdkType || '', yn(c.isPeripher), c.peripherType || '', yn(c.isSedierung),
                 yn(c.isAbdominell), yn(c.isKopfHals), yn(c.isIntrathorakal), yn(c.isIntrakraniell), yn(c.isSectio), yn(c.isAmbulant),
                 yn(c.isFiberoptik), yn(c.isVideo), yn(c.isSonoGefaess),
                 caseCriteriaLabels(c).join(', '), btmCaseLine(c), c.notes || ''];
@@ -2875,7 +3529,7 @@
 
         [...withBtm].sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach((c) => {
             lines.push('');
-            lines.push(formatDate(c.date) + '  ' + c.initials + (c.isDemo ? ' (Demo)' : '') + '  geb. ' + c.dob);
+            lines.push(formatDate(c.date) + '  ' + c.initials + (c.isDemo ? ' (Demo)' : '') + '  ' + caseBirthLabel(c));
             c.btm.forEach((e) => {
                 lines.push('  - ' + btmEntryCountLabel(e));
             });
@@ -2960,12 +3614,12 @@
 
             const sorted = sortedCasesAsc();
             const head = anonymize
-                ? ['Datum', 'OP-Saal', 'Eingriff', 'Erfüllte Kriterien']
-                : ['Datum', 'Initialen', 'Geburtsdatum', 'OP-Saal', 'Eingriff', 'Erfüllte Kriterien'];
+                ? ['Datum', 'Ort', 'Eingriff', 'Erfüllte Kriterien']
+                : ['Datum', 'Initialen', 'Geb./Alter', 'Ort', 'Eingriff', 'Erfüllte Kriterien'];
             const body = sorted.length
                 ? sorted.map((c) => anonymize
                     ? [S(formatDate(c.date)), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))]
-                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))])
+                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : '')), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))])
                 : [[{ content: 'Keine Fälle erfasst.', colSpan: anonymize ? 4 : 6, styles: { halign: 'center' } }]];
 
             doc.autoTable({
@@ -3057,7 +3711,7 @@
             [...withBtm].sort((a, b) => (a.date || '').localeCompare(b.date || '')).forEach((c) => {
                 c.btm.forEach((e) => {
                     detailRows.push([
-                        S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob),
+                        S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : '')),
                         S(e.label.split(' (')[0]), fmtAmount(e.count)
                     ]);
                 });
@@ -3065,7 +3719,7 @@
 
             doc.autoTable({
                 startY: y + 3,
-                head: [['Datum', 'Initialen', 'Geburtsdatum', 'Substanz', 'Anzahl (Amp.)'].map(S)],
+                head: [['Datum', 'Initialen', 'Geb./Alter', 'Substanz', 'Anzahl (Amp.)'].map(S)],
                 body: detailRows,
                 theme: 'grid',
                 styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
@@ -3242,7 +3896,7 @@
             ? sorted.map((c) => `<tr>
                     <td>${esc(formatDate(c.date))}</td>
                     <td>${esc(c.initials)}${c.isDemo ? ' (Demo)' : ''}</td>
-                    <td>${esc(c.dob)}</td>
+                    <td>${esc(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : ''))}</td>
                     <td>${esc(c.opSaal)}</td>
                     <td>${esc(c.procedure)}</td>
                     <td>${esc(caseCriteriaLabels(c).join(', '))}</td>
@@ -3353,6 +4007,7 @@
                 isSedierung: has('sed'),
                 isFiberoptik: has('fib'),
                 isVideo: has('vid'),
+                airway: has('itn') ? (has('vid') ? 'Video-ITN' : (has('amb') ? 'LAMA' : 'ITN')) : '',
                 isSonoGefaess: has('sono'),
                 btm: (ex.btm || []).map((e) => {
                     const opt = btmById[e.id];
