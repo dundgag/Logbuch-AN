@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
@@ -57,6 +57,7 @@
 
     <!-- PDF- und Excel-Export (cdnjs, feste Versionen) -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -93,22 +94,27 @@
                horizontal scrollbare Bereiche (Tab-Leiste, BTM-Anzahl-Pills,
                ggf. Tabellen-Wrapper) setzen ihr eigenes overflow-x: auto
                und bleiben davon unberührt, da sie einen eigenen
-               Scroll-Container bilden. */
+               Scroll-Container bilden.
+               "clip" statt "hidden": schneidet seitlich ab, macht html/body
+               aber NICHT zu eigenen (verschachtelten) Scroll-Bereichen - das
+               führte v. a. in Safari dazu, dass Mausrad/Tastatur-Scrollen
+               nicht mehr zuverlässig die Seite bewegten. "hidden" bleibt als
+               Rückfall für sehr alte Browser ohne "clip". */
             overflow-x: hidden;
+            overflow-x: clip;
         }
+        /* Kein Gummiband/Pull-to-refresh: gehört auf das Wurzelelement
+           (wird von dort auf das Seitenfenster übertragen). */
+        html { overscroll-behavior-y: none; }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             -webkit-text-size-adjust: 100%;
-            /* Verhindert, dass das "Pull-to-refresh"/Gummiband-Verhalten von
-               Safari auf dem iPhone die App wie eine Webseite statt wie eine
-               App wirken lässt. */
-            overscroll-behavior-y: none;
             width: 100%;
         }
         /* #app nutzt 100dvh statt (nur) 100vh: dvh berücksichtigt die
            ein-/ausblendende Safari-Adressleiste, sodass die Mindesthöhe der
            App nicht springt, wenn die Leiste beim Scrollen verschwindet. */
-        #app { min-height: 100vh; max-width: 100%; overflow-x: hidden; }
+        #app { min-height: 100vh; max-width: 100%; overflow-x: hidden; overflow-x: clip; }
         @supports (min-height: 100dvh) {
             #app { min-height: 100dvh; }
         }
@@ -669,6 +675,59 @@
                 Vorwerte verwalten
             </button>
         </div>
+        <!-- ZEITRAUM -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="calendar-range" class="w-5 h-5 text-brand-600"></i> Zeitraum
+                </h2>
+                <select id="eval-range-preset" onchange="setEvalPreset(this.value)" aria-label="Zeitraum wählen" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
+                    <option value="all">Gesamter Zeitraum</option>
+                    <option value="thisYear">Dieses Jahr</option>
+                    <option value="lastYear">Letztes Jahr</option>
+                    <option value="last12">Letzte 12 Monate</option>
+                    <option value="last6">Letzte 6 Monate</option>
+                    <option value="since">Ab Datum bis heute</option>
+                    <option value="custom">Eigener Zeitraum</option>
+                </select>
+            </div>
+            <div id="eval-range-dates" class="hidden grid grid-cols-2 gap-3">
+                <div id="eval-from-wrap">
+                    <label for="eval-from" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Von</label>
+                    <div class="date-picker-wrap relative overflow-hidden rounded-lg">
+                        <input type="text" id="eval-from-display" readonly tabindex="-1" placeholder="Datum wählen" class="w-full pl-3 pr-9 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm outline-none">
+                        <i data-lucide="calendar" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <input type="date" id="eval-from" aria-label="Von (Kalender)" onchange="handleEvalDate('from', this.value)" class="date-picker-overlay">
+                    </div>
+                </div>
+                <div id="eval-to-wrap">
+                    <label for="eval-to" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Bis</label>
+                    <div class="date-picker-wrap relative overflow-hidden rounded-lg">
+                        <input type="text" id="eval-to-display" readonly tabindex="-1" placeholder="Datum wählen" class="w-full pl-3 pr-9 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm outline-none">
+                        <i data-lucide="calendar" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <input type="date" id="eval-to" aria-label="Bis (Kalender)" onchange="handleEvalDate('to', this.value)" class="date-picker-overlay">
+                    </div>
+                </div>
+                <div id="eval-to-today" class="hidden">
+                    <span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Bis</span>
+                    <div class="px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-sm text-slate-500 dark:text-slate-400">heute</div>
+                </div>
+            </div>
+            <label id="eval-vw-wrap" class="hidden checkbox-card">
+                <input type="checkbox" id="eval-include-vw" onchange="setEvalIncludeVorwerte(this.checked)">
+                <span>Vorwerte einbeziehen <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">(haben kein Datum)</span></span>
+            </label>
+            <p id="eval-range-summary" class="text-xs text-slate-500 dark:text-slate-400"></p>
+            <div class="flex gap-2">
+                <button type="button" onclick="exportPdf(false, true)" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="file-down" class="w-4 h-4"></i> PDF für diesen Zeitraum
+                </button>
+                <button type="button" onclick="exportPdf(true, true)" title="Ohne Initialen und Geburtsdatum" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="user-x" class="w-4 h-4"></i> Anonym
+                </button>
+            </div>
+        </div>
+
         <div id="demo-banner" class="hidden p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
             <span><strong>Demo-Daten enthalten:</strong> Die Auswertung zählt aktuell Beispielfälle mit. Deine eigenen Einträge bleiben beim Löschen der Demo-Daten erhalten.</span>
             <button onclick="deleteDemoData()" class="px-3 py-1.5 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-medium rounded-lg whitespace-nowrap">Demo-Daten löschen</button>
@@ -695,6 +754,20 @@
 
     <!-- TAB: EINSTELLUNGEN -->
     <main id="tab-content-settings" class="tab-content hidden flex-1 pb-12 space-y-6">
+        <!-- PERSÖNLICHE ANGABEN -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-3">
+            <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3">
+                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="user" class="w-5 h-5 text-brand-600"></i> Persönliche Angaben
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Dein Name erscheint auf allen PDF-Berichten und in der Druckansicht.</p>
+            </div>
+            <div>
+                <label for="input-user-name" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Name</label>
+                <input type="text" id="input-user-name" autocomplete="name" maxlength="80" placeholder="z. B. Dr. Vorname Nachname" oninput="setUserName(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+        </div>
+
         <!-- DATENSCHUTZ -->
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
             <div class="border-b border-slate-100 dark:border-slate-700/50 pb-3">
@@ -779,7 +852,7 @@
 
                 <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                     <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">PDF-Bericht</h3>
-                    <p class="text-xs text-slate-500">Auswertung plus Einzeldarstellung aller Fälle als PDF-Datei.</p>
+                    <p class="text-xs text-slate-500">Auswertung plus Einzeldarstellung aller Fälle als PDF-Datei. Für einen bestimmten Zeitraum: Tab „Auswertung“.</p>
                     <div class="flex gap-2 mt-2">
                         <button onclick="exportPdf(false)" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
                             <i data-lucide="file-down" class="w-4 h-4"></i> Vollständig
@@ -816,6 +889,16 @@
                             <input type="file" id="import-file" class="hidden" accept=".json,application/json" onchange="importFromJSON(event)">
                         </label>
                     </div>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                    <h3 class="text-xs font-semibold text-slate-700 dark:text-slate-300">Speicherort</h3>
+                    <label id="share-export-wrap" class="hidden checkbox-card items-start">
+                        <input type="checkbox" id="share-export-toggle" onchange="storeSet('exportShare', this.checked ? '1' : '0')" class="mt-0.5">
+                        <span><span class="font-medium">Speicherort bei jedem Export wählen</span><br>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Öffnet das Teilen-Menü: „In Dateien sichern“ wählen und z. B. iCloud Drive, Google Drive oder einen Ordner auf dem iPhone auswählen.</span></span>
+                    </label>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Standard-Ordner für alle Downloads am iPhone: Einstellungen → Apps → Safari → Downloads (z. B. iCloud Drive oder „Auf meinem iPhone“).</p>
                 </div>
 
                 <div class="p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 space-y-2">
@@ -891,6 +974,7 @@
 <div id="print-report">
     <div class="print-sheet">
         <h1>Anästhesie Logbuch - Fallübersicht</h1>
+        <p id="print-owner" style="font-size: 13px; font-weight: bold; margin: 0 0 2px;"></p>
         <p style="font-size: 10px; color: #555;">Erstellt am: <span id="print-date"></span></p>
 
         <h2>Zusammenfassung / Auswertung</h2>
@@ -1027,6 +1111,14 @@
         const age = caseAge(c);
         if (c.dob) return `geb. ${c.dob}` + (age !== null ? ` (${age} J.)` : '');
         return age !== null ? `Alter bei OP: ${age} J.` : '';
+    }
+
+    function userName() {
+        return (storeGet('userName') || '').trim();
+    }
+
+    function setUserName(v) {
+        storeSet('userName', String(v || '').trim());
     }
 
     function privacyAgeOnly() {
@@ -2506,6 +2598,12 @@
     document.addEventListener('DOMContentLoaded', () => {
         setDateField(todayStr());
         $('privacy-age-only-toggle').checked = privacyAgeOnly();
+        $('input-user-name').value = userName();
+        syncEvalRangeUI();
+        if (canShareFiles()) {
+            $('share-export-wrap').classList.remove('hidden');
+            $('share-export-toggle').checked = storeGet('exportShare') === '1';
+        }
         AUTO_CHECK_IDS.forEach((id) => $(id).addEventListener('change', () => {
             autoOwned.delete(id);
             if (id === 'proc-spa-pdk') autoOwned.delete('spaType');
@@ -3482,19 +3580,116 @@
     // Auswertung
     // ---------------------------------------------------------------
     function computeProgress() {
+        return computeProgressFor(cases, true);
+    }
+
+    function computeProgressFor(caseList, withVorwerte) {
         const res = {};
         baekCategories.forEach((c) => { res[c.id] = { logbook: 0, vorwerte: 0 }; });
-
-        cases.forEach((c) => {
+        caseList.forEach((c) => {
             caseCategoryIds(c).forEach((id) => { res[id].logbook++; });
         });
-
-        vorwerte.forEach((v) => {
-            Object.entries(v.counts || {}).forEach(([id, n]) => {
-                if (res[id]) res[id].vorwerte += (parseInt(n, 10) || 0);
+        if (withVorwerte) {
+            vorwerte.forEach((v) => {
+                Object.entries(v.counts || {}).forEach(([id, n]) => {
+                    if (res[id]) res[id].vorwerte += (parseInt(n, 10) || 0);
+                });
             });
-        });
+        }
         return res;
+    }
+
+    // ---------------------------------------------------------------
+    // Auswertungs-Zeitraum
+    // ---------------------------------------------------------------
+    // Wirkt auf den Tab "Auswertung" und die dort erstellten PDFs. Der
+    // Gesamtfortschritt oben und die Ist/Soll-Zahlen im Formular zeigen
+    // immer den Gesamtstand. Vorwerte haben kein Datum und sind bei einem
+    // gewählten Zeitraum daher standardmäßig nicht enthalten (umschaltbar).
+    let evalRange = { preset: 'all', from: '', to: '', includeVorwerte: false };
+
+    function isoOf(d) {
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    // Datum um m Monate verschieben (+1 Tag): "letzte 12 Monate" bis heute
+    // beginnt so am Tag nach demselben Datum im Vorjahr. Monatsende wird
+    // abgefangen (z. B. 31.08. minus 6 Monate -> 28./29.02.).
+    function shiftMonthsPlusDay(iso, m) {
+        const d = parseIso(iso);
+        const first = new Date(d.getFullYear(), d.getMonth() + m, 1);
+        const dim = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+        return isoOf(new Date(first.getFullYear(), first.getMonth(), Math.min(d.getDate(), dim) + 1));
+    }
+
+    function rangeLabel(from, to) {
+        if (from && to) return `${formatDate(from)} – ${formatDate(to)}`;
+        if (from) return `ab ${formatDate(from)} bis heute`;
+        if (to) return `bis ${formatDate(to)}`;
+        return 'Gesamter Zeitraum';
+    }
+
+    function fullScope() {
+        return { cases, withVorwerte: true, from: '', to: '', ranged: false, label: 'Gesamter Zeitraum' };
+    }
+
+    function evalScope() {
+        const r = evalRange;
+        if (r.preset === 'all' || (!r.from && !r.to)) return fullScope();
+        const list = cases.filter((c) => {
+            const d = c.date || '';
+            return (!r.from || d >= r.from) && (!r.to || d <= r.to);
+        });
+        return { cases: list, withVorwerte: !!r.includeVorwerte, from: r.from, to: r.to, ranged: true, label: rangeLabel(r.from, r.to) };
+    }
+
+    function setEvalPreset(preset) {
+        const t = todayStr();
+        const Y = Number(t.slice(0, 4));
+        const prev = evalRange;
+        const r = { preset, from: '', to: '', includeVorwerte: prev.preset === 'all' ? false : prev.includeVorwerte };
+        if (preset === 'thisYear') { r.from = `${Y}-01-01`; r.to = t; }
+        else if (preset === 'lastYear') { r.from = `${Y - 1}-01-01`; r.to = `${Y - 1}-12-31`; }
+        else if (preset === 'last12') { r.from = shiftMonthsPlusDay(t, -12); r.to = t; }
+        else if (preset === 'last6') { r.from = shiftMonthsPlusDay(t, -6); r.to = t; }
+        else if (preset === 'since') { r.from = prev.from || shiftMonthsPlusDay(t, -1); r.to = ''; }
+        else if (preset === 'custom') { r.from = prev.from || `${Y}-01-01`; r.to = prev.to || t; }
+        evalRange = r;
+        syncEvalRangeUI();
+        renderEvaluation();
+    }
+
+    // Datum im Zeitraum-Feld geändert -> wird zum eigenen Zeitraum
+    // ("ab Datum bis heute" bleibt erhalten).
+    function handleEvalDate(which, value) {
+        const r = { ...evalRange };
+        r[which] = value || '';
+        if (r.preset !== 'since') r.preset = 'custom';
+        if (r.from && r.to && r.from > r.to) { const x = r.from; r.from = r.to; r.to = x; }
+        evalRange = r;
+        syncEvalRangeUI();
+        renderEvaluation();
+    }
+
+    function setEvalIncludeVorwerte(on) {
+        evalRange = { ...evalRange, includeVorwerte: !!on };
+        renderEvaluation();
+    }
+
+    function syncEvalRangeUI() {
+        const r = evalRange;
+        const ranged = r.preset !== 'all';
+        if (!$('eval-range-preset')) return;
+        $('eval-range-preset').value = r.preset;
+        $('eval-range-dates').classList.toggle('hidden', !ranged);
+        $('eval-to-wrap').classList.toggle('hidden', r.preset === 'since');
+        $('eval-to-today').classList.toggle('hidden', r.preset !== 'since');
+        ['from', 'to'].forEach((k) => {
+            $(`eval-${k}`).value = r[k] || '';
+            $(`eval-${k}-display`).value = r[k] ? formatDate(r[k]) : '';
+        });
+        $('eval-vw-wrap').classList.toggle('hidden', !ranged || vorwerte.length === 0);
+        $('eval-include-vw').checked = !!r.includeVorwerte;
     }
 
     // ---------------------------------------------------------------
@@ -3577,7 +3772,8 @@
 
     function renderEvaluation() {
         const grid = $('baek-grid');
-        const prog = computeProgress();
+        const scope = evalScope();
+        const prog = computeProgressFor(scope.cases, scope.withVorwerte);
 
         grid.innerHTML = baekCategories.map((cat) => {
             const p = prog[cat.id];
@@ -3613,15 +3809,21 @@
                     </div>`}
                 </div>`;
         }).join('');
-        renderProcedureBreakdown();
-        renderAirwayStats();
+        renderProcedureBreakdown(scope.cases);
+        renderAirwayStats(scope.cases);
+        const sum = $('eval-range-summary');
+        if (sum) {
+            const n = scope.cases.length;
+            const vw = scope.withVorwerte ? (vorwerte.length ? 'inkl. Vorwerte' : 'keine Vorwerte vorhanden') : 'ohne Vorwerte';
+            sum.textContent = `${scope.label} · ${n} ${n === 1 ? 'Fall' : 'Fälle'} im Logbuch · ${vw}`;
+        }
         refreshIcons();
     }
 
-    function renderAirwayStats() {
+    function renderAirwayStats(list = cases) {
         const el = $('airway-stats');
         if (!el) return;
-        const ga = cases.filter((c) => c.isVollnarkose);
+        const ga = list.filter((c) => c.isVollnarkose);
         if (ga.length === 0) {
             el.innerHTML = '<p class="text-xs text-slate-400 italic">Noch keine Allgemeinanästhesien erfasst.</p>';
             return;
@@ -3647,20 +3849,20 @@
     // ---------------------------------------------------------------
     // Unterteilung nach Eingriff (Auswertung + PDF-Bericht)
     // ---------------------------------------------------------------
-    function procedureBreakdown() {
+    function procedureBreakdown(list = cases) {
         const counts = {};
-        cases.forEach((c) => {
+        list.forEach((c) => {
             const list = caseProcedureList(c);
             (list.length ? list : ['Ohne Angabe']).forEach((key) => { counts[key] = (counts[key] || 0) + 1; });
         });
         return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
     }
 
-    function renderProcedureBreakdown() {
+    function renderProcedureBreakdown(list = cases) {
         const container = $('procedure-breakdown-list');
         const empty = $('procedure-breakdown-empty');
         if (!container || !empty) return;
-        const rows = procedureBreakdown();
+        const rows = procedureBreakdown(list);
         empty.classList.toggle('hidden', rows.length > 0);
         const max = rows.length ? rows[0][1] : 1;
         container.innerHTML = rows.map(([name, count]) => `
@@ -3786,6 +3988,15 @@
     // Speichert eine Datei: bevorzugt über die Download-Funktion der
     // Claude-Umgebung, sonst (lokal geöffnete Datei) per normalem Download,
     // sonst als kopierbarer Text.
+    // Teilen-Menü mit Dateien (v. a. iPhone/iPad Safari): ermöglicht "In
+    // Dateien sichern" in jeden Ordner (iCloud Drive, Google Drive, lokal).
+    function canShareFiles() {
+        try {
+            return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File(['x'], 'x.txt', { type: 'text/plain' })] }));
+        } catch (e) { return false; }
+    }
+
+    // Gibt true zurück, wenn gespeichert/geteilt wurde, false bei Abbruch/Fehler.
     async function saveFile(filename, content, mime) {
         const host = window.claude && typeof window.claude.use === 'function' ? window.claude : null;
         if (host) {
@@ -3795,16 +4006,16 @@
                 try {
                     await dl.save({ filename, data: content });
                     showToast('Datei gespeichert');
-                    return;
+                    return true;
                 } catch (err) {
-                    if (err && err.code === 'declined') return;
-                    if (err && err.code === 'rate_limited') { showToast('Bitte einen Moment warten und erneut versuchen.', 'warn'); return; }
+                    if (err && err.code === 'declined') return false;
+                    if (err && err.code === 'rate_limited') { showToast('Bitte einen Moment warten und erneut versuchen.', 'warn'); return false; }
                     // sonst weiter zum Text-Fallback
                 }
             }
             if (content instanceof Blob) {
                 showToast('Datei-Download ist in dieser Ansicht nicht verfügbar.', 'error');
-                return;
+                return false;
             }
             await openDialog({
                 title: filename,
@@ -3821,7 +4032,21 @@
                     } }
                 ]
             });
-            return;
+            return false;
+        }
+        if (storeGet('exportShare') === '1' && canShareFiles()) {
+            try {
+                const blob = content instanceof Blob ? content : new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+                const file = new File([blob], filename, { type: blob.type || mime || 'application/octet-stream' });
+                if (navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: filename });
+                    showToast('Datei gespeichert/geteilt');
+                    return true;
+                }
+            } catch (e) {
+                if (e && e.name === 'AbortError') { showToast('Abgebrochen – nichts gespeichert.', 'warn'); return false; }
+                // sonst: normaler Download als Rückfall
+            }
         }
         try {
             const blob = content instanceof Blob ? content : new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
@@ -3831,8 +4056,10 @@
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(url), 1000);
             showToast('Export gestartet');
+            return true;
         } catch (e) {
             showToast('Export nicht möglich.', 'error');
+            return false;
         }
     }
 
@@ -3842,12 +4069,12 @@
         return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     }
 
-    function sortedCasesAsc() {
-        return [...cases].sort((a, b) => (a.date || '').localeCompare(b.date || '') || String(a.id).localeCompare(String(b.id)));
+    function sortedCasesAsc(list = cases) {
+        return [...list].sort((a, b) => (a.date || '').localeCompare(b.date || '') || String(a.id).localeCompare(String(b.id)));
     }
 
-    function summaryRows() {
-        const prog = computeProgress();
+    function summaryRows(scope) {
+        const prog = scope ? computeProgressFor(scope.cases, scope.withVorwerte) : computeProgress();
         return baekCategories.map((cat) => {
             const p = prog[cat.id];
             const cur = p.logbook + p.vorwerte;
@@ -4006,13 +4233,15 @@
             .replace(/[^\x00-\xFF]/g, '?');
     }
 
-    function exportPdf(anonymize) {
+    // Bisherige Auswertungs-PDF (jsPDF) - nur noch Rückfall, falls pdf-lib
+    // nicht geladen werden konnte.
+    function exportPdfLegacy(anonymize, scope = fullScope()) {
         const JsPDF = window.jspdf && window.jspdf.jsPDF;
         let doc = null;
         try { doc = JsPDF ? new JsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) : null; } catch (e) { doc = null; }
         if (!doc || typeof doc.autoTable !== 'function') {
             showToast('PDF-Bibliothek konnte nicht geladen werden – Druckansicht wird geöffnet.', 'warn');
-            generatePrintReport();
+            generatePrintReport(scope);
             return;
         }
 
@@ -4033,8 +4262,20 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(90);
-            doc.text(S(`Erstellt am ${new Date().toLocaleDateString('de-DE')}  |  ${cases.length} erfasste Fälle`), M, 22);
-            let y = 27;
+            let y = 22;
+            const owner = userName();
+            if (owner) {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(40);
+                doc.text(S(owner), M, y);
+                y += 5.5;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(90);
+            }
+            doc.text(S(`Erstellt am ${new Date().toLocaleDateString('de-DE')}  |  ${scope.cases.length} erfasste Fälle${scope.ranged ? '  |  Zeitraum ' + scope.label : ''}`), M, y);
+            y += 5;
             if (hasDemo) {
                 doc.setTextColor(180, 83, 9);
                 doc.text(S('Achtung: Enthält Demo-Daten (in der Fallliste mit "Demo" gekennzeichnet).'), M, y);
@@ -4045,7 +4286,7 @@
             doc.autoTable({
                 startY: y + 2,
                 head: [['Kategorie', 'Ziel (BÄK)', 'Aktuell gesamt', 'Logbuch', 'Vorwerte', 'Fortschritt'].map(S)],
-                body: summaryRows().map((s) => [S(s.cat.label), s.cat.target, s.cur, s.logbook, s.vorwerte, `${s.pct} %`]),
+                body: summaryRows(scope).map((s) => [S(s.cat.label), s.cat.target, s.cur, s.logbook, s.vorwerte, `${s.pct} %`]),
                 theme: 'grid',
                 styles: { font: 'helvetica', fontSize: 9, cellPadding: 2 },
                 headStyles: { fillColor: brand, textColor: 255 },
@@ -4066,7 +4307,7 @@
             doc.setTextColor(navy[0], navy[1], navy[2]);
             doc.text('Einzeldarstellung der Fälle', M, y);
 
-            const sorted = sortedCasesAsc();
+            const sorted = sortedCasesAsc(scope.cases);
             const head = anonymize
                 ? ['Datum', 'Ort', 'Eingriff', 'Erfüllte Kriterien']
                 : ['Datum', 'Initialen', 'Geb./Alter', 'Ort', 'Eingriff', 'Erfüllte Kriterien'];
@@ -4103,7 +4344,7 @@
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
                 doc.setTextColor(120);
-                doc.text(S('Anästhesie Logbuch'), M, pageH - 6);
+                doc.text(S('Anästhesie Logbuch' + (owner ? ' - ' + owner : '')), M, pageH - 6);
                 doc.text(`Seite ${i} von ${n}`, pageW - M, pageH - 6, { align: 'right' });
             }
 
@@ -4111,6 +4352,408 @@
         } catch (e) {
             showToast('PDF konnte nicht erstellt werden.', 'error');
         }
+    }
+
+    // ---------------------------------------------------------------
+    // PDF-Auswertung (pdf-lib): professioneller Leistungsnachweis im
+    // A4-Hochformat. Fällt auf die bisherige jsPDF-Variante zurück, falls
+    // pdf-lib nicht geladen werden konnte.
+    // ---------------------------------------------------------------
+    const PDF_CP1252 = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+    // Standard-PDF-Schriften kennen nur WinAnsi (Latin-1 + einige Zeichen):
+    // alles andere wird ersetzt, damit die Erzeugung nie abbricht.
+    function pdfClean(s) {
+        return String(s == null ? '' : s)
+            .replace(/[\r\n\t]+/g, ' ')
+            .replace(/≤\s*/g, 'bis ').replace(/≥\s*/g, 'ab ')
+            .replace(/[   ]/g, ' ')
+            .replace(/[\s\S]/gu, (ch) => {
+                const c = ch.codePointAt(0);
+                return (c >= 32 && c <= 126) || (c >= 160 && c <= 255) || PDF_CP1252.includes(ch) ? ch : '?';
+            });
+    }
+
+    function overallProgressPct(prog = computeProgress()) {
+        const withTarget = baekCategories.filter((c) => typeof c.target === 'number');
+        if (!withTarget.length) return 0;
+        const sum = withTarget.reduce((acc, c) => {
+            const p = prog[c.id];
+            const cur = p ? p.logbook + p.vorwerte : 0;
+            return acc + Math.min(100, (cur / c.target) * 100);
+        }, 0);
+        return Math.round(sum / withTarget.length);
+    }
+
+    // useRange: true = Zeitraum aus dem Tab "Auswertung", sonst alle Fälle.
+    async function exportPdf(anonymize, useRange) {
+        const scope = useRange ? evalScope() : fullScope();
+        const L = window.PDFLib;
+        if (!L || !L.PDFDocument) { exportPdfLegacy(anonymize, scope); return; }
+        try {
+            const bytes = await buildReportPdf(L, !!anonymize, scope);
+            const rangePart = scope.ranged ? `_${scope.from || 'anfang'}_bis_${scope.to || todayStr()}` : '';
+            await saveFile(`anaesthesie-logbuch${anonymize ? '-anonym' : ''}${rangePart}_${todayStr()}.pdf`,
+                new Blob([bytes], { type: 'application/pdf' }), 'application/pdf');
+        } catch (e) {
+            console.error(e);
+            showToast('PDF konnte nicht erstellt werden.', 'error');
+        }
+    }
+
+    async function buildReportPdf(L, anonymize, scope = fullScope()) {
+        const { PDFDocument, StandardFonts, rgb } = L;
+        const doc = await PDFDocument.create();
+        const F = await doc.embedFont(StandardFonts.Helvetica);
+        const FB = await doc.embedFont(StandardFonts.HelveticaBold);
+        const owner = userName();
+        const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        doc.setTitle(pdfClean('Leistungsnachweis Anästhesiologie' + (owner ? ' – ' + owner : '') + (scope.ranged ? ' – ' + scope.label : '')));
+        if (owner) doc.setAuthor(pdfClean(owner));
+        doc.setCreator('Anästhesie Logbuch');
+        doc.setCreationDate(new Date());
+
+        // --- Maße & Farben ------------------------------------------------
+        const W = 595.28, H = 841.89, M = 40, CW = W - 2 * M;
+        const BOTTOM = 56; // unterer Rand inkl. Fußzeile
+        const C = (r, g, b) => rgb(r / 255, g / 255, b / 255);
+        const col = {
+            navy: C(12, 42, 74), brand: C(3, 105, 161), ink: C(15, 23, 42), text: C(51, 65, 85),
+            muted: C(100, 116, 139), faint: C(148, 163, 184), rule: C(203, 213, 225), line: C(226, 232, 240),
+            soft: C(241, 245, 249), zebra: C(248, 250, 252), white: C(255, 255, 255),
+            red: C(220, 38, 38), amber: C(217, 119, 6), green: C(22, 163, 74),
+            amberSoft: C(254, 243, 199), amberInk: C(146, 64, 14), sky: C(147, 197, 253), mist: C(203, 213, 225)
+        };
+        const levelColor = (pct) => (pct >= 100 ? col.green : pct >= 50 ? col.amber : col.red);
+        const nf = (n) => Number(n || 0).toLocaleString('de-DE');
+
+        // --- Zeichen-Helfer (y = Abstand von oben) ------------------------
+        let page = null;
+        let y = 0;
+        const tw = (s, size, font = F) => font.widthOfTextAtSize(pdfClean(s), size);
+        const text = (s, x, yTop, size, o = {}) => {
+            const font = o.font || F;
+            const str = pdfClean(s);
+            const w = font.widthOfTextAtSize(str, size);
+            const xx = o.align === 'right' ? x - w : o.align === 'center' ? x - w / 2 : x;
+            page.drawText(str, { x: xx, y: H - yTop - size * 0.8, size, font, color: o.color || col.text });
+            return w;
+        };
+        const rect = (x, yTop, w, h, fill, stroke) => page.drawRectangle({
+            x, y: H - yTop - h, width: w, height: h,
+            ...(fill ? { color: fill } : {}), ...(stroke ? { borderColor: stroke, borderWidth: 0.6 } : {})
+        });
+        const hline = (x1, x2, yTop, color = col.line, th = 0.6) =>
+            page.drawLine({ start: { x: x1, y: H - yTop }, end: { x: x2, y: H - yTop }, thickness: th, color });
+        const truncate = (s, size, maxW, font = F) => {
+            let str = pdfClean(s);
+            if (font.widthOfTextAtSize(str, size) <= maxW) return str;
+            while (str.length > 1 && font.widthOfTextAtSize(str + '…', size) > maxW) str = str.slice(0, -1);
+            return str.trimEnd() + '…';
+        };
+        const wrap = (s, size, maxW, font = F) => {
+            const words = pdfClean(s).split(' ').filter(Boolean);
+            const fits = (t) => font.widthOfTextAtSize(t, size) <= maxW;
+            const lines = [];
+            let cur = '';
+            words.forEach((w) => {
+                const t = cur ? cur + ' ' + w : w;
+                if (fits(t)) { cur = t; return; }
+                if (cur) lines.push(cur);
+                if (fits(w)) { cur = w; return; }
+                let part = '';
+                for (const ch of w) { if (fits(part + ch)) part += ch; else { lines.push(part); part = ch; } }
+                cur = part;
+            });
+            if (cur) lines.push(cur);
+            return lines.length ? lines : [''];
+        };
+
+        const newPage = () => {
+            page = doc.addPage([W, H]);
+            text('Leistungsnachweis Logbuch', M, 24, 8, { font: FB, color: col.navy });
+            text([owner, scope.ranged ? scope.label : '', anonymize ? 'anonymisiert' : ''].filter(Boolean).join(' · '), W - M, 24, 8, { color: col.muted, align: 'right' });
+            hline(M, W - M, 38, col.line, 0.6);
+            y = 54;
+        };
+        const ensure = (h) => { if (y + h > H - BOTTOM) newPage(); };
+        // need = Platz, der direkt unter der Überschrift noch frei sein muss,
+        // damit sie nie allein am Seitenende steht.
+        const sectionTitle = (title, sub, need = 40) => {
+            ensure(28 + need);
+            text(title, M, y, 12, { font: FB, color: col.navy });
+            if (sub) text(sub, W - M, y + 2.5, 7.5, { color: col.muted, align: 'right' });
+            rect(M, y + 17, 26, 2, col.brand);
+            y += 28;
+        };
+
+        // Tabelle mit Zeilenumbruch, Zebra-Streifen und auf jeder Seite
+        // wiederholtem Tabellenkopf. Spalten: { title, w, align, font, render }.
+        const drawTable = (columns, rows, o = {}) => {
+            const size = o.size || 7.5, lh = size * 1.3, padX = 4, padY = 4, headSize = 6.5;
+            const headH = headSize + 2 * padY + 2;
+            const drawHead = () => {
+                rect(M, y, CW, headH, col.soft);
+                let x = M;
+                columns.forEach((c) => {
+                    const tx = c.align === 'right' ? x + c.w - padX : c.align === 'center' ? x + c.w / 2 : x + padX;
+                    text(c.title.toUpperCase(), tx, y + padY + 1, headSize, { font: FB, color: col.muted, align: c.align });
+                    x += c.w;
+                });
+                y += headH;
+                hline(M, M + CW, y, col.rule, 0.8);
+            };
+            ensure(headH + 24);
+            drawHead();
+            rows.forEach((row, i) => {
+                const fontFor = (ci) => (row.fonts && row.fonts[ci]) || columns[ci].font || F;
+                const cellLines = columns.map((c, ci) => (c.render ? null
+                    : wrap(row.cells[ci], size, c.w - 2 * padX - (ci === 0 && row.indent ? row.indent : 0), fontFor(ci))));
+                const nLines = Math.max(1, ...cellLines.filter(Boolean).map((l) => l.length));
+                const rh = Math.max(o.minRow || 0, nLines * lh + 2 * padY - 1.5);
+                if (y + rh > H - BOTTOM) { newPage(); drawHead(); }
+                if (o.zebra && i % 2 === 1) rect(M, y, CW, rh, col.zebra);
+                let x = M;
+                columns.forEach((c, ci) => {
+                    if (c.render) {
+                        c.render(row, x, y, c.w, rh);
+                    } else {
+                        const color = (row.colors && row.colors[ci]) || row.color || c.color || col.text;
+                        cellLines[ci].forEach((ln, li) => {
+                            const tx = c.align === 'right' ? x + c.w - padX
+                                : c.align === 'center' ? x + c.w / 2
+                                : x + padX + (ci === 0 && row.indent ? row.indent : 0);
+                            text(ln, tx, y + padY + li * lh, size, { font: fontFor(ci), color, align: c.align });
+                        });
+                    }
+                    x += c.w;
+                });
+                y += rh;
+                hline(M, M + CW, y, col.line, 0.5);
+            });
+        };
+
+        // --- Daten ---------------------------------------------------------
+        const summary = summaryRows(scope);
+        const withTarget = summary.filter((s) => s.hasTarget);
+        const doneCount = withTarget.filter((s) => s.cur >= s.cat.target).length;
+        const totalRow = summary.find((s) => s.cat.id === 'total');
+        const overall = overallProgressPct(computeProgressFor(scope.cases, scope.withVorwerte));
+        const dates = scope.cases.map((c) => c.date).filter(Boolean).sort();
+        const period = dates.length ? `${formatDate(dates[0])} – ${formatDate(dates[dates.length - 1])}` : '–';
+        const vwTotal = vorwerte.reduce((acc, v) => acc + (parseInt(v.counts && v.counts.total, 10) || 0), 0);
+        const vwText = !scope.withVorwerte ? 'nicht enthalten (ohne Datum)'
+            : vorwerte.length ? `${vorwerte.length} ${vorwerte.length === 1 ? 'Block' : 'Blöcke'} · ${nf(vwTotal)} Anästhesien`
+            : 'keine';
+        const nCases = scope.cases.length;
+        const hasDemo = scope.cases.some((c) => c.isDemo) || (scope.withVorwerte && vorwerte.some((v) => v.isDemo));
+
+        // --- Seite 1: Kopfbereich ------------------------------------------
+        page = doc.addPage([W, H]);
+        const BAND = 86;
+        rect(0, 0, W, BAND, col.navy);
+        rect(0, BAND, W, 3, col.brand);
+        text('WEITERBILDUNG ANÄSTHESIOLOGIE', M, 27, 7.5, { font: FB, color: col.sky });
+        text('Leistungsnachweis Logbuch', M, 41, 21, { font: FB, color: col.white });
+        text(`Stand: ${today}`, W - M, 28, 8.5, { color: col.mist, align: 'right' });
+        if (scope.ranged) text(`Zeitraum: ${scope.label}`, W - M, 42, 8.5, { font: FB, color: col.white, align: 'right' });
+        if (anonymize) {
+            const pw = tw('ANONYMISIERT', 6.8, FB) + 14;
+            const py = scope.ranged ? 58 : 45;
+            rect(W - M - pw, py, pw, 14, col.brand);
+            text('ANONYMISIERT', W - M - pw / 2, py + 3.5, 6.8, { font: FB, color: col.white, align: 'center' });
+        }
+        y = BAND + 3 + 22;
+
+        // Eckdaten
+        const info = [
+            ['Ärztin / Arzt in Weiterbildung', owner || '–', true],
+            scope.ranged ? ['Auswertungszeitraum', scope.label, true] : ['Erfassungszeitraum', period, false],
+            ['Logbuch', `${nf(nCases)} ${nCases === 1 ? 'Fall' : 'Fälle'}${scope.ranged ? ' im Zeitraum' : ''}`, false],
+            ['Vorwerte', vwText, false]
+        ];
+        const halfW = CW / 2;
+        info.forEach(([k, v, bold], i) => {
+            const x = M + (i % 2) * halfW;
+            const yy = y + Math.floor(i / 2) * 30;
+            text(k.toUpperCase(), x, yy, 6.5, { font: FB, color: col.muted });
+            text(truncate(v, 10.5, halfW - 14, bold ? FB : F), x, yy + 10, 10.5, { font: bold ? FB : F, color: col.ink });
+        });
+        y += 60;
+
+        if (hasDemo) {
+            rect(M, y, CW, 20, col.amberSoft);
+            text('Hinweis: Enthält Demo-Daten (in der Fallübersicht grau dargestellt). Vor der Weitergabe unter Einstellungen löschen.', M + 8, y + 6.5, 7.5, { color: col.amberInk });
+            y += 30;
+        }
+
+        // Kennzahl-Kacheln
+        const kpis = [
+            { label: scope.ranged ? 'Fortschritt im Zeitraum' : 'Gesamtfortschritt', value: `${overall} %`, color: levelColor(overall), bar: overall, sub: 'Ø aller Richtzahlen' },
+            { label: 'Anästhesieverfahren', value: nf(totalRow ? totalRow.cur : 0),
+                sub: totalRow ? `von ${nf(totalRow.cat.target)} (${totalRow.pct} %)` : '' },
+            { label: 'Richtzahlen erreicht', value: `${doneCount} / ${withTarget.length}`, color: doneCount === withTarget.length ? col.green : col.navy, sub: 'Kategorien vollständig' },
+            { label: 'Fälle im Logbuch', value: nf(nCases), sub: scope.ranged ? 'im gewählten Zeitraum' : dates.length ? `seit ${formatDate(dates[0])}` : 'noch keine' }
+        ];
+        const gap = 10, tileW = (CW - gap * 3) / 4, tileH = 60;
+        kpis.forEach((k, i) => {
+            const x = M + i * (tileW + gap);
+            rect(x, y, tileW, tileH, col.zebra, col.line);
+            rect(x, y, 3, tileH, k.color && k.bar != null ? k.color : col.brand);
+            text(k.label.toUpperCase(), x + 12, y + 10, 6.3, { font: FB, color: col.muted });
+            text(k.value, x + 12, y + 22, 17, { font: FB, color: k.color || col.navy });
+            if (k.bar != null) {
+                const bw = tileW - 24;
+                rect(x + 12, y + 44, bw, 4, col.line);
+                rect(x + 12, y + 44, Math.max(0, bw * Math.min(100, k.bar) / 100), 4, k.color);
+            } else {
+                text(k.sub, x + 12, y + 44, 7, { color: col.muted });
+            }
+        });
+        y += tileH + 26;
+
+        // Richtzahlen
+        // Ohne Vorwerte (Zeitraum-Auswertung) entfällt die Vorwerte-Spalte.
+        const showVw = scope.withVorwerte;
+        sectionTitle('Richtzahlen', showVw ? 'Gesamt = Logbuch + Vorwerte' : 'nur Logbuch-Fälle im Zeitraum');
+        const catW = showVw ? 192 : 236;
+        const progW = CW - (catW + 48 + 44 * 3 + 40) + (showVw ? 0 : 44);
+        drawTable([
+            { title: 'Kategorie', w: catW },
+            { title: 'Richtzahl', w: 48, align: 'right' },
+            { title: 'Logbuch', w: 44, align: 'right' },
+            ...(showVw ? [{ title: 'Vorwerte', w: 44, align: 'right' }] : []),
+            { title: 'Gesamt', w: 44, align: 'right', font: FB },
+            { title: 'Offen', w: 40, align: 'right' },
+            { title: 'Fortschritt', w: progW, render: (row, x, yy, w, h) => {
+                const bw = w - 48;
+                const by = yy + h / 2 - 2.5;
+                rect(x + 6, by, bw, 5, col.line);
+                rect(x + 6, by, Math.max(0, bw * Math.min(100, row.pct) / 100), 5, levelColor(row.pct));
+                text(row.pct >= 100 ? 'erfüllt' : `${row.pct} %`, x + w - 4, yy + h / 2 - 3.2, 7.5,
+                    { font: FB, color: levelColor(row.pct), align: 'right' });
+            } }
+        ], summary.map((s) => {
+            const davon = /^davon:/i.test(s.cat.label);
+            const open = s.hasTarget ? Math.max(0, s.cat.target - s.cur) : 0;
+            const cells = [s.cat.label, s.hasTarget ? nf(s.cat.target) : '–', nf(s.logbook), nf(s.vorwerte), nf(s.cur), open > 0 ? nf(open) : '–'];
+            const colors = [davon ? col.muted : col.ink, col.muted, col.text, col.text, col.ink, open > 0 ? col.text : col.faint];
+            if (!showVw) { cells.splice(3, 1); colors.splice(3, 1); }
+            return {
+                cells,
+                indent: davon ? 10 : 0,
+                colors,
+                pct: s.hasTarget ? Math.round((s.cur / s.cat.target) * 100) : 0
+            };
+        }), { size: 7.8, minRow: 17 });
+        y += 7;
+        wrap((scope.ranged ? `Zeitraum-Auswertung ${scope.label}: gezählt werden nur Logbuch-Fälle aus diesem Zeitraum; Vorwerte (ohne Datum) sind ${scope.withVorwerte ? 'zusätzlich enthalten' : 'nicht enthalten'}. ` : '') + 'Richtzahlen in Anlehnung an das Logbuch Anästhesiologie der Ärztekammer Niedersachsen; „davon“-Positionen sind Teilmengen der jeweils vorstehenden Kategorie. Maßgeblich ist die jeweils gültige Weiterbildungsordnung. Diese Übersicht ist eine persönliche Aufzeichnung und ersetzt nicht das offizielle Logbuch.', 6.8, CW)
+            .forEach((ln) => { text(ln, M, y, 6.8, { color: col.muted }); y += 9; });
+        y += 16;
+
+        // Kurzstatistik: Atemweg + häufigste Eingriffe
+        const ga = scope.cases.filter((c) => c.isVollnarkose);
+        const awCounts = { 'ITN': 0, 'Video-ITN': 0, 'LAMA': 0, '': 0 };
+        ga.forEach((c) => { awCounts[caseAirway(c)] = (awCounts[caseAirway(c)] || 0) + 1; });
+        const awItems = ga.length ? ['ITN', 'Video-ITN', 'LAMA', ''].filter((k) => k || awCounts[''] > 0).map((k) => ({
+            label: k || 'ohne Angabe', n: awCounts[k],
+            right: `${nf(awCounts[k])}  (${Math.round((awCounts[k] / ga.length) * 100)} %)`,
+            color: k === 'ITN' ? col.brand : k === 'Video-ITN' ? C(124, 58, 237) : k === 'LAMA' ? C(16, 185, 129) : col.faint
+        })) : [];
+        const topItems = procedureBreakdown(scope.cases).slice(0, 8).map(([name, n]) => ({ label: name, n, color: col.brand }));
+        const panelH = 18 + Math.max(awItems.length, topItems.length, 1) * 13;
+        sectionTitle('Kurzstatistik', 'nur Logbuch-Fälle, ohne Vorwerte', panelH);
+        const barList = (x, w, title, items, emptyText) => {
+            let yy = y;
+            text(title, x, yy, 8.5, { font: FB, color: col.ink });
+            yy += 16;
+            if (!items.length) { text(emptyText, x, yy, 7.5, { color: col.muted }); return; }
+            const max = Math.max(1, ...items.map((it) => it.n));
+            const labelW = w * 0.5, rightW = 52, bw = w - labelW - rightW - 6;
+            items.forEach((it) => {
+                text(truncate(it.label, 7.5, labelW - 6), x, yy, 7.5, { color: col.text });
+                rect(x + labelW, yy + 1.2, bw, 5, col.soft);
+                rect(x + labelW, yy + 1.2, Math.max(1.5, bw * it.n / max), 5, it.color);
+                text(it.right || nf(it.n), x + w, yy, 7.5, { font: FB, color: col.ink, align: 'right' });
+                yy += 13;
+            });
+        };
+        const pW = (CW - 24) / 2;
+        barList(M, pW, `Atemwegssicherung bei Allgemeinanästhesie (n = ${nf(ga.length)})`, awItems, 'Keine Allgemeinanästhesien erfasst.');
+        barList(M + pW + 24, pW, 'Häufigste Eingriffe', topItems, 'Keine Fälle erfasst.');
+        y += panelH + 18;
+
+        // Kenntnisnahme (Unterschriftsfeld): auf Seite 1, wenn dort noch
+        // Platz ist - sonst am Ende des Dokuments (nie allein auf einer
+        // sonst leeren Seite).
+        const SIGN_H = 70;
+        const drawSignature = () => {
+            text('Kenntnisnahme durch die/den Weiterbildungsbefugte(n)', M, y, 8.5, { font: FB, color: col.ink });
+            y += 44;
+            const sw = (CW - 30) / 2;
+            hline(M, M + sw, y, col.faint, 0.8);
+            hline(M + sw + 30, M + CW, y, col.faint, 0.8);
+            text('Ort, Datum', M, y + 5, 7, { color: col.muted });
+            text('Unterschrift / Stempel', M + sw + 30, y + 5, 7, { color: col.muted });
+            y += 20;
+        };
+        let signed = false;
+        if (y + SIGN_H <= H - BOTTOM) { drawSignature(); signed = true; }
+
+        // --- Anlage: Einzeldarstellung -------------------------------------
+        // Passt die Zusammenfassung auf Seite 1, beginnt die Anlage auf einer
+        // eigenen Seite; ist sie schon übergelaufen, geht es direkt weiter
+        // (keine halbleeren Seiten).
+        if (doc.getPageCount() === 1) newPage(); else y += 22;
+        const sorted = sortedCasesAsc(scope.cases);
+        sectionTitle('Anlage: Einzeldarstellung der Fälle', `${nf(sorted.length)} ${sorted.length === 1 ? 'Fall' : 'Fälle'} · chronologisch`);
+        if (!sorted.length) {
+            text('Keine Fälle erfasst.', M, y, 8.5, { color: col.muted });
+        } else {
+            const verfahren = (c) => {
+                const v = [];
+                if (c.isVollnarkose) v.push(caseAirway(c) || 'Allgemeinanästhesie');
+                if (c.isSpaPdk) v.push(c.spaPdkType || 'RM-RA');
+                if (c.isPeripher) v.push(c.peripherType || 'Periphere RA');
+                if (c.isSedierung) v.push('Analgosedierung');
+                return v.join(', ') || '–';
+            };
+            const kriterien = (c) => caseCategoryIds(c).filter((id) => id !== 'total').map((id) => catById[id].short).join(', ') || '–';
+            const colsFull = [
+                { title: 'Nr.', w: 24, align: 'right' }, { title: 'Datum', w: 50 }, { title: 'Initialen', w: 40 },
+                { title: 'Alter', w: 30, align: 'right' }, { title: 'Ort', w: 32 }, { title: 'Eingriff', w: 146 },
+                { title: 'Verfahren', w: 92 }, { title: 'Richtzahl-Kriterien', w: 0 }
+            ];
+            const colsAnon = [
+                { title: 'Nr.', w: 24, align: 'right' }, { title: 'Datum', w: 50 }, { title: 'Ort', w: 32 },
+                { title: 'Eingriff', w: 180 }, { title: 'Verfahren', w: 112 }, { title: 'Richtzahl-Kriterien', w: 0 }
+            ];
+            const cols = anonymize ? colsAnon : colsFull;
+            cols[cols.length - 1].w = CW - cols.slice(0, -1).reduce((a, c) => a + c.w, 0);
+            drawTable(cols, sorted.map((c, i) => {
+                const age = caseAge(c);
+                const cells = anonymize
+                    ? [String(i + 1), formatDate(c.date), c.opSaal || '–', caseProcedureLabel(c) || '–', verfahren(c), kriterien(c)]
+                    : [String(i + 1), formatDate(c.date), c.initials || '–', age !== null ? String(age) : '–', c.opSaal || '–', caseProcedureLabel(c) || '–', verfahren(c), kriterien(c)];
+                return c.isDemo ? { cells, color: col.faint } : { cells, colors: [col.muted] };
+            }), { size: 7.3, zebra: true });
+        }
+
+        if (!signed) {
+            y += 24;
+            ensure(SIGN_H);
+            drawSignature();
+        }
+
+        // --- Fußzeile auf allen Seiten --------------------------------------
+        const pages = doc.getPages();
+        pages.forEach((pg, i) => {
+            page = pg;
+            hline(M, W - M, H - 38, col.line, 0.6);
+            text(['Anästhesie Logbuch', owner, scope.ranged ? `Zeitraum ${scope.label}` : '', `Stand ${today}`, anonymize ? 'anonymisiert' : ''].filter(Boolean).join(' · '), M, H - 32, 7, { color: col.muted });
+            text(`Seite ${i + 1} von ${pages.length}`, W - M, H - 32, 7, { color: col.muted, align: 'right' });
+        });
+
+        return doc.save();
     }
 
     function exportBtmPdf() {
@@ -4140,11 +4783,23 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(90);
-            doc.text(S(`Erstellt am ${new Date().toLocaleDateString('de-DE')}`), M, 22);
+            let headY = 22;
+            const owner = userName();
+            if (owner) {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(40);
+                doc.text(S(owner), M, headY);
+                headY += 5.5;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(90);
+            }
+            doc.text(S(`Erstellt am ${new Date().toLocaleDateString('de-DE')}`), M, headY);
 
             const totals = computeBtmTotals().filter((t) => t.count > 0);
             doc.autoTable({
-                startY: 27,
+                startY: headY + 5,
                 head: [['Substanz', 'Anzahl (Amp.)'].map(S)],
                 body: totals.length ? totals.map((t) => [S(t.label.split(' (')[0]), fmtAmount(t.count)]) : [[{ content: 'Keine Einträge.', colSpan: 2, styles: { halign: 'center' } }]],
                 theme: 'grid',
@@ -4190,7 +4845,7 @@
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
                 doc.setTextColor(120);
-                doc.text(S('BTM-Erfassung'), M, pageH - 6);
+                doc.text(S('BTM-Erfassung' + (owner ? ' - ' + owner : '')), M, pageH - 6);
                 doc.text(`Seite ${i} von ${n}`, pageW - M, pageH - 6, { align: 'right' });
             }
 
@@ -4208,8 +4863,9 @@
 
     async function exportToJSON() {
         if (cases.length === 0 && vorwerte.length === 0) { showToast('Es gibt noch keine Daten zum Sichern.', 'warn'); return; }
-        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), cases, vorwerte };
-        await saveFile(`anaesthesie-logbuch-backup_${todayStr()}.json`, JSON.stringify(payload, null, 2), 'application/json');
+        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), profile: { name: userName() }, cases, vorwerte };
+        const saved = await saveFile(`anaesthesie-logbuch-backup_${todayStr()}.json`, JSON.stringify(payload, null, 2), 'application/json');
+        if (saved === false) return;
         storeSet('lastBackupAt', new Date().toISOString());
         storeSet('backupSnoozeUntil', '');
         checkBackupReminder();
@@ -4307,6 +4963,11 @@
             }
             saveCases();
             storeSet('vorwerte', JSON.stringify(vorwerte));
+            const importedName = parsed.profile && typeof parsed.profile.name === 'string' ? parsed.profile.name.trim() : '';
+            if (importedName && (r.value === 'replace' || !userName())) {
+                setUserName(importedName);
+                $('input-user-name').value = importedName;
+            }
             refreshAll();
             showToast('Import abgeschlossen');
         };
@@ -4331,21 +4992,22 @@
     // ---------------------------------------------------------------
     // Druckansicht (Ersatz, falls die PDF-Bibliothek nicht geladen wurde)
     // ---------------------------------------------------------------
-    function generatePrintReport() {
-        $('print-date').textContent = new Date().toLocaleDateString('de-DE');
+    function generatePrintReport(scope = fullScope()) {
+        $('print-date').textContent = new Date().toLocaleDateString('de-DE') + (scope.ranged ? ' · Zeitraum: ' + scope.label : '');
+        $('print-owner').textContent = userName();
 
-        $('print-summary-table').querySelector('tbody').innerHTML = summaryRows().map((s) =>
+        $('print-summary-table').querySelector('tbody').innerHTML = summaryRows(scope).map((s) =>
             `<tr><td>${esc(s.cat.label)}</td><td>${s.hasTarget ? s.cat.target : 'keine Richtzahl'}</td><td>${s.cur} (Logbuch ${s.logbook} + Vorwerte ${s.vorwerte})</td><td>${s.hasTarget ? s.pct + ' %' : '–'}</td></tr>`
         ).join('');
 
         $('print-procedure-table').querySelector('tbody').innerHTML = (() => {
-            const rows = procedureBreakdown();
+            const rows = procedureBreakdown(scope.cases);
             return rows.length
                 ? rows.map(([name, count]) => `<tr><td>${esc(name)}</td><td>${count}</td></tr>`).join('')
                 : '<tr><td colspan="2">Keine Fälle erfasst.</td></tr>';
         })();
 
-        const sorted = sortedCasesAsc();
+        const sorted = sortedCasesAsc(scope.cases);
         $('print-cases-table').querySelector('tbody').innerHTML = sorted.length
             ? sorted.map((c) => `<tr>
                     <td>${esc(formatDate(c.date))}</td>
