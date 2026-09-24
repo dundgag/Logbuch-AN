@@ -114,7 +114,12 @@
         }
         /* Sperrt den Hintergrund-Scroll, während ein Modal offen ist (iOS
            Safari scrollt sonst gerne den Hintergrund mit). */
+        /* Body hat bewusst keine feste Höhe mehr (sonst wird er zum inneren
+           Scroll-Container und iOS lässt die Seite beim Schließen der
+           Tastatur zurückspringen). Damit scrollt das Fenster selbst - für
+           die Hintergrund-Sperre bei offenem Dialog daher auch <html> sperren. */
         body.modal-open { overflow: hidden; }
+        html:has(body.modal-open) { overflow: hidden; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -214,6 +219,37 @@
            und dass beim Ziehen versehentlich Text markiert wird. */
         /* Im Erfassungsformular ausgeblendete Felder (Einstellungen > Erfassungsformular) */
         .field-off { display: none !important; }
+
+        /* Ist/Soll-Zahlen in den Kästchen: rechtsbündig, vertikal zentriert */
+        .checkbox-card .cb-text { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+        .checkbox-card .cb-text > .eval-badge { flex-shrink: 0; margin-left: auto; }
+        /* Farbcodierung nach Fortschritt (wie Gesamtfortschritt oben):
+           rot < 50 % · gelb < 100 % · grün erreicht */
+        .eval-badge[data-level] { font-weight: 600; white-space: nowrap; }
+        .checkbox-card .eval-badge[data-level] { padding: 1px 7px; border-radius: 9999px; font-size: 11px; line-height: 16px; }
+        .eval-badge[data-level="red"]   { color: #dc2626; }
+        .eval-badge[data-level="amber"] { color: #b45309; }
+        .eval-badge[data-level="blue"]  { color: #0369a1; }
+        .eval-badge[data-level="green"] { color: #15803d; }
+        .checkbox-card .eval-badge[data-level="red"]   { background: #fee2e2; }
+        .checkbox-card .eval-badge[data-level="amber"] { background: #fef3c7; }
+        .checkbox-card .eval-badge[data-level="blue"]  { background: #e0f2fe; }
+        .checkbox-card .eval-badge[data-level="green"] { background: #dcfce7; }
+        .dark .eval-badge[data-level="red"]   { color: #f87171; }
+        .dark .eval-badge[data-level="amber"] { color: #fbbf24; }
+        .dark .eval-badge[data-level="blue"]  { color: #38bdf8; }
+        .dark .eval-badge[data-level="green"] { color: #4ade80; }
+        .dark .checkbox-card .eval-badge[data-level="red"]   { background: rgba(220, 38, 38, 0.18); }
+        .dark .checkbox-card .eval-badge[data-level="amber"] { background: rgba(217, 119, 6, 0.18); }
+        .dark .checkbox-card .eval-badge[data-level="blue"]  { background: rgba(2, 132, 199, 0.20); }
+        .dark .checkbox-card .eval-badge[data-level="green"] { background: rgba(22, 163, 74, 0.20); }
+        /* Im (evtl. aktiven, blauen) Video-ITN-Button: Schriftfarbe erben */
+        .pill-option .eval-badge[data-level] { color: inherit !important; background: none !important; padding: 0; font-weight: 500; }
+        /* Aktions-Symbole in den kompakten Fallkarten: feste Größe + Abstand,
+           damit sich die (per ::after auf 44px vergrößerten) Tippflächen von
+           Bearbeiten und Löschen nicht überlappen - Mitte zu Mitte 44px. */
+        .card-actions { display: flex; align-items: center; gap: 8px; }
+        .card-action { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
         .drag-handle { touch-action: none; -webkit-user-select: none; user-select: none; }
 
         /* Unsichtbares natives Datumsfeld über dem sichtbaren Datum-Textfeld:
@@ -254,7 +290,7 @@
     </style>
 </head>
 
-<body class="h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 transition-colors duration-200">
+<body class="min-h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 transition-colors duration-200">
 
 <div id="app" class="min-h-screen flex flex-col max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
 
@@ -393,14 +429,33 @@
                     </div>
                     <input type="hidden" id="input-opsaal" value="">
                 </div>
-                <div class="relative" data-field="procedure">
+                <div data-field="procedure">
                     <label for="input-procedure" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Eingriff * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="sectio" data-cat-prefix="Sectio: "></span></label>
-                    <input type="text" id="input-procedure" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …"
-                        oninput="handleProcedureInput(this.value); renderProcedureDropdown(this.value)"
-                        onfocus="renderProcedureDropdown(this.value)"
-                        onkeydown="if (event.key === 'Escape') hideProcedureDropdown()"
-                        class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                    <div id="procedure-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-30 max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-lg"></div>
+                    <div class="relative">
+                        <input type="text" id="input-procedure" required autocomplete="off" placeholder="Eingriff eintippen oder auswählen …"
+                            oninput="handleProcedureInput(this.value); renderProcedureDropdown(this.value, 1)"
+                            onfocus="renderProcedureDropdown(this.value, 1)"
+                            onkeydown="if (event.key === 'Escape') hideProcedureDropdown(1)"
+                            class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                        <div id="procedure-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-30 max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-lg"></div>
+                    </div>
+                    <!-- Optionaler zweiter Eingriff (kombinierte OP) -->
+                    <div id="procedure2-wrap" class="hidden mt-2 flex items-center gap-1">
+                        <div class="relative flex-1 min-w-0">
+                            <input type="text" id="input-procedure2" autocomplete="off" placeholder="Zweiter Eingriff …"
+                                oninput="handleProcedureInput(this.value); renderProcedureDropdown(this.value, 2)"
+                                onfocus="renderProcedureDropdown(this.value, 2)"
+                                onkeydown="if (event.key === 'Escape') hideProcedureDropdown(2)"
+                                class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                            <div id="procedure-dropdown2" class="hidden absolute left-0 right-0 top-full mt-1 z-30 max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-lg"></div>
+                        </div>
+                        <button type="button" onclick="removeSecondProcedure()" class="shrink-0 p-2 text-slate-400 hover:text-red-600 rounded-lg" title="Zweiten Eingriff entfernen" aria-label="Zweiten Eingriff entfernen">
+                            <i data-lucide="x" class="w-4 h-4 pointer-events-none"></i>
+                        </button>
+                    </div>
+                    <button type="button" id="add-procedure2-btn" onclick="showSecondProcedure()" class="mt-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3.5 h-3.5 pointer-events-none"></i> Zweiter Eingriff
+                    </button>
                 </div>
             </div>
 
@@ -409,12 +464,12 @@
                     <i data-lucide="list-checks" class="w-4 h-4 text-brand-600"></i> Eingriffsart & Besonderheiten
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <label class="checkbox-card" data-field="abd"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span>Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
-                    <label class="checkbox-card" data-field="amb"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span>Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
-                    <label class="checkbox-card" data-field="sectio"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span>Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
-                    <label class="checkbox-card" data-field="kra"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span>Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
-                    <label class="checkbox-card" data-field="thx"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span>Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
-                    <label class="checkbox-card" data-field="kh"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span>Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
+                    <label class="checkbox-card" data-field="abd"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span class="cb-text">Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
+                    <label class="checkbox-card" data-field="amb"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span class="cb-text">Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
+                    <label class="checkbox-card" data-field="sectio"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span class="cb-text">Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
+                    <label class="checkbox-card" data-field="kra"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
+                    <label class="checkbox-card" data-field="thx"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
+                    <label class="checkbox-card" data-field="kh"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span class="cb-text">Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
                 </div>
             </div>
 
@@ -425,7 +480,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- Allgemeinanästhesie mit Atemweg-Auswahl direkt in der Kachel -->
                     <div class="checkbox-card font-medium" data-field="ga" style="flex-direction: column; align-items: stretch; cursor: default;">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="proc-vollnarkose" onchange="toggleAirway(this.checked); updateLiveEvalBadges()"><span>Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="proc-vollnarkose" onchange="toggleAirway(this.checked); updateLiveEvalBadges()"><span class="cb-text">Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
                         <div id="airway-container" class="hidden" data-field="airway">
                             <div id="airway-pills" class="grid grid-cols-3 gap-1">
                                 <button type="button" data-pill data-value="ITN" onclick="selectAirway('ITN')" class="pill-option px-1 py-1 rounded-md border text-xs font-medium leading-tight transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">ITN</button>
@@ -435,8 +490,8 @@
                             <input type="hidden" id="input-airway" value="">
                         </div>
                     </div>
-                    <label class="checkbox-card font-medium" data-field="spa"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span>Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
-                    <label class="checkbox-card font-medium" data-field="peripher"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span>Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
+                    <label class="checkbox-card font-medium" data-field="spa"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span class="cb-text">Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
+                    <label class="checkbox-card font-medium" data-field="peripher"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span class="cb-text">Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
                 </div>
 
                 <div id="spa-pdk-container" data-field="spa" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -487,11 +542,11 @@
                     <i data-lucide="shield-alert" class="w-4 h-4 text-brand-600"></i> Atemwegs- & Gefäßinterventionen
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="checkbox-card" data-field="fiberoptik"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span>Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
+                    <label class="checkbox-card" data-field="fiberoptik"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span class="cb-text">Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
                     <!-- Videolaryngoskopie wird jetzt über "Atemweg: Video-ITN" gesetzt;
                          die Checkbox bleibt versteckt als interner Speicher (isVideo). -->
                     <input type="checkbox" id="check-videolaryngo" class="hidden" tabindex="-1" aria-hidden="true">
-                    <label class="checkbox-card" data-field="sono"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span>Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
+                    <label class="checkbox-card" data-field="sono"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span class="cb-text">Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
                 </div>
             </div>
 
@@ -553,7 +608,7 @@
                 <button type="button" onclick="toggleReorderMode()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg whitespace-nowrap self-start sm:self-auto">Fertig</button>
             </div>
 
-            <div id="case-list-container" class="space-y-5"></div>
+            <div id="case-list-container" class="space-y-4"></div>
 
             <div id="empty-cases-placeholder" class="hidden py-12 text-center text-slate-400 space-y-2">
                 <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
@@ -993,7 +1048,7 @@
         { key: 'dob', label: 'Geburtsdatum', group: 'Patient & Eingriff', props: [] },
         { key: 'asa', label: 'ASA', group: 'Patient & Eingriff', props: ['asa'] },
         { key: 'ort', label: 'Ort', group: 'Patient & Eingriff', props: ['opSaal'] },
-        { key: 'procedure', label: 'Eingriff', group: 'Patient & Eingriff', props: ['procedure'] },
+        { key: 'procedure', label: 'Eingriff', group: 'Patient & Eingriff', props: ['procedure', 'procedure2'] },
         { key: 'abd', label: 'Abdomineller Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isAbdominell'] },
         { key: 'amb', label: 'Ambulante Anästhesie', group: 'Eingriffsart & Besonderheiten', props: ['isAmbulant'] },
         { key: 'sectio', label: 'Geburtshilfe Eingriff', group: 'Eingriffsart & Besonderheiten', props: ['isSectio'] },
@@ -1099,8 +1154,8 @@
             updateLiveEvalBadges();
         } else {
             selectPillOption(groupEl, hiddenInputId, value);
-            if (hiddenInputId === 'input-opsaal' && value === 'KRS') setObstetricDefaults('PDK Geb');
         }
+        if (hiddenInputId === 'input-opsaal') syncAutoFlags();
     }
 
     async function confirmResetCaseForm() {
@@ -1262,11 +1317,27 @@
     // Zustand & Konstanten
     // ---------------------------------------------------------------
     let cases = loadList('cases');
+    // Umbenannte Eingriffe: gespeicherte Fälle auf den neuen Namen umstellen,
+    // damit Auswertung "nach Eingriff" nicht in alt/neu aufgeteilt wird.
+    (function migrateProcedureNames() {
+        const RENAMED = { 'Explorativlaparotomie': 'Explorative Laparotomie' };
+        let changed = false;
+        cases.forEach((c) => {
+            if (c && RENAMED[c.procedure]) { c.procedure = RENAMED[c.procedure]; changed = true; }
+            if (c && RENAMED[c.procedure2]) { c.procedure2 = RENAMED[c.procedure2]; changed = true; }
+        });
+        if (changed) storeSet('cases', JSON.stringify(cases));
+    })();
     let vorwerte = loadList('vorwerte');
     let editingCaseId = null;
     let editingVorwertId = null;
     let reorderMode = false;
     let btmReorderMode = false;
+    // Automatische Häkchen (Eingriff, Sectio, KRS): welche Felder die App
+    // selbst gesetzt hat (autoOwned) und was beim letzten Abgleich gewünscht
+    // war (autoPrev) - siehe syncAutoFlags().
+    const autoOwned = new Set();
+    let autoPrev = { checks: new Set(), spa: [] };
     let dragCtx = null; // aktiver Drag-Vorgang in der Fall-Liste (Reihenfolge je Tag), s. initReorderDrag()
 
     // Rohdaten je Fachrichtung. Werden nur noch intern verwendet, um die
@@ -1277,14 +1348,37 @@
         "Allg. & Viszeralchirurgie": [
             "Appendektomie", "Cholezystektomie", "Hernien-OP (inguinal/umbilikal)",
             "TAPP/TEP (laparoskopische Leistenhernien-OP)", "Narbenhernien-OP",
-            "Explorativlaparotomie", "Sigmaresektion", "Hemikolektomie", "Rektumresektion",
+            "Explorative Laparotomie", "Explorative Laparoskopie", "Sigmaresektion", "Hemikolektomie", "Rektumresektion",
             "Ileostoma-/Kolostoma-Anlage", "Schilddrüsenresektion", "Nebenschilddrüsen-OP",
             "Splenektomie", "Lebersegmentresektion", "Whipple-OP (Pankreaskopfresektion)",
             "Fundoplicatio", "Bariatrische Chirurgie (Bypass/Sleeve)", "Proktologischer Eingriff",
             "Magenresektion / Gastrektomie", "Ileus-OP", "Adhäsiolyse",
             "Ulkusperforation-Übernähung", "Rektumprolaps-OP", "PEG-Anlage",
             "Portimplantation (Port-Anlage)", "ZVK-Anlage (isoliert)",
-            "Drainagen-Anlage (perkutan)", "Hämorrhoiden-OP"
+            "Drainagen-Anlage (perkutan)", "Hämorrhoiden-OP",
+            "Laparoskopische Sigmaresektion",
+            "Laparoskopische Hemikolektomie",
+            "Laparoskopische Rektumresektion",
+            "Diagnostische Laparoskopie (Viszeral)",
+            "Laparoskopische Adhäsiolyse",
+            "Laparoskopische Narbenhernien-OP (IPOM)",
+            "Hiatushernien-OP laparoskopisch",
+            "Adrenalektomie laparoskopisch",
+            "Cholezystektomie offen",
+            "Appendektomie offen",
+            "Kolektomie (subtotal/total)",
+            "Pankreaslinksresektion",
+            "Hemihepatektomie",
+            "Stomarückverlagerung",
+            "Second-Look-Laparotomie / Lavage",
+            "Laparostoma / VAC-Wechsel abdominal",
+            "Leistenhernie Kind (Herniotomie)",
+            "Pylorotomie (Säugling)",
+            "Pilonidalsinus-OP",
+            "Analfistel-/Analabszess-OP",
+            "Abszessspaltung (Weichteil)",
+            "Lipom-/Atherom-Exzision",
+            "Lymphknotenexstirpation"
         ],
         "Unfallchirurgie / Orthopädie": [
             "TEP Hüfte", "TEP Knie", "TEP Schulter", "Osteosynthese obere Extremität",
@@ -1297,63 +1391,181 @@
             "TEP-Wechsel Knie (Revision)", "Klavikula-Osteosynthese", "Beckenfraktur-Versorgung",
             "Fixateur externe-Anlage", "Débridement bei offener Fraktur",
             "Humerusfraktur-Osteosynthese", "Tibiakopffraktur-Versorgung",
-            "Wirbelkörperfraktur (Kyphoplastie/Vertebroplastie)"
+            "Wirbelkörperfraktur (Kyphoplastie/Vertebroplastie)",
+            "Proximale Femurfraktur (PFNA/Gammanagel)",
+            "Schenkelhalsfraktur (DHS/Schrauben)",
+            "Duokopfprothese (Hemiarthroplastik Hüfte)",
+            "Marknagelung Femur/Tibia",
+            "Knie-TEP unikondylär (Schlitten)",
+            "Hüftarthroskopie",
+            "Sprunggelenk-Arthroskopie",
+            "Ellenbogen-Arthroskopie",
+            "Hallux-valgus-OP",
+            "Achillessehnennaht",
+            "Patellafraktur-Osteosynthese",
+            "Olekranon-/Ellenbogen-Osteosynthese",
+            "Azetabulumfraktur-Versorgung",
+            "Kompartment-Spaltung (Fasziotomie)",
+            "Wundrevision / Débridement",
+            "Reposition in Narkose (Luxation/Fraktur)",
+            "Skoliose-OP",
+            "Suprakondyläre Humerusfraktur (Kind)",
+            "Unterarmfraktur Kind (K-Draht/ESIN)"
         ],
         "Gynäkologie": [
             "Hysterektomie (abdominal/vaginal)", "Laparoskopie (Gyn)", "Abrasio",
             "Mamma-PE / Ablatio", "Ovarial-OP", "Konisation", "Deszensus-OP",
             "Myomenukleation", "Vulva-OP", "Bartholin-Zysten-OP", "Hysteroskopie",
             "Diagnostische Laparoskopie (Gyn)", "Sterilisation (Tubenligatur)", "Portio-PE",
-            "Uterusexstirpation laparoskopisch (LASH/TLH)"
+            "Uterusexstirpation laparoskopisch (LASH/TLH)",
+            "Adnexektomie laparoskopisch", "Ovarialzystenausschälung laparoskopisch",
+            "Salpingektomie laparoskopisch", "Extrauteringravidität (EUG), laparoskopisch",
+            "Adnextorsion (Detorquierung, laparoskopisch)", "Endometriose-Sanierung laparoskopisch",
+            "Chromopertubation (LSK/HSK)", "Sakrokolpopexie laparoskopisch",
+            "Radikale Hysterektomie (Wertheim-Meigs)", "Debulking-OP (Ovarialkarzinom)",
+            "Pelvine/paraaortale Lymphonodektomie", "Vulvektomie",
+            "Hysteroskopie mit fraktionierter Abrasio", "Hysteroskopische Resektion (Polyp/Myom/Septum)",
+            "Endometriumablation", "Saugkürettage (Abort/Abruptio)",
+            "Mastektomie (Ablatio mammae)", "Brusterhaltende Therapie (BET) mit Sentinel-LK",
+            "Axilladissektion", "Sentinel-Lymphknotenbiopsie (Mamma)",
+            "Mammarekonstruktion (Expander/Implantat)", "Mammaabszess-Spaltung",
+            "Inkontinenz-OP (TVT/TOT-Band)", "Kondylome-Abtragung (Laser)"
         ],
         "Geburtshilfe": [
             "Sectio Caesarea", "Manuelle Plazentalösung", "Curettage p.p.",
             "Cerclage", "Geburtseinleitung (Analgesie)", "PDK Kreissaal",
-            "Dammriss-Versorgung / Episiotomie-Naht", "Vaginal-operative Entbindung (Zange/Vakuum)"
+            "Dammriss-Versorgung / Episiotomie-Naht", "Vaginal-operative Entbindung (Zange/Vakuum)",
+            "Äußere Wendung (Analgesie)",
+            "Postpartale Blutung (PPH), operative Versorgung",
+            "CSE Kreißsaal",
+            "Remifentanil-PCA Kreißsaal"
         ],
         "HNO / Augen": [
             "Tonsillektomie", "Adenotomie", "Septumplastik", "Parotidektomie",
             "Neck Dissection", "Laryngektomie", "Mastoidektomie", "Nasennebenhöhlen-OP (FESS)",
             "Tracheotomie", "Katarakt-OP", "Vitrektomie", "Schieloperation",
             "Panendoskopie", "Ohrmuschel-OP", "Stapesplastik", "Cochlea-Implantat-OP",
-            "Glaukom-OP", "Netzhaut-OP (Ablatio-Chirurgie)", "Lidkorrektur-OP", "Tympanoplastik"
+            "Glaukom-OP", "Netzhaut-OP (Ablatio-Chirurgie)", "Lidkorrektur-OP", "Tympanoplastik",
+            "Mikrolaryngoskopie (MLS)",
+            "Laserchirurgie Larynx (CO2-Laser)",
+            "Transorale Tumorresektion (Laser/Roboter)",
+            "Tonsillotomie",
+            "Abszesstonsillektomie (Peritonsillarabszess)",
+            "Nachblutung nach Tonsillektomie (Revision)",
+            "Paukendrainage / Parazentese",
+            "Adenotomie mit Paukendrainage",
+            "Uvulopalatopharyngoplastik (UPPP)",
+            "Septorhinoplastik",
+            "Nasenmuschelreduktion (Conchotomie)",
+            "Nasenbeinreposition",
+            "Epistaxis-Versorgung (Ligatur/Koagulation)",
+            "Halszyste/-fistel-Exstirpation",
+            "Submandibulektomie",
+            "Sialendoskopie",
+            "Ösophagoskopie (starr)",
+            "Zenker-Divertikel-OP",
+            "Gehörgangsplastik",
+            "Fremdkörperentfernung HNO (Ohr/Nase)",
+            "Schlafendoskopie (DISE)",
+            "Orbitadekompression",
+            "Tränenwegs-OP (Dakryozystorhinostomie)",
+            "Enukleation / Eviszeration (Auge)",
+            "Bulbusverletzung (perforierend)",
+            "Keratoplastik",
+            "Intravitreale Injektion (IVOM)",
+            "Augenuntersuchung in Narkose (Kind)",
+            "Lidtumor-Exzision"
         ],
         "Neurochirurgie": [
             "Kraniotomie (Tumor)", "Bohrlochtrepanation", "Aneurysma-Clipping",
             "VP-Shunt-Anlage", "Bandscheiben-OP (Neurochirurgie)", "Wirbelsäulen-Stabilisierung",
             "Tiefe Hirnstimulation (DBS)", "Spinale Dekompression (Laminektomie)",
             "Liquordrainage-Anlage (Lumbaldrainage)", "Karpaltunnel-OP",
-            "Schädel-Hirn-Trauma-Versorgung", "Stereotaktische Hirnbiopsie"
+            "Schädel-Hirn-Trauma-Versorgung", "Stereotaktische Hirnbiopsie",
+            "Akutes Subduralhämatom (Kraniotomie)",
+            "Dekompressive Kraniektomie",
+            "Kranioplastik (Knochendeckel-Reimplantation)",
+            "Hypophysen-OP (transsphenoidal)",
+            "Tumor-OP hintere Schädelgrube",
+            "Wach-Kraniotomie (Awake)",
+            "Externe Ventrikeldrainage (EVD)",
+            "Endoskopische Ventrikulozisternostomie",
+            "Epilepsiechirurgie",
+            "Aneurysma-Coiling (interventionell)",
+            "Mechanische Thrombektomie (Schlaganfall)",
+            "Zervikale Diskektomie (ACDF)",
+            "Spinale Tumor-OP",
+            "Rückenmarkstimulator-Implantation (SCS)",
+            "Ulnarisneurolyse (Sulcus ulnaris)",
+            "Baclofenpumpen-Implantation"
         ],
         "Urologie": [
             "TUR-P / TUR-B", "Zirkumzision", "Ureterorenoskopie (URS)", "Nierenbeckenplastik",
             "Nephrektomie", "Radikale Prostatektomie", "Zystektomie", "Hydrozelen-OP",
             "Perkutane Nephrolitholapaxie (PCNL)", "Extrakorporale Stoßwellenlithotripsie (ESWL)",
             "Varikozelen-OP", "Orchidopexie", "Harnröhrenschlitzung (Urethrotomia interna)",
-            "Zystoskopie mit Harnleiterschienung (DJ-Einlage)"
+            "Zystoskopie mit Harnleiterschienung (DJ-Einlage)",
+            "Holmium-Laser-Enukleation der Prostata (HoLEP)",
+            "Nierenteilresektion",
+            "Orchiektomie / Semikastratio",
+            "Hodenfreilegung (Hodentorsion)",
+            "Harnröhrenplastik",
+            "Hypospadie-Korrektur (Kind)",
+            "Suprapubische Zystostomie",
+            "Zystolitholapaxie (Blasenstein)",
+            "Blasentamponade-Ausräumung",
+            "Nephrostomie-Anlage (perkutan)",
+            "Vasektomie",
+            "Retroperitoneale Lymphadenektomie (RLA)"
         ],
         "Gefäßchirurgie": [
             "Karotis-TEA", "Aortenaneurysma offen (AAA)", "EVAR (endovaskulär)",
             "Femoro-poplitealer Bypass", "Femoralis-TEA", "Shunt-Anlage (Dialyse)",
             "Amputation (Gefäß-bedingt)", "Varizen-OP", "Dialyseshunt-Revision",
-            "Periphere Amputation (Zehen/Vorfuß)", "Thrombektomie (akuter Extremitätenverschluss)"
+            "Periphere Amputation (Zehen/Vorfuß)", "Thrombektomie (akuter Extremitätenverschluss)",
+            "Aortenbifurkationsprothese (Y-Prothese)",
+            "TEVAR (thorakal endovaskulär)",
+            "Karotis-Stent (CAS)",
+            "Crossover-Bypass",
+            "PTA/Stent peripher (Hybrid-OP)",
+            "Dialysekatheter-Anlage (Demers/Shaldon)"
         ],
         "Thoraxchirurgie": [
             "VATS", "Lobektomie", "Pneumonektomie", "Mediastinoskopie",
             "Ösophagusresektion", "Thoraxdrainage-Anlage", "Pleurektomie", "Bullektomie",
-            "Thymektomie", "Perikardfensterung", "Pleurodese"
+            "Thymektomie", "Perikardfensterung", "Pleurodese",
+            "Segmentresektion (anatomisch)",
+            "Keilresektion (atypisch)",
+            "Dekortikation (Pleuraempyem)",
+            "Trichterbrust-OP (Nuss)",
+            "Trachearesektion",
+            "Zwerchfell-OP (Relaxatio/Hernie)",
+            "Rippenfraktur-Osteosynthese",
+            "EBUS (endobronchialer Ultraschall)"
         ],
         "Plastische Chirurgie": [
             "Lappenplastik", "Mammareduktion", "Mammaaugmentation", "Hauttransplantation",
             "Verbrennungs-Débridement", "Replantation (Extremität)", "Narbenkorrektur",
             "Dekubitus-Débridement", "Freier Lappentransfer (Mikrochirurgie)",
-            "Liposuktion (Fettabsaugung)", "Abdominoplastik (Bauchdeckenstraffung)"
+            "Liposuktion (Fettabsaugung)", "Abdominoplastik (Bauchdeckenstraffung)",
+            "DIEP-Lappen (Brustrekonstruktion)",
+            "Dupuytren-OP",
+            "Beugesehnennaht Hand",
+            "Gynäkomastie-OP",
+            "Oberarm-/Oberschenkelstraffung",
+            "Escharotomie (Verbrennung)",
+            "Syndaktylie-Trennung (Kind)"
         ],
         "Mund-Kiefer-Gesicht": [
             "Zahnsanierung (ITN)", "Weisheitszahn-OP", "Kieferumstellung (Osteotomie)",
             "Tumorresektion MKG", "Abszessspaltung MKG", "Frakturversorgung Mittelgesicht",
             "Zystektomie MKG (odontogene Zyste)", "Implantatchirurgie (Zahnimplantate)",
-            "LKG-Spalt-OP (Lippen-Kiefer-Gaumenspalte)", "Osteosynthese Unterkieferfraktur"
+            "LKG-Spalt-OP (Lippen-Kiefer-Gaumenspalte)", "Osteosynthese Unterkieferfraktur",
+            "Kiefergelenk-Arthroskopie",
+            "Orbitabodenfraktur-Versorgung",
+            "Jochbeinfraktur-Reposition",
+            "Sinuslift / Kieferaugmentation",
+            "Speichelstein-Entfernung"
         ],
         "Sonstige": [
             "Sonstiger Eingriff", "Schockraum", "Reanimation", "Interventionelle Radiologie",
@@ -1361,7 +1573,18 @@
             "Bronchoskopie, flexible (Sedierung)", "Fremdkörperentfernung Atemwege",
             "Strahlentherapie in Anästhesie (Kinder)", "Schrittmacher-/ICD-Implantation",
             "MRT/CT in Sedierung", "Zahnsanierung ohne ITN (Sedierung)",
-            "Elektrokrampftherapie (EKT) in Anästhesie"
+            "Elektrokrampftherapie (EKT) in Anästhesie",
+            "ERCP (Sedierung)",
+            "TEE (Sedierung)",
+            "Endosonographie (EUS)",
+            "TAVI (Transkatheter-Aortenklappe)",
+            "Vorhofflimmer-Ablation (Katheter)",
+            "Radiofrequenzablation (RFA) Leber/Niere",
+            "Knochenmarkpunktion (Kind, Sedierung)",
+            "Lumbalpunktion (Kind, Sedierung)",
+            "Epiduraler Blutpatch",
+            "Periduralkatheter-Anlage (Schmerztherapie)",
+            "Multiorganentnahme"
         ]
     };
 
@@ -1390,7 +1613,7 @@
         // wieder auf false korrigiert. "Abdominell" im Sinne der
         // aekn-Richtzahl zählt hier nur ein tatsächliches Kapnoperitoneum,
         // nicht jeder anatomisch abdominale Eingriff (z. B. ist eine offene
-        // Sectio oder Explorativlaparotomie NICHT "abdominell" in diesem
+        // Sectio oder explorative Laparotomie NICHT "abdominell" in diesem
         // Sinne).
         "Allg. & Viszeralchirurgie": ['abd'],
         "HNO / Augen": ['kh'],
@@ -1421,7 +1644,8 @@
         // bewusst kein "ga: true".
         "Hernien-OP (inguinal/umbilikal)": { abd: false },
         "Narbenhernien-OP": { abd: false, ga: true },
-        "Explorativlaparotomie": { abd: false, ga: true },
+        "Explorative Laparotomie": { abd: false, ga: true },
+        "Explorative Laparoskopie": { abd: true, ga: true },
         "Sigmaresektion": { abd: false, ga: true },
         "Hemikolektomie": { abd: false, ga: true },
         "Rektumresektion": { abd: false, ga: true },
@@ -1636,6 +1860,35 @@
         "Diagnostische Laparoskopie (Gyn)": { abd: true, ga: true },
         "Sterilisation (Tubenligatur)": { abd: true, ga: true },
         "Uterusexstirpation laparoskopisch (LASH/TLH)": { abd: true, ga: true },
+        // Weitere laparoskopische Gyn-Eingriffe: Kapnoperitoneum (abd: true)
+        // und praktisch immer Allgemeinanästhesie.
+        "Adnexektomie laparoskopisch": { abd: true, ga: true },
+        "Ovarialzystenausschälung laparoskopisch": { abd: true, ga: true },
+        "Salpingektomie laparoskopisch": { abd: true, ga: true },
+        "Extrauteringravidität (EUG), laparoskopisch": { abd: true, ga: true },
+        "Adnextorsion (Detorquierung, laparoskopisch)": { abd: true, ga: true },
+        "Endometriose-Sanierung laparoskopisch": { abd: true, ga: true },
+        "Chromopertubation (LSK/HSK)": { abd: true, ga: true },
+        "Sakrokolpopexie laparoskopisch": { abd: true, ga: true },
+        // Große offene/onkologische Eingriffe und Mamma-Chirurgie: praktisch
+        // immer Allgemeinanästhesie; offen (Laparotomie) -> nicht "abdominell"
+        // im Sinne der Richtzahl. Lymphonodektomie: Zugang uneinheitlich
+        // (offen/laparoskopisch) -> abd bewusst unmarkiert.
+        "Radikale Hysterektomie (Wertheim-Meigs)": { ga: true },
+        "Debulking-OP (Ovarialkarzinom)": { ga: true },
+        "Pelvine/paraaortale Lymphonodektomie": { ga: true },
+        "Vulvektomie": { ga: true },
+        "Mastektomie (Ablatio mammae)": { ga: true },
+        "Brusterhaltende Therapie (BET) mit Sentinel-LK": { ga: true },
+        "Axilladissektion": { ga: true },
+        "Sentinel-Lymphknotenbiopsie (Mamma)": { ga: true },
+        "Mammarekonstruktion (Expander/Implantat)": { ga: true },
+        // Kurze intrauterine Eingriffe mit Abrasio: wie "Abrasio" praktisch
+        // immer kurze Allgemeinanästhesie. Hysteroskopische Resektion,
+        // Endometriumablation, Mammaabszess-Spaltung, TVT/TOT-Band und
+        // Kondylome-Abtragung bleiben unmarkiert (Verfahren variiert).
+        "Hysteroskopie mit fraktionierter Abrasio": { ga: true },
+        "Saugkürettage (Abort/Abruptio)": { ga: true },
 
         // Geburtshilfe: wie alle Eingriffe dieser Gruppe automatisch "sec:
         // true" (siehe Kommentar oben); nicht abdominell; keine Vollnarkose-
@@ -1718,7 +1971,104 @@
         "Bronchoskopie, starre": { ga: true },
         "Fremdkörperentfernung Atemwege": { ga: true },
         "Strahlentherapie in Anästhesie (Kinder)": { ga: true },
-        "Elektrokrampftherapie (EKT) in Anästhesie": { ga: true }
+        "Elektrokrampftherapie (EKT) in Anästhesie": { ga: true },
+        // --- Erweiterung (weitere Eingriffe aller Fachrichtungen) ---
+        // Gleiche Logik wie oben: abd = laparoskopisch mit Kapnoperitoneum
+        // (offene Viszeral-Eingriffe daher explizit abd: false, da die
+        // Fachrichtung sonst "abdominell" vorbelegt); ga nur dort, wo
+        // praktisch immer Allgemeinanästhesie; spinale Neurochirurgie und
+        // endovaskuläre Eingriffe nicht "intrakraniell"; Eingriffe ohne
+        // Eintrag hier bleiben unmarkiert (Verfahren variiert).
+        "Laparoskopische Sigmaresektion": { abd: true, ga: true },
+        "Laparoskopische Hemikolektomie": { abd: true, ga: true },
+        "Laparoskopische Rektumresektion": { abd: true, ga: true },
+        "Diagnostische Laparoskopie (Viszeral)": { abd: true, ga: true },
+        "Laparoskopische Adhäsiolyse": { abd: true, ga: true },
+        "Laparoskopische Narbenhernien-OP (IPOM)": { abd: true, ga: true },
+        "Hiatushernien-OP laparoskopisch": { abd: true, ga: true },
+        "Adrenalektomie laparoskopisch": { abd: true, ga: true },
+        "Cholezystektomie offen": { abd: false, ga: true },
+        "Appendektomie offen": { abd: false, ga: true },
+        "Kolektomie (subtotal/total)": { abd: false, ga: true },
+        "Pankreaslinksresektion": { abd: false, ga: true },
+        "Hemihepatektomie": { abd: false, ga: true },
+        "Stomarückverlagerung": { abd: false, ga: true },
+        "Second-Look-Laparotomie / Lavage": { abd: false, ga: true },
+        "Laparostoma / VAC-Wechsel abdominal": { abd: false, ga: true },
+        "Leistenhernie Kind (Herniotomie)": { abd: false, ga: true },
+        "Pylorotomie (Säugling)": { abd: false, ga: true },
+        "Pilonidalsinus-OP": { abd: false },
+        "Analfistel-/Analabszess-OP": { abd: false },
+        "Abszessspaltung (Weichteil)": { abd: false },
+        "Lipom-/Atherom-Exzision": { abd: false },
+        "Lymphknotenexstirpation": { abd: false },
+        "Hüftarthroskopie": { ga: true },
+        "Azetabulumfraktur-Versorgung": { ga: true },
+        "Skoliose-OP": { ga: true },
+        "Suprakondyläre Humerusfraktur (Kind)": { ga: true },
+        "Unterarmfraktur Kind (K-Draht/ESIN)": { ga: true },
+        "Äußere Wendung (Analgesie)": { abd: false, sec: true },
+        "Postpartale Blutung (PPH), operative Versorgung": { abd: false, sec: true },
+        "CSE Kreißsaal": { abd: false, sec: true },
+        "Remifentanil-PCA Kreißsaal": { abd: false, sec: true },
+        "Mikrolaryngoskopie (MLS)": { ga: true },
+        "Laserchirurgie Larynx (CO2-Laser)": { ga: true },
+        "Transorale Tumorresektion (Laser/Roboter)": { ga: true },
+        "Tonsillotomie": { ga: true },
+        "Abszesstonsillektomie (Peritonsillarabszess)": { ga: true },
+        "Nachblutung nach Tonsillektomie (Revision)": { ga: true },
+        "Paukendrainage / Parazentese": { ga: true },
+        "Adenotomie mit Paukendrainage": { ga: true },
+        "Uvulopalatopharyngoplastik (UPPP)": { ga: true },
+        "Septorhinoplastik": { ga: true },
+        "Halszyste/-fistel-Exstirpation": { ga: true },
+        "Submandibulektomie": { ga: true },
+        "Ösophagoskopie (starr)": { ga: true },
+        "Zenker-Divertikel-OP": { ga: true },
+        "Orbitadekompression": { ga: true },
+        "Tränenwegs-OP (Dakryozystorhinostomie)": { ga: true },
+        "Enukleation / Eviszeration (Auge)": { ga: true },
+        "Bulbusverletzung (perforierend)": { ga: true },
+        "Augenuntersuchung in Narkose (Kind)": { ga: true },
+        "Akutes Subduralhämatom (Kraniotomie)": { kra: true, ga: true },
+        "Dekompressive Kraniektomie": { kra: true, ga: true },
+        "Kranioplastik (Knochendeckel-Reimplantation)": { kra: true, ga: true },
+        "Hypophysen-OP (transsphenoidal)": { kra: true, ga: true },
+        "Tumor-OP hintere Schädelgrube": { kra: true, ga: true },
+        "Wach-Kraniotomie (Awake)": { kra: true },
+        "Externe Ventrikeldrainage (EVD)": { kra: true },
+        "Endoskopische Ventrikulozisternostomie": { kra: true, ga: true },
+        "Epilepsiechirurgie": { kra: true, ga: true },
+        "Aneurysma-Coiling (interventionell)": { kra: false, ga: true },
+        "Mechanische Thrombektomie (Schlaganfall)": { kra: false },
+        "Zervikale Diskektomie (ACDF)": { kra: false, ga: true },
+        "Spinale Tumor-OP": { kra: false, ga: true },
+        "Rückenmarkstimulator-Implantation (SCS)": { kra: false },
+        "Ulnarisneurolyse (Sulcus ulnaris)": { kra: false },
+        "Baclofenpumpen-Implantation": { kra: false },
+        "Nierenteilresektion": { ga: true },
+        "Hodenfreilegung (Hodentorsion)": { ga: true },
+        "Harnröhrenplastik": { ga: true },
+        "Hypospadie-Korrektur (Kind)": { ga: true },
+        "Retroperitoneale Lymphadenektomie (RLA)": { ga: true },
+        "Aortenbifurkationsprothese (Y-Prothese)": { abd: false, ga: true },
+        "TEVAR (thorakal endovaskulär)": { ga: true },
+        "Karotis-Stent (CAS)": { kh: true },
+        "Segmentresektion (anatomisch)": { ga: true },
+        "Keilresektion (atypisch)": { ga: true },
+        "Dekortikation (Pleuraempyem)": { ga: true },
+        "Trichterbrust-OP (Nuss)": { ga: true },
+        "Trachearesektion": { ga: true },
+        "Zwerchfell-OP (Relaxatio/Hernie)": { ga: true },
+        "Rippenfraktur-Osteosynthese": { thx: false, ga: true },
+        "EBUS (endobronchialer Ultraschall)": { thx: false },
+        "DIEP-Lappen (Brustrekonstruktion)": { ga: true },
+        "Oberarm-/Oberschenkelstraffung": { ga: true },
+        "Syndaktylie-Trennung (Kind)": { ga: true },
+        "Kiefergelenk-Arthroskopie": { ga: true },
+        "Orbitabodenfraktur-Versorgung": { ga: true },
+        "Jochbeinfraktur-Reposition": { ga: true },
+        "Multiorganentnahme": { ga: true }
     };
 
     // Flache, fachrichtungsübergreifende Eingriffsliste (dedupliziert, alphabetisch)
@@ -1788,6 +2138,9 @@
     }
 
     function selectAirway(value) {
+        // Atemweg selbst gewählt -> Allgemeinanästhesie gilt als bestätigt
+        // und wird nicht mehr automatisch entfernt.
+        if (typeof autoOwned !== 'undefined') autoOwned.delete('proc-vollnarkose');
         // Erneutes Tippen auf die aktive Option hebt die Auswahl wieder auf.
         if ($('input-airway').value === value) value = '';
         $('check-videolaryngo').checked = value === 'Video-ITN';
@@ -1849,13 +2202,21 @@
     // "Sectio Caesarea" erfasst (siehe caseCategoryIds()).
     const GEBURTSHILFE_PROCEDURES = PROCEDURE_GROUPS['Geburtshilfe'] || [];
 
+    // Eingriffe eines Falls (1-2) als Liste bzw. als Anzeige-Text "A + B".
+    function caseProcedureList(c) {
+        return [c.procedure, c.procedure2].map((x) => (x || '').trim()).filter(Boolean);
+    }
+    function caseProcedureLabel(c) {
+        return caseProcedureList(c).join(' + ');
+    }
+
     function caseAsaAtLeast3(c) {
         const n = parseInt(c.asa, 10);
         return !isNaN(n) && n >= 3;
     }
 
     function isGeburtshilfeCase(c) {
-        return !!c.isSectio || GEBURTSHILFE_PROCEDURES.includes(c.procedure);
+        return !!c.isSectio || caseProcedureList(c).some((pn) => GEBURTSHILFE_PROCEDURES.includes(pn));
     }
 
     // Welche Auswertungs-Kategorien ein Fall erfüllt.
@@ -1885,7 +2246,7 @@
         // über die (mittlerweile breiter gefasste) Checkbox "Geburtshilfe
         // Eingriff" (c.isSectio) ermittelt, sondern direkt über den
         // Eingriffsnamen - nur ein tatsächlicher Kaiserschnitt zählt hier.
-        if (c.procedure === 'Sectio Caesarea') ids.push('sectio');
+        if (caseProcedureList(c).includes('Sectio Caesarea')) ids.push('sectio');
         if (c.isSpaPdk) ids.push('regional_zentral');
         if (c.isPeripher) ids.push('regional_peripher');
         if (c.isAmbulant) ids.push('ambulant');
@@ -2118,7 +2479,7 @@
                         <div class="flex items-center flex-wrap gap-2 mb-1">
                             <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
                             ${c.isDemo ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Demo</span>' : ''}
-                            <span class="text-xs text-slate-400">${esc(c.procedure || '')}</span>
+                            <span class="text-xs text-slate-400">${esc(caseProcedureLabel(c))}</span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">${esc(caseBirthLabel(c))}</p>
                         <div class="flex gap-1.5 flex-wrap">
@@ -2141,9 +2502,56 @@
         refreshIcons();
     }
 
+    // iPhone/iOS Safari: Beim Tippen in ein Feld schiebt Safari die Seite so,
+    // dass das Feld über der Tastatur steht. Beim Schließen der Tastatur
+    // (Häkchen/"Fertig") springt die Seite wieder zurück. Hier wird die
+    // Position beim Schließen gemerkt und kurz gehalten. Greift nicht, wenn
+    // direkt ins nächste Feld gewechselt wird (Tastatur bleibt offen) oder
+    // man selbst wischt.
+    (function keepScrollOnKeyboardClose() {
+        // iOS verschiebt beim Öffnen der Tastatur oft nicht die Seite
+        // (window.scrollY), sondern nur den sichtbaren Ausschnitt
+        // (visualViewport.offsetTop). Beim Schließen wird dieser Ausschnitt
+        // zurückgesetzt - ohne normales Scroll-Ereignis. Daher wird hier die
+        // tatsächlich sichtbare Oberkante (pageTop = scrollY + offsetTop)
+        // gemerkt und während der Schließ-Animation Bild für Bild gehalten.
+        const vv = window.visualViewport;
+        const TEXT_TYPES = ['text', 'search', 'email', 'number', 'tel', 'url', 'password'];
+        const isTextField = (el) => !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && TEXT_TYPES.includes(el.type) && !el.readOnly));
+        const visibleTop = () => (vv ? window.scrollY + vv.offsetTop : window.scrollY);
+        let target = null;
+        let until = 0;
+        let raf = 0;
+        const stop = () => { target = null; if (raf) cancelAnimationFrame(raf); raf = 0; };
+        const hold = () => {
+            raf = 0;
+            if (target === null) return;
+            if (Date.now() > until) { stop(); return; }
+            const offset = vv ? vv.offsetTop : 0;
+            if (Math.abs(visibleTop() - target) > 2) window.scrollTo(0, Math.max(0, target - offset));
+            raf = requestAnimationFrame(hold);
+        };
+        document.addEventListener('focusout', (e) => {
+            if (!isTextField(e.target) || isTextField(e.relatedTarget)) return;
+            target = visibleTop();
+            until = Date.now() + 1200;
+            if (!raf) raf = requestAnimationFrame(hold);
+        });
+        document.addEventListener('focusin', (e) => { if (isTextField(e.target)) stop(); });
+        document.addEventListener('touchstart', stop, { passive: true });
+        document.addEventListener('pointerdown', stop, { passive: true });
+        document.addEventListener('wheel', stop, { passive: true });
+    })();
+
     document.addEventListener('DOMContentLoaded', () => {
         setDateField(todayStr());
         $('privacy-age-only-toggle').checked = privacyAgeOnly();
+        AUTO_CHECK_IDS.forEach((id) => $(id).addEventListener('change', () => {
+            autoOwned.delete(id);
+            if (id === 'proc-spa-pdk') autoOwned.delete('spaType');
+        }));
+        // Wer das RA-Verfahren selbst wählt, bestätigt damit auch "Rückenmarksnahe RA".
+        $('select-spa-pdk').addEventListener('change', () => { autoOwned.delete('spaType'); autoOwned.delete('proc-spa-pdk'); });
         applyFormConfig();
         renderFormFieldSettings();
         $('theme-toggle').addEventListener('click', () => {
@@ -2251,12 +2659,12 @@
         }
         label.textContent = `${pct} %`;
         bar.style.width = `${pct}%`;
-        // Farbcodierung: rot (früher Fortschritt) -> gelb -> grün (nah am/am Ziel).
+        // Farbcodierung (wie Ist/Soll-Zahlen im Formular):
+        // rot < 50 % · gelb < 100 % · grün erreicht.
         const color = pct >= 100 ? 'bg-green-500'
-            : pct >= 66 ? 'bg-brand-500'
-            : pct >= 33 ? 'bg-amber-500'
+            : pct >= 50 ? 'bg-amber-500'
             : 'bg-red-500';
-        bar.className = 'h-1.5 rounded-full transition-all ' + color;
+        bar.className = 'h-2 rounded-full transition-all ' + color;
         if (track) track.setAttribute('aria-valuenow', String(pct));
     }
 
@@ -2430,8 +2838,14 @@
     // eingeblendet; ein Tippen auf einen Treffer übernimmt den Eingriff
     // und stößt dieselbe Flag-Erkennung an wie bisher. Freitext für einen
     // neuen/eigenen Eingriff bleibt weiterhin uneingeschränkt möglich.
-    function renderProcedureDropdown(rawVal) {
-        const dd = $('procedure-dropdown');
+    // slot 1 = erster Eingriff, slot 2 = optionaler zweiter Eingriff
+    function procedureSlotIds(slot) {
+        return slot === 2 ? ['input-procedure2', 'procedure-dropdown2'] : ['input-procedure', 'procedure-dropdown'];
+    }
+
+    function renderProcedureDropdown(rawVal, slot) {
+        slot = slot === 2 ? 2 : 1;
+        const dd = $(procedureSlotIds(slot)[1]);
         if (!dd) return;
         const val = (rawVal || '').trim();
         const query = val.toLowerCase();
@@ -2446,7 +2860,7 @@
                 <button type="button"
                     class="procedure-option w-full text-left px-3 py-2.5 min-h-[44px] text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-slate-600 active:bg-brand-100 dark:active:bg-slate-600 border-b border-slate-100 dark:border-slate-600/60 last:border-b-0"
                     onmousedown="event.preventDefault()"
-                    onclick="selectProcedureOption('${esc(p).replace(/'/g, "\\'")}')">${esc(p)}</button>
+                    onclick="selectProcedureOption('${esc(p).replace(/'/g, "\\'")}', ${slot})">${esc(p)}</button>
             `).join('');
         }
         if (val && !all.some((p) => p.toLowerCase() === query)) {
@@ -2456,86 +2870,146 @@
             html = `<div class="px-3 py-2.5 text-sm text-slate-400 dark:text-slate-400">Keine Treffer</div>`;
         }
         dd.innerHTML = html;
-        showProcedureDropdown();
+        hideProcedureDropdown(slot === 1 ? 2 : 1);
+        dd.classList.remove('hidden');
     }
 
-    function showProcedureDropdown() {
-        const dd = $('procedure-dropdown');
-        if (dd) dd.classList.remove('hidden');
+    // Ohne Angabe: beide Trefferlisten schließen.
+    function hideProcedureDropdown(slot) {
+        (slot ? [slot] : [1, 2]).forEach((sl) => {
+            const dd = $(procedureSlotIds(sl)[1]);
+            if (dd) dd.classList.add('hidden');
+        });
     }
 
-    function hideProcedureDropdown() {
-        const dd = $('procedure-dropdown');
-        if (dd) dd.classList.add('hidden');
-    }
-
-    function selectProcedureOption(name) {
-        const input = $('input-procedure');
-        input.value = name;
-        hideProcedureDropdown();
+    function selectProcedureOption(name, slot) {
+        slot = slot === 2 ? 2 : 1;
+        $(procedureSlotIds(slot)[0]).value = name;
+        hideProcedureDropdown(slot);
         handleProcedureInput(name);
     }
 
     document.addEventListener('click', (e) => {
-        const input = $('input-procedure');
-        const dd = $('procedure-dropdown');
-        if (!input || !dd) return;
-        if (e.target === input || dd.contains(e.target)) return;
-        hideProcedureDropdown();
+        [1, 2].forEach((sl) => {
+            const [inputId, ddId] = procedureSlotIds(sl);
+            const input = $(inputId);
+            const dd = $(ddId);
+            if (!input || !dd) return;
+            if (e.target === input || dd.contains(e.target)) return;
+            dd.classList.add('hidden');
+        });
     });
+
+    function setSecondProcedureVisible(show) {
+        $('procedure2-wrap').classList.toggle('hidden', !show);
+        $('add-procedure2-btn').classList.toggle('hidden', show);
+        if (!show) {
+            $('input-procedure2').value = '';
+            hideProcedureDropdown(2);
+        }
+    }
+
+    function showSecondProcedure() {
+        setSecondProcedureVisible(true);
+        $('input-procedure2').focus();
+    }
+
+    // Zweiten Eingriff entfernen: automatische Häkchen wieder allein aus dem
+    // ersten Eingriff ableiten (falls dieser bekannt ist).
+    function removeSecondProcedure() {
+        setSecondProcedureVisible(false);
+        handleProcedureInput($('input-procedure').value.trim());
+    }
+
+    // Aktuell im Formular eingetragene Eingriffe (1-2, ohne leere).
+    function formProcedures() {
+        return [$('input-procedure').value, $('input-procedure2') ? $('input-procedure2').value : '']
+            .map((x) => (x || '').trim()).filter(Boolean);
+    }
 
     // Automatische Erkennung der Eingriffsart anhand des eingegebenen/
     // ausgewählten Eingriffs. Bei bekanntem Eingriff werden die Checkboxen
     // gemäß der flachen procedureFlags-Zuordnung gesetzt; bei einem
     // unbekannten/eigenen Eingriff bleiben die Checkboxen unverändert und
     // müssen manuell gesetzt werden.
-    function handleProcedureInput(val) {
-        const flags = procedureFlags[val];
-        if (flags) {
-            resetCategoryFlags();
-            applyCategoryFlags(flags);
+    // Automatische Häkchen
+    // ---------------------
+    // Auslöser: bekannte Eingriffe (Feld 1 und 2, Flags zusammengeführt),
+    // Eingriff "Sectio Caesarea" (-> Geburtshilfe + RM-RA "SPA Geb") und
+    // Ort "KRS" (-> Geburtshilfe + RM-RA "PDK Geb"). Bei jeder Änderung wird
+    // der gewünschte Zustand neu berechnet und mit dem vorherigen verglichen:
+    //  - neu gewünscht & noch nicht angehakt -> anhaken (gilt als "automatisch")
+    //  - nicht mehr gewünscht & automatisch gesetzt -> Haken wieder entfernen
+    // Sobald man ein Feld selbst anfasst, gehört es dem Nutzer und wird nie
+    // mehr automatisch entfernt oder überschrieben.
+    const AUTO_CHECK_IDS = ['check-abdominell', 'check-kopf-hals', 'check-intrathorakal',
+        'check-intrakraniell', 'check-sectio', 'proc-vollnarkose', 'proc-spa-pdk'];
+
+    function computeAutoDesired() {
+        const checks = new Set();
+        const procs = formProcedures();
+        procs.forEach((pn) => {
+            const f = procedureFlags[pn];
+            if (!f) return;
+            Object.entries(CATEGORY_CHECKBOX).forEach(([k, id]) => { if (f[k] === true) checks.add(id); });
+            if (f.ga === true) checks.add('proc-vollnarkose');
+        });
+        const spa = [];
+        if (procs.includes('Sectio Caesarea')) spa.push('SPA Geb');
+        if ($('input-opsaal').value === 'KRS') spa.push('PDK Geb');
+        if (spa.length) { checks.add('check-sectio'); checks.add('proc-spa-pdk'); }
+        return { checks, spa };
+    }
+
+    function setAutoChecked(id, on) {
+        const el = $(id);
+        if (el.checked === on) return;
+        el.checked = on;
+        if (id === 'proc-vollnarkose') toggleAirway(on);
+        if (id === 'proc-spa-pdk') {
+            toggleSpaPdk(on);
+            if (!on) autoOwned.delete('spaType');
         }
-        if (val === 'Sectio Caesarea') setObstetricDefaults('SPA Geb');
-        autoDetectSectio();
+    }
+
+    function syncAutoFlags() {
+        const next = computeAutoDesired();
+        const prev = autoPrev;
+        next.checks.forEach((id) => {
+            if (!prev.checks.has(id) && !$(id).checked) { setAutoChecked(id, true); autoOwned.add(id); }
+        });
+        prev.checks.forEach((id) => {
+            if (!next.checks.has(id) && autoOwned.has(id)) { setAutoChecked(id, false); autoOwned.delete(id); }
+        });
+        // RA-Verfahren: nur ein leeres oder selbst gesetztes Feld wird geändert;
+        // ein noch passender Wert bleibt (z. B. Sectio über liegenden PDK aus KRS).
+        const sel = $('select-spa-pdk');
+        const ownedSpa = autoOwned.has('spaType');
+        if (next.spa.length) {
+            if ($('proc-spa-pdk').checked && (!sel.value || (ownedSpa && !next.spa.includes(sel.value)))) {
+                sel.value = next.spa[0];
+                autoOwned.add('spaType');
+            }
+        } else if (ownedSpa) {
+            sel.value = '';
+            autoOwned.delete('spaType');
+        }
+        autoPrev = next;
         updateLiveEvalBadges();
     }
 
-    // Checkbox "Geburtshilfe Eingriff" wird bereits primär über die
-    // eingriffsspezifischen Flags (procedureFlags, sec: true für alle
-    // Eingriffe der Gruppe "Geburtshilfe") automatisch gesetzt, sobald einer
-    // dieser Eingriffe gewählt wird - analog zu den übrigen Kategorie-
-    // Checkboxen (Kopf/Hals, Intrathorakal, Intrakraniell). Zusätzlich gibt
-    // es hier eine spezifischere Kombinations-Erkennung "Sectio Caesarea"
-    // UND Verfahren "SPA Geburtshilfe" (Rückenmarksnahe RA), die auch beim
-    // reinen Ändern des RA-Verfahrens (ohne erneutes Ändern des Eingriffs)
-    // greift. Wie bei der übrigen automatischen Flag-Erkennung bleibt diese
-    // Checkbox weiterhin manuell umschaltbar (kein automatisches
-    // Zurücksetzen). Eine Sectio wird NICHT automatisch als "Abdomineller
-    // Eingriff" gewertet, da sie offen (Laparotomie) und nicht
-    // laparoskopisch mit CO2-Kapnoperitoneum erfolgt.
-    function isSectioCombo() {
-        return $('input-procedure').value === 'Sectio Caesarea' && $('select-spa-pdk').value === 'SPA Geb';
+    // Neuer Ausgangspunkt (leeres Formular / geladener Fall): nichts gilt als
+    // automatisch gesetzt, bestehende Häkchen bleiben unangetastet.
+    function resetAutoBaseline() {
+        autoOwned.clear();
+        autoPrev = computeAutoDesired();
+    }
+
+    function handleProcedureInput(val) {
+        syncAutoFlags();
     }
 
     function autoDetectSectio() {
-        if (isSectioCombo()) {
-            $('check-sectio').checked = true;
-        }
-        updateLiveEvalBadges();
-    }
-
-    // Geburtshilfe-Voreinstellung (Eingriff "Sectio Caesarea" bzw. Ort "KRS"):
-    // hakt "Geburtshilfe Eingriff" und "Rückenmarksnahe RA" an und setzt das
-    // RA-Verfahren - aber nur, wenn dort noch nichts gewählt ist, damit eine
-    // bewusste Wahl (z. B. Sectio über liegenden PDK) nicht überschrieben wird.
-    function setObstetricDefaults(spaType) {
-        $('check-sectio').checked = true;
-        if (!$('proc-spa-pdk').checked) {
-            $('proc-spa-pdk').checked = true;
-            toggleSpaPdk(true);
-        }
-        if (!$('select-spa-pdk').value) $('select-spa-pdk').value = spaType;
-        autoDetectSectio();
         updateLiveEvalBadges();
     }
 
@@ -2559,6 +3033,7 @@
     function resetCaseForm() {
         $('case-form').reset();
         hideProcedureDropdown();
+        setSecondProcedureVisible(false);
         setDateField(todayStr());
         $('input-asa').value = '';
         $('input-opsaal').value = '';
@@ -2572,6 +3047,7 @@
         $('input-dob').required = fieldOn('dob');
         refreshDobFeedback();
         setEditMode(false);
+        resetAutoBaseline();
     }
 
     function setEditMode(on) {
@@ -2655,10 +3131,13 @@
         }
 
         const procName = ($('input-procedure').value || '').trim();
-        if (procName && !allProcedures.includes(procName) && !customProcedures.includes(procName)) {
-            customProcedures.push(procName);
-            storeSet('customProcedures', JSON.stringify(customProcedures));
-        }
+        const procName2 = ($('input-procedure2').value || '').trim();
+        [procName, procName2].forEach((pn) => {
+            if (pn && !allProcedures.includes(pn) && !customProcedures.includes(pn)) {
+                customProcedures.push(pn);
+                storeSet('customProcedures', JSON.stringify(customProcedures));
+            }
+        });
 
         const data = {
             id: editingCaseId || Date.now().toString(),
@@ -2667,6 +3146,7 @@
             asa: $('input-asa').value,
             opSaal: $('input-opsaal').value,
             procedure: procName,
+            procedure2: procName2,
             spaPdkType: '',
             peripherType: '',
             btm: collectBtmEntries(),
@@ -2745,6 +3225,8 @@
         if (c.opSaal) selectPillOption($('opsaal-pills'), 'input-opsaal', c.opSaal);
 
         $('input-procedure').value = c.procedure || '';
+        setSecondProcedureVisible(!!c.procedure2);
+        $('input-procedure2').value = c.procedure2 || '';
 
         FLAG_FIELDS.forEach(([key, id2]) => { $(id2).checked = !!c[key]; });
 
@@ -2763,6 +3245,7 @@
 
         setEditMode(true);
         refreshDobFeedback();
+        resetAutoBaseline();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2774,7 +3257,7 @@
     async function deleteCase(id) {
         const c = cases.find((x) => x.id === id);
         if (!c) return;
-        const ok = await askConfirm(`Fall "${c.initials}" vom ${formatDate(c.date)} (${c.procedure}) wirklich löschen?`, {
+        const ok = await askConfirm(`Fall "${c.initials}" vom ${formatDate(c.date)} (${caseProcedureLabel(c)}) wirklich löschen?`, {
             title: 'Fall löschen', confirmLabel: 'Löschen', danger: true
         });
         if (!ok) return;
@@ -2811,44 +3294,48 @@
         return f;
     }
 
-    function caseCardHtml(c, number, dragEnabled) {
+    // Kompakte Fallkarte: eine Zeile Kopf (Initialen · ASA · Ort · Alter),
+    // Eingriff, kleine Kriterien-Chips; Aktionen rechts (sichtbar klein, per
+    // CSS trotzdem 44px Tippfläche). Datum nur ohne Tages-Gruppierung, da es
+    // sonst schon in der Tages-Überschrift steht.
+    function caseCardHtml(c, number, dragEnabled, showDate) {
+        const age = caseAge(c);
         const chips = caseProcedureChips(c).map((t) =>
-            `<span class="text-[10px] bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
-        const flags = caseFlagChips(c).map((t) =>
-            `<span class="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-600/50 dark:text-slate-200 px-2 py-0.5 rounded-full">${esc(t)}</span>`).join('');
+            `<span class="text-[10px] leading-4 bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 px-1.5 rounded">${esc(t)}</span>`).join('')
+            + caseFlagChips(c).map((t) =>
+            `<span class="text-[10px] leading-4 bg-slate-200 text-slate-700 dark:bg-slate-600/50 dark:text-slate-200 px-1.5 rounded">${esc(t)}</span>`).join('');
+        const meta = [
+            c.asa ? `ASA ${c.asa}` : '',
+            c.opSaal || '',
+            age !== null ? `${age} J.` : '',
+            showDate ? formatDate(c.date) : ''
+        ].filter(Boolean).join(' · ');
         const handle = dragEnabled
-            ? `<button type="button" class="drag-handle shrink-0 p-2 -ml-2 mt-1 text-slate-400 hover:text-brand-600 cursor-grab active:cursor-grabbing" aria-label="Ziehen zum Verschieben" title="Ziehen zum Verschieben">
-                   <i data-lucide="grip-vertical" class="w-4 h-4 pointer-events-none"></i>
-               </button>`
+            ? `<button type="button" class="drag-handle shrink-0 -ml-1 p-1 text-slate-400 hover:text-brand-600 cursor-grab active:cursor-grabbing" aria-label="Ziehen zum Verschieben" title="Ziehen zum Verschieben"><i data-lucide="grip-vertical" class="w-4 h-4 pointer-events-none"></i></button>`
             : '';
         const numberBadge = number != null
-            ? `<div class="shrink-0 mt-1 w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center" title="Reihenfolge an diesem Tag">${number}</div>`
+            ? `<div class="shrink-0 w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-[10px] font-bold flex items-center justify-center" title="Reihenfolge an diesem Tag">${number}</div>`
             : '';
         return `
-            <div class="case-card p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-1 transition hover:shadow-sm" data-id="${esc(c.id)}" data-date="${esc(c.date)}">
+            <div class="case-card px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2" data-id="${esc(c.id)}" data-date="${esc(c.date)}">
                 ${handle}${numberBadge}
-                <div class="flex-1 min-w-0 flex flex-col sm:flex-row justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="flex items-center flex-wrap gap-2 mb-1">
-                            <span class="font-bold text-slate-800 dark:text-white">${esc(c.initials)}</span>
-                            ${c.isDemo ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Demo</span>' : ''}
-                            <span class="text-xs text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600 px-1.5 py-0.5 rounded">ASA ${esc(c.asa)}</span>
-                            <span class="text-xs text-slate-400">${esc(formatDate(c.date))}</span>
-                        </div>
-                        <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">${esc(c.procedure)}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            ${esc(c.opSaal)}${caseBirthLabel(c) ? ' · ' + esc(caseBirthLabel(c)) : ''}${c.notes ? ' — <i>' + esc(c.notes) + '</i>' : ''}
-                        </p>
-                        <div class="mt-2 flex gap-1.5 flex-wrap">${chips}${flags}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-baseline gap-1.5 min-w-0">
+                        <span class="font-semibold text-sm text-slate-800 dark:text-white shrink-0">${esc(c.initials)}</span>
+                        ${c.isDemo ? '<span class="shrink-0 text-[9px] font-semibold px-1 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Demo</span>' : ''}
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${esc(meta)}</span>
                     </div>
-                    <div class="flex items-start sm:items-center justify-end gap-2 shrink-0">
-                        <button type="button" data-action="edit" data-id="${esc(c.id)}" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-lg transition" title="Bearbeiten" aria-label="Bearbeiten">
-                            <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
-                        </button>
-                        <button type="button" data-action="delete" data-id="${esc(c.id)}" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg transition" title="Löschen" aria-label="Löschen">
-                            <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                        </button>
-                    </div>
+                    <p class="text-[13px] leading-snug text-slate-700 dark:text-slate-300 line-clamp-2">${esc(caseProcedureLabel(c))}</p>
+                    ${chips ? `<div class="mt-1 flex gap-1 flex-wrap">${chips}</div>` : ''}
+                    ${c.notes ? `<p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 italic truncate">${esc(c.notes)}</p>` : ''}
+                </div>
+                <div class="card-actions shrink-0">
+                    <button type="button" data-action="edit" data-id="${esc(c.id)}" class="card-action text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-md transition" title="Bearbeiten" aria-label="Bearbeiten">
+                        <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
+                    </button>
+                    <button type="button" data-action="delete" data-id="${esc(c.id)}" class="card-action text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-md transition" title="Löschen" aria-label="Löschen">
+                        <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                    </button>
                 </div>
             </div>`;
     }
@@ -2897,7 +3384,7 @@
 
         const list = cases.filter((c) => {
             if (!q) return true;
-            return [c.initials, c.procedure, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
+            return [c.initials, c.procedure, c.procedure2, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
                 .some((v) => String(v || '').toLowerCase().includes(q));
         });
 
@@ -2914,7 +3401,7 @@
                 if (sortMode === 'initials-asc') return (a.initials || '').localeCompare(b.initials || '');
                 return (b.date || '').localeCompare(a.date || '') || b.id.localeCompare(a.id);
             });
-            container.innerHTML = flat.map((c) => caseCardHtml(c, null, false)).join('');
+            container.innerHTML = flat.map((c) => caseCardHtml(c, null, false, true)).join('');
             refreshIcons();
             return;
         }
@@ -2925,14 +3412,14 @@
 
         container.innerHTML = dateKeys.map((dateKey) => {
             const dayCases = byDate.get(dateKey);
-            const cardsHtml = dayCases.map((c, i) => caseCardHtml(c, i + 1, reorderMode)).join('');
+            const cardsHtml = dayCases.map((c, i) => caseCardHtml(c, i + 1, reorderMode, false)).join('');
             return `
                 <div class="day-group" data-date="${esc(dateKey)}">
                     <div class="flex items-baseline justify-between gap-2 mb-2 px-1">
                         <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">${esc(formatDateWithWeekday(dateKey))}</h3>
                         <span class="text-[11px] text-slate-400 shrink-0">${dayCases.length} ${dayCases.length === 1 ? 'Fall' : 'Fälle'}</span>
                     </div>
-                    <div class="day-group-list space-y-2">${cardsHtml}</div>
+                    <div class="day-group-list space-y-1.5">${cardsHtml}</div>
                 </div>`;
         }).join('');
         refreshIcons();
@@ -3064,6 +3551,7 @@
             dob: g('input-dob') ? g('input-dob').value : '',
             asa: g('input-asa') ? g('input-asa').value : '',
             procedure: (g('input-procedure') ? g('input-procedure').value : '').trim(),
+            procedure2: (g('input-procedure2') ? g('input-procedure2').value : '').trim(),
             isVollnarkose: !!(g('proc-vollnarkose') && g('proc-vollnarkose').checked),
             isAbdominell: !!(g('check-abdominell') && g('check-abdominell').checked),
             isKopfHals: !!(g('check-kopf-hals') && g('check-kopf-hals').checked),
@@ -3113,11 +3601,17 @@
             const catId = badge.dataset.cat;
             const cat = catById[catId];
             const b = base[catId];
-            if (!cat || !b) { badge.textContent = ''; return; }
+            if (!cat || !b) { badge.textContent = ''; delete badge.dataset.level; return; }
             const current = b.logbook + b.vorwerte + (draftIds.includes(catId) ? 1 : 0);
             const prefix = badge.dataset.catPrefix || '';
             const hasTarget = typeof cat.target === 'number';
-            badge.textContent = hasTarget ? `${prefix}(${current}/${cat.target})` : `${prefix}(${current})`;
+            badge.textContent = hasTarget ? `${prefix}${current}/${cat.target}` : `${prefix}${current}`;
+            if (hasTarget) {
+                const pct = (current / cat.target) * 100;
+                badge.dataset.level = pct >= 100 ? 'green' : pct >= 50 ? 'amber' : 'red';
+            } else {
+                delete badge.dataset.level;
+            }
         });
     }
 
@@ -3196,8 +3690,8 @@
     function procedureBreakdown() {
         const counts = {};
         cases.forEach((c) => {
-            const key = (c.procedure || '').trim() || 'Ohne Angabe';
-            counts[key] = (counts[key] || 0) + 1;
+            const list = caseProcedureList(c);
+            (list.length ? list : ['Ohne Angabe']).forEach((key) => { counts[key] = (counts[key] || 0) + 1; });
         });
         return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
     }
@@ -3413,7 +3907,7 @@
         const rows = sortedCasesAsc().map((c) => {
             const age = caseAge(c);
             return [formatDate(c.date), c.initials, yn(c.isDemo), c.dob, age === null ? '' : age, c.asa ? Number(c.asa) : '',
-                c.opSaal, c.procedure,
+                c.opSaal, caseProcedureLabel(c),
                 yn(c.isVollnarkose), caseAirway(c), yn(c.isSpaPdk), c.spaPdkType || '', yn(c.isPeripher), c.peripherType || '', yn(c.isSedierung),
                 yn(c.isAbdominell), yn(c.isKopfHals), yn(c.isIntrathorakal), yn(c.isIntrakraniell), yn(c.isSectio), yn(c.isAmbulant),
                 yn(c.isFiberoptik), yn(c.isVideo), yn(c.isSonoGefaess),
@@ -3618,8 +4112,8 @@
                 : ['Datum', 'Initialen', 'Geb./Alter', 'Ort', 'Eingriff', 'Erfüllte Kriterien'];
             const body = sorted.length
                 ? sorted.map((c) => anonymize
-                    ? [S(formatDate(c.date)), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))]
-                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : '')), S(c.opSaal), S(c.procedure), S(caseCriteriaLabels(c).join(', '))])
+                    ? [S(formatDate(c.date)), S(c.opSaal), S(caseProcedureLabel(c)), S(caseCriteriaLabels(c).join(', '))]
+                    : [S(formatDate(c.date)), S(c.initials + (c.isDemo ? ' (Demo)' : '')), S(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : '')), S(c.opSaal), S(caseProcedureLabel(c)), S(caseCriteriaLabels(c).join(', '))])
                 : [[{ content: 'Keine Fälle erfasst.', colSpan: anonymize ? 4 : 6, styles: { halign: 'center' } }]];
 
             doc.autoTable({
@@ -3898,7 +4392,7 @@
                     <td>${esc(c.initials)}${c.isDemo ? ' (Demo)' : ''}</td>
                     <td>${esc(c.dob || (caseAge(c) !== null ? caseAge(c) + ' J.' : ''))}</td>
                     <td>${esc(c.opSaal)}</td>
-                    <td>${esc(c.procedure)}</td>
+                    <td>${esc(caseProcedureLabel(c))}</td>
                     <td>${esc(caseCriteriaLabels(c).join(', '))}</td>
                 </tr>`).join('')
             : '<tr><td colspan="6">Keine Fälle erfasst.</td></tr>';
@@ -3921,7 +4415,7 @@
         ['Allg. & Viszeralchirurgie', 'Hernien-OP (inguinal/umbilikal)', 2, 66, '', { spa: 'SPA' }],
         ['Allg. & Viszeralchirurgie', 'Sigmaresektion', 3, 72, 'itn abd sono', { spa: 'PDK', note: 'ZVK V. jug. int. rechts', btm: [{ id: 'sufentanil-50', count: 1 }] }],
         ['Allg. & Viszeralchirurgie', 'Schilddrüsenresektion', 2, 48, 'itn kh vid'],
-        ['Allg. & Viszeralchirurgie', 'Explorativlaparotomie', 4, 78, 'itn abd sono', { note: 'Arterie A. radialis links' }],
+        ['Allg. & Viszeralchirurgie', 'Explorative Laparotomie', 4, 78, 'itn sono', { note: 'Arterie A. radialis links' }],
         ['Unfallchirurgie / Orthopädie', 'TEP Hüfte', 3, 71, '', { spa: 'SPA' }],
         ['Unfallchirurgie / Orthopädie', 'TEP Knie', 2, 65, 'itn', { per: 'Femoralisnerv / FICB' }],
         ['Unfallchirurgie / Orthopädie', 'Osteosynthese untere Extremität', 3, 84, 'sed', { spa: 'SPA' }],
