@@ -957,7 +957,8 @@
             </summary>
             <div class="set-sec-body">
                 <div class="set-row">
-                    <p class="set-row-hint">Hält App und deine Google-Tabelle abgeglichen – in beide Richtungen, ohne Initialen, Geburtsdatum, Alter und Bemerkungen.</p>
+                    <p class="set-row-hint">Hält alle Geräte über deine Google-Tabelle abgeglichen. Die Tabelle ist das vollständige Abbild der App – inkl. Initialen, Geburtsdatum, Bemerkungen, Reihenfolge je Tag und Papierkorb.</p>
+                    <p class="guide-note mb-2"><b>Datenschutz:</b> Die Tabelle enthält damit patientenbezogene Daten. Tabelle nicht freigeben, Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten. Klinik-Vorgaben beachten; „Nur Alter speichern“ (Datenschutz) lässt das Geburtsdatum weg.</p>
                     <details class="guide mb-3" id="sync-guide">
                         <summary><i data-lucide="book-open" class="w-4 h-4 shrink-0"></i><span class="flex-1">Anleitung: Google-Tabelle einrichten</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
                         <div class="guide-body">
@@ -1008,25 +1009,25 @@
                                 <li>Weiter unten in diesem Abschnitt die <b>Skript-Adresse</b> und den <b>geheimen Schlüssel</b> einfügen.</li>
                                 <li><b>Verbindung testen</b> tippen. Die App gleicht danach sofort ab und fragt: „… Fälle stehen nicht in der Google-Tabelle – jetzt hochladen?“ → <b>Hochladen</b>. Deine Vorwerte-Blöcke werden mit hochgeladen.</li>
                                 <li>Unten erscheint <b>„App und Tabelle stimmen überein“</b> mit der Zahl der Fälle – dann ist alles drüben.</li>
-                                <li>Auf jedem weiteren Gerät nur Adresse und Schlüssel eintragen – die App holt sich die Fälle aus der Tabelle. Tipp: beides am Computer per Nachricht an dich selbst schicken, am iPhone einfügen, Nachricht löschen.</li>
+                                <li>Auf jedem weiteren Gerät (z. B. PC) nur Adresse und Schlüssel eintragen – die App holt sich alles aus der Tabelle, inkl. Initialen und Geburtsdatum. Dort <b>nicht</b> „Hochladen“ wählen, falls sie fragt und du auf dem Gerät nur Demo-/Testdaten hast. Tipp: Adresse und Schlüssel per Nachricht an dich selbst schicken, einfügen, Nachricht löschen.</li>
                             </ol>
 
                             <h4>6 · Was steht in der Tabelle?</h4>
                             <ul>
                                 <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jedem Abgleich und beim Öffnen neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
-                                <li><b>Fälle</b>: ein Fall je Zeile, nach OP-Datum sortiert, stornierte grau. Graue Spalten rechnet das Skript (RZ …) bzw. sind technisch (Version, UID).</li>
-                                <li><b>Vorwerte</b>: deine Vorwerte-Blöcke.</li>
-                                <li><b>Verlauf</b> (alte Fassungen), <b>Papierkorb</b> (endgültig gelöschte Fälle), <b>Protokoll</b> (jeder Auftrag aus der App).</li>
+                                <li><b>Fälle</b>: ein Fall je Zeile mit allen Angaben, sortiert nach OP-Datum und <b>Nr.</b> (Reihenfolge am Tag wie in der App), stornierte grau. Graue Spalten rechnet das Skript (Alter, Kind ≤ 5, RZ …) bzw. sind technisch (Version, UID).</li>
+                                <li><b>Vorwerte</b>: deine Vorwerte-Blöcke (stornierte grau).</li>
+                                <li><b>Papierkorb</b>: endgültig gelöschte Fälle und Vorwerte – in der App unter Mehr → Papierkorb wiederherstellbar.</li>
+                                <li><b>Verlauf</b> (alte Fassungen) und <b>Protokoll</b> (jeder Auftrag aus der App).</li>
                             </ul>
 
                             <h4>7 · In der Tabelle bearbeiten</h4>
                             <ul>
-                                <li><b>Werte ändern</b> (z. B. Eingriff, ASA, „ja“ in einer Spalte): einfach überschreiben. Die Auswahllisten helfen. Die App übernimmt die Änderung beim nächsten Abgleich.</li>
-                                <li><b>Neuer Fall</b>: unten eine Zeile mit mindestens Datum und Eingriff ausfüllen – UID und Version vergibt das Skript. In der App erscheint er ohne Initialen/Geburtsdatum.</li>
+                                <li><b>Werte ändern</b> (z. B. Eingriff, ASA, Initialen, „ja“ in einer Spalte, Nr.): einfach überschreiben. Die Auswahllisten helfen. Alle Geräte übernehmen die Änderung beim nächsten Abgleich.</li>
+                                <li><b>Neuer Fall</b>: unten eine Zeile mit mindestens Datum und Eingriff ausfüllen – Nr., UID und Version vergibt das Skript.</li>
                                 <li><b>Fall stornieren</b>: Status auf <b>storniert</b> setzen. Zählt dann nirgends mehr, auch nicht in der App.</li>
                                 <li><b>Zeile löschen</b>: Die App merkt, dass der Fall fehlt, und fragt: <b>Hochladen</b> (war ein Versehen) oder <b>In App stornieren</b> (war Absicht).</li>
                                 <li>Nicht ändern: die grauen Spalten <b>UID</b> und <b>Version</b>. Eine kopierte Zeile bekommt automatisch eine neue UID und gilt als eigener Fall.</li>
-                                <li>Initialen, Geburtsdatum und Bemerkungen gibt es nur in der App – sie bleiben dort erhalten.</li>
                             </ul>
 
                             <h4>8 · Excel-Datei herunterladen</h4>
@@ -1070,7 +1071,7 @@
                 </div>
                 <div class="set-row">
                     <div class="set-row-head"><h3>In der Tabelle bearbeiten</h3></div>
-                    <p class="set-row-hint">Du darfst in der Tabelle Werte ändern, Zeilen ergänzen und den Status auf „storniert“ setzen – die App übernimmt das beim nächsten Abgleich. Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt die App, ob sie ihn wieder hochladen oder in der App stornieren soll. Jeder Fall zählt dabei nur einmal.</p>
+                    <p class="set-row-hint">Du darfst in der Tabelle alles ändern (auch Initialen, Geburtsdatum, Bemerkungen, Nr.), Zeilen ergänzen und den Status auf „storniert“ setzen – alle Geräte übernehmen das beim nächsten Abgleich (automatisch alle 2 Minuten, beim Öffnen oder per Sync-Knopf). Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt die App, ob sie ihn wieder hochladen oder in der App stornieren soll. Jeder Fall zählt nur einmal.</p>
                 </div>
             </div>
         </details>
@@ -1134,6 +1135,23 @@
                         <i data-lucide="trash-2" class="w-4 h-4"></i> Nur Demo löschen
                     </button>
                 </div>
+            </div>
+        </details>
+
+        <!-- PAPIERKORB -->
+        <details class="set-sec" id="set-sec-trash">
+            <summary>
+                <i data-lucide="trash-2" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Papierkorb</span><span class="set-sec-sub" id="set-sum-trash"></span></span>
+                <i data-lucide="chevron-down" class="set-sec-chev"></i>
+            </summary>
+            <div class="set-sec-body space-y-2">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Endgültig gelöschte Fälle und Vorwerte. „Wiederherstellen“ holt sie als <b>storniert</b> zurück – dort kannst du das Storno aufheben. Mit Google Sheets verbunden: gleicher Papierkorb auf allen Geräten und in der Tabelle.</p>
+                <div id="trash-list" class="space-y-1.5"></div>
+                <p id="trash-empty" class="py-2 text-xs text-slate-400">Der Papierkorb ist leer.</p>
+                <button type="button" id="trash-empty-btn" onclick="emptyTrash()" class="hidden w-full px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-700 dark:text-red-300 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="trash" class="w-4 h-4"></i> Papierkorb leeren
+                </button>
             </div>
         </details>
 
@@ -1656,9 +1674,12 @@
     (function migrateCaseMeta() {
         let changed = false;
         cases.forEach((c) => { if (c && typeof c === 'object' && ensureCaseMeta(c)) changed = true; });
+        if (ensurePositions()) changed = true;
         if (changed) storeSet('cases', JSON.stringify(cases));
     })();
     let vorwerte = loadList('vorwerte');
+    // Papierkorb (endgültig gelöschte Fälle/Vorwerte, wiederherstellbar)
+    let trash = loadList('trash');
     let editingCaseId = null;
     let editingVorwertId = null;
     let reorderMode = false;
@@ -2896,7 +2917,9 @@
             const b = e.target.closest('[data-action]');
             if (!b) return;
             if (b.dataset.action === 'edit') openVorwertModal(b.dataset.id);
-            if (b.dataset.action === 'delete') deleteVorwert(b.dataset.id);
+            if (b.dataset.action === 'cancel' || b.dataset.action === 'delete') cancelVorwert(b.dataset.id);
+            if (b.dataset.action === 'uncancel') uncancelVorwert(b.dataset.id);
+            if (b.dataset.action === 'purge') purgeVorwert(b.dataset.id);
         });
 
         $('dialog-input').addEventListener('keydown', (e) => {
@@ -2921,6 +2944,7 @@
     function refreshAll() {
         updateGlobalCounts();
         if (typeof updateSyncUI === 'function') updateSyncUI();
+        if (typeof renderTrash === 'function') renderTrash();
         renderCaseList();
         renderEvaluation();
         renderVorwerteList();
@@ -3487,11 +3511,13 @@
         // Identität, Version und Storno-Status des bearbeiteten Falls behalten
         if (prevCase) {
             data.uid = prevCase.uid; data.ts = prevCase.ts; data.rev = prevCase.rev;
+            data.pos = prevCase.date === data.date && typeof prevCase.pos === 'number' ? prevCase.pos : maxPos(data.date, prevCase.id) + 1;
             if (prevCase.cancelled) data.cancelled = true;
             if (prevCase.restored) data.restored = true;
             if (!data.dob && typeof data.ageAtCase !== 'number' && prevCase.kindLe5) data.kindLe5 = true;
         } else {
             data.uid = newUid();
+            data.pos = maxPos(data.date) + 1;
         }
         touchCase(data);
         if (data.isSpaPdk) data.spaPdkType = $('select-spa-pdk').value;
@@ -3512,8 +3538,11 @@
             cases.push(data);
         }
 
-        saveCases();
         enqueueSync('upsert', data);
+        // Datum geändert: alten Tag lückenlos neu nummerieren
+        if (prevCase && prevCase.date !== data.date) pushPositionChanges(renumberDay(prevCase.date, false));
+        sortCasesByDayOrder();
+        saveCases();
         resetCaseForm();
         refreshAll();
         refreshIcons();
@@ -3769,6 +3798,9 @@
             const c = byId.get(id);
             if (c && indices[k] !== undefined) cases[indices[k]] = c;
         });
+        // neue Nr. je Tag übernehmen und an die Tabelle senden
+        const days = new Set(orderedIds.map((id) => (byId.get(id) || {}).date).filter(Boolean));
+        days.forEach((d) => pushPositionChanges(renumberDay(d, false)));
         saveCases();
         renderCaseList();
         renderBtmOverview();
@@ -3861,7 +3893,7 @@
             caseCategoryIds(c).forEach((id) => { res[id].logbook++; });
         });
         if (withVorwerte) {
-            vorwerte.forEach((v) => {
+            activeVorwerte().forEach((v) => {
                 Object.entries(v.counts || {}).forEach(([id, n]) => {
                     if (res[id]) res[id].vorwerte += (parseInt(n, 10) || 0);
                 });
@@ -3959,7 +3991,7 @@
             $(`eval-${k}`).value = r[k] || '';
             $(`eval-${k}-display`).value = r[k] ? formatDate(r[k]) : '';
         });
-        $('eval-vw-wrap').classList.toggle('hidden', !ranged || vorwerte.length === 0);
+        $('eval-vw-wrap').classList.toggle('hidden', !ranged || activeVorwerte().length === 0);
         $('eval-include-vw').checked = !!r.includeVorwerte;
     }
 
@@ -4004,7 +4036,7 @@
             if (c.id === excludeId) return;
             caseCategoryIds(c).forEach((id) => { res[id].logbook++; });
         });
-        vorwerte.forEach((v) => {
+        activeVorwerte().forEach((v) => {
             Object.entries(v.counts || {}).forEach(([id, n]) => {
                 if (res[id]) res[id].vorwerte += (parseInt(n, 10) || 0);
             });
@@ -4077,7 +4109,7 @@
         const sum = $('eval-range-summary');
         if (sum) {
             const n = scope.cases.length;
-            const vw = scope.withVorwerte ? (vorwerte.length ? 'inkl. Vorwerte' : 'keine Vorwerte vorhanden') : 'ohne Vorwerte';
+            const vw = scope.withVorwerte ? (activeVorwerte().length ? 'inkl. Vorwerte' : 'keine Vorwerte vorhanden') : 'ohne Vorwerte';
             sum.textContent = `${scope.label} · ${n} ${n === 1 ? 'Fall' : 'Fälle'} im Logbuch · ${vw}`;
         }
         refreshIcons();
@@ -4225,42 +4257,28 @@
         showToast('Vorwerte gespeichert');
     }
 
-    async function deleteVorwert(id) {
-        const v = vorwerte.find((x) => x.id === id);
-        if (!v) return;
-        const ok = await askConfirm(`Vorwerte-Block "${v.name}" wirklich löschen?`, { title: 'Vorwerte löschen', confirmLabel: 'Löschen', danger: true });
-        if (!ok) return;
-        touchCase(v);
-        enqueueVwSync('vw-delete', v);
-        vorwerte = vorwerte.filter((x) => x.id !== id);
-        storeSet('vorwerte', JSON.stringify(vorwerte));
-        renderVorwerteList();
-        renderEvaluation();
-    }
+    // Früherer Name – Löschen läuft jetzt über Stornieren → Papierkorb
+    function deleteVorwert(id) { return cancelVorwert(id); }
 
     // Vorwerte kompakt: ein Block = eine Zeile (Name + Summen als Kurztext).
     function renderVorwerteList() {
         const list = $('vorwerte-list');
         $('empty-vorwerte').classList.toggle('hidden', vorwerte.length > 0);
+        const btn = (v, action, icon, title, hover) => `<button type="button" data-action="${action}" data-id="${esc(v.id)}" class="card-action text-slate-400 ${hover} dark:hover:bg-slate-700 rounded-md transition" title="${title}" aria-label="${title}"><i data-lucide="${icon}" class="w-4 h-4 pointer-events-none"></i></button>`;
         list.innerHTML = vorwerte.map((v) => {
             const summary = baekCategories
                 .filter((c) => v.counts && v.counts[c.id] > 0)
                 .map((c) => `${c.short} ${parseInt(v.counts[c.id], 10)}`)
                 .join(' · ');
             return `
-                <div class="px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                <div class="case-card ${v.cancelled ? 'is-cancelled ' : ''}px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(v.name)}${v.isDemo ? ' <span class="text-[9px] font-semibold px-1 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 align-middle">Demo</span>' : ''}</p>
+                        <p class="case-proc text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">${esc(v.name)}${v.cancelled ? ' <span class="text-[9px] font-semibold px-1 rounded bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-200 align-middle">Storniert</span>' : ''}${v.isDemo ? ' <span class="text-[9px] font-semibold px-1 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 align-middle">Demo</span>' : ''}</p>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${esc(summary || 'Keine Werte')}</p>
                     </div>
-                    <div class="card-actions shrink-0">
-                        <button type="button" data-action="edit" data-id="${esc(v.id)}" class="card-action text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-md transition" title="Bearbeiten" aria-label="Bearbeiten">
-                            <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
-                        </button>
-                        <button type="button" data-action="delete" data-id="${esc(v.id)}" class="card-action text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-md transition" title="Löschen" aria-label="Löschen">
-                            <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                        </button>
-                    </div>
+                    <div class="card-actions shrink-0">${v.cancelled
+                        ? btn(v, 'uncancel', 'undo-2', 'Storno aufheben', 'hover:text-brand-600 hover:bg-brand-50') + btn(v, 'purge', 'trash-2', 'Endgültig löschen', 'hover:text-red-600 hover:bg-red-50')
+                        : btn(v, 'edit', 'pencil', 'Bearbeiten', 'hover:text-brand-600 hover:bg-brand-50') + btn(v, 'cancel', 'ban', 'Stornieren', 'hover:text-red-600 hover:bg-red-50')}</div>
                 </div>`;
         }).join('');
         updateSettingsSummaries();
@@ -4272,9 +4290,13 @@
         const set = (id, t) => { const el = $(id); if (el) el.textContent = t; };
         const name = userName();
         set('set-sum-profil', name || 'Kein Name hinterlegt');
-        const nv = vorwerte.length;
-        const vTotal = vorwerte.reduce((sum, v) => sum + (parseInt(v.counts && v.counts.total, 10) || 0), 0);
-        set('set-sum-vorwerte', nv === 0 ? 'Keine' : `${nv} ${nv === 1 ? 'Block' : 'Blöcke'} · ${vTotal} Anästhesien`);
+        const avw = activeVorwerte();
+        const nv = avw.length;
+        const vTotal = avw.reduce((sum, v) => sum + (parseInt(v.counts && v.counts.total, 10) || 0), 0);
+        const ncv = vorwerte.length - nv;
+        set('set-sum-vorwerte', (nv === 0 ? 'Keine' : `${nv} ${nv === 1 ? 'Block' : 'Blöcke'} · ${vTotal} Anästhesien`) + (ncv ? ` · ${ncv} storniert` : ''));
+        const nt = typeof trash !== 'undefined' ? trash.length : 0;
+        set('set-sum-trash', nt === 0 ? 'Leer' : `${nt} ${nt === 1 ? 'Eintrag' : 'Einträge'} – wiederherstellbar`);
         const last = storeGet('lastBackupAt');
         const days = daysSince(last);
         set('set-sum-export', !last ? 'Noch kein Backup'
@@ -4301,10 +4323,13 @@
     // ---------------------------------------------------------------
     // Zwei Richtungen:
     //  App → Tabelle: nur Aufträge für ausdrückliche Aktionen (anlegen,
-    //    bearbeiten, stornieren, Storno aufheben, endgültig löschen) – nie
-    //    der Gesamtbestand. Ein leerer App-Speicher ändert die Tabelle nicht.
+    //    bearbeiten, Reihenfolge, stornieren, Storno aufheben, endgültig
+    //    löschen, Papierkorb) – nie der Gesamtbestand. Ein leerer
+    //    App-Speicher ändert die Tabelle nicht.
     //  Tabelle → App: beim Abgleich holt die App den Stand der Tabelle und
-    //    übernimmt, was dort neuer ist (auch Änderungen von Hand).
+    //    übernimmt, was dort neuer ist (auch Änderungen von Hand). Die
+    //    Tabelle ist das vollständige Abbild – inkl. Initialen, Geburtsdatum,
+    //    Bemerkungen, Reihenfolge je Tag und Papierkorb.
     // Jeder Fall/Vorwerte-Block hat eine uid bzw. id und eine Version (ts =
     // Zeitpunkt der letzten Änderung). Es gewinnt immer die neuere Fassung.
     // Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt
@@ -4312,7 +4337,9 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 4;
+    const SYNC_SCRIPT_VERSION = 5;
+    const SYNC_POLL_MS = 2 * 60 * 1000;
+    const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
     let syncBusy = false;
     let syncTimer = null;
@@ -4341,6 +4368,49 @@
         return cases.filter((c) => !c.cancelled);
     }
 
+    function activeVorwerte() {
+        return vorwerte.filter((v) => !v.cancelled);
+    }
+
+    // Papierkorb (endgültig gelöschte Fälle/Vorwerte, wiederherstellbar)
+    function saveTrash() { storeSet('trash', JSON.stringify(trash)); }
+
+    // ---- Reihenfolge je Tag (Feld pos = Nr. am Tag, wie in der Tabelle) ----
+    function maxPos(date, exceptId) {
+        return cases.reduce((m, c) => (c.date === date && c.id !== exceptId ? Math.max(m, Number(c.pos) || 0) : m), 0);
+    }
+
+    // Nummeriert die Fälle eines Tages 1..n in der Reihenfolge des Arrays
+    // (byPos: vorher nach pos sortieren). Liefert die geänderten Fälle.
+    function renumberDay(date, byPos) {
+        const idx = [];
+        cases.forEach((c, i) => { if (c.date === date) idx.push(i); });
+        let list = idx.map((i) => cases[i]);
+        if (byPos) list = list.slice().sort((a, b) => (Number(a.pos) || 1e9) - (Number(b.pos) || 1e9));
+        list.forEach((c, k) => { cases[idx[k]] = c; });
+        const changed = [];
+        list.forEach((c, k) => { if (c.pos !== k + 1) { c.pos = k + 1; changed.push(c); } });
+        return changed;
+    }
+
+    // Geänderte Reihenfolge als Aufträge (neue Version je Fall)
+    function pushPositionChanges(changed) {
+        changed.forEach((c) => { if (!c.isDemo) { touchCase(c); enqueueSync('upsert', c); } });
+    }
+
+    // Einmalig: fehlende Nummern aus der bisherigen Reihenfolge vergeben
+    function ensurePositions() {
+        const dates = new Set(cases.filter((c) => typeof c.pos !== 'number').map((c) => c.date));
+        dates.forEach((d) => renumberDay(d, false));
+        return dates.size > 0;
+    }
+
+    function sortCasesByDayOrder() {
+        const order = new Map(cases.map((c, i) => [c, i]));
+        cases.sort((a, b) => (a.date || '').localeCompare(b.date || '')
+            || (Number(a.pos) || 1e9) - (Number(b.pos) || 1e9) || order.get(a) - order.get(b));
+    }
+
     function syncUrl() { return (storeGet('syncUrl') || '').trim(); }
     function syncKey() { return (storeGet('syncKey') || '').trim(); }
     function syncConfigured() { return !!(syncUrl() && syncKey()); }
@@ -4350,11 +4420,13 @@
     function syncReport() { try { return JSON.parse(storeGet('syncReport') || 'null'); } catch (e) { return null; } }
     function saveSyncReport(r) { storeSet('syncReport', JSON.stringify(r)); }
 
-    // Was in die Tabelle darf: keine Initialen, kein Geburtsdatum, kein
-    // Alter, keine Bemerkungen. Für die Richtzahl nur "Kind <= 5 J." ja/nein.
+    // Alle Angaben eines Falls für die Tabelle (vollständiges Abbild).
     function sheetRecord(c) {
         return {
-            id: c.id, date: c.date, asa: c.asa || '', opSaal: c.opSaal || '',
+            id: c.id, date: c.date, pos: typeof c.pos === 'number' ? c.pos : null,
+            initials: c.initials || '', dob: c.dob || '', ageAtCase: typeof c.ageAtCase === 'number' ? c.ageAtCase : null,
+            notes: c.notes || '',
+            asa: c.asa || '', opSaal: c.opSaal || '',
             procedure: c.procedure || '', procedure2: c.procedure2 || '',
             kindLe5: isChildCase(c),
             isVollnarkose: !!c.isVollnarkose, airway: c.isVollnarkose ? (caseAirway(c) || '') : '',
@@ -4375,7 +4447,16 @@
     }
     function vwOp(type, v) {
         return { opId: newUid(), type, uid: String(v.id), ts: v.ts || Date.now(), at: new Date().toISOString(),
-            data: type === 'vw-delete' ? undefined : { name: v.name, counts: v.counts || {} } };
+            data: type === 'vw-purge' ? undefined : { name: v.name, counts: v.counts || {}, cancelled: !!v.cancelled } };
+    }
+
+    function enqueueRaw(op) {
+        if (!syncConfigured()) return;
+        const q = syncQueue();
+        q.push(op);
+        saveSyncQueue(q);
+        updateSyncUI();
+        scheduleSync();
     }
 
     // Auftrag in die Warteschlange (nur wenn eingerichtet, nie für Demo).
@@ -4416,6 +4497,7 @@
         let data;
         try { data = await res.json(); } catch (e) { throw new Error('Antwort ist kein JSON – stimmt die Skript-Adresse (endet auf /exec)?'); }
         if (data && data.version != null) storeSet('syncScriptVersion', String(Number(data.version) || 0));
+        if (data && !data.ok && data.error === 'action') { storeSet('syncScriptVersion', '0'); throw new Error('Das Skript in Google ist veraltet.'); }
         if (!data.ok && data.error === 'key') throw new Error('Geheimer Schlüssel falsch.');
         if (!data.ok && data.error === 'setup') throw new Error(data.message || 'Skript nicht eingerichtet – „einrichten“ ausführen.');
         return data;
@@ -4470,10 +4552,22 @@
     function applySheetCase(target, row) {
         SHEET_FIELDS.forEach((k) => { if (row[k] !== undefined) target[k] = row[k]; });
         if (!target.isVollnarkose) target.airway = '';
-        if (btmText(target.btm) !== String(row.btm || '')) target.btm = parseBtmText(row.btm);
-        if (row.status === 'storniert') target.cancelled = true; else delete target.cancelled;
+        if (Array.isArray(row.btm)) target.btm = row.btm;
+        else if (btmText(target.btm) !== String(row.btm || '')) target.btm = parseBtmText(row.btm);
+        if (row.status === 'storniert' || row.cancelled === true) target.cancelled = true; else delete target.cancelled;
+        // Personen-/Freitextfelder: die Tabelle ist maßgeblich
+        ['initials', 'notes'].forEach((k) => { if (row[k] !== undefined) target[k] = String(row[k] || ''); });
+        if (row.dob) { target.dob = String(row.dob); delete target.ageAtCase; }
+        else {
+            delete target.dob;
+            if (typeof row.ageAtCase === 'number') target.ageAtCase = row.ageAtCase; else delete target.ageAtCase;
+        }
+        if (typeof row.pos === 'number') target.pos = row.pos;
         target.kindLe5 = !!row.kindLe5;
-        target.uid = row.uid; target.ts = row.ts; target.rev = (target.rev || 0) + 1;
+        if (target.initials) delete target.restored;
+        if (row.uid) target.uid = row.uid;
+        if (row.ts) target.ts = row.ts;
+        target.rev = (target.rev || 0) + 1;
         return target;
     }
 
@@ -4483,7 +4577,7 @@
     function reconcileWithSheet(state) {
         const queued = new Set(syncQueue().map((o) => o.uid));
         const res = { pulledNew: 0, pulledChanged: 0, pushedNewer: 0, missingCases: [], missingVw: [], possibleDupes: 0, inTrash: 0, vwRemoved: 0 };
-        const trash = new Set(state.trash || []);
+        const trashSet = new Set(state.trash || []);
         const sheetCases = new Map((state.cases || []).map((r) => [r.uid, r]));
         const localByUid = new Map(cases.map((c) => [c.uid, c]));
         const q = syncQueue();
@@ -4494,10 +4588,10 @@
             if (c.isDemo || queued.has(c.uid)) return;
             const row = sheetCases.get(c.uid);
             if (!row) {
-                if (trash.has(c.uid)) {
-                    // auf einem anderen Gerät endgültig gelöscht
-                    if (c.cancelled) cases = cases.filter((x) => x !== c);
-                    else res.inTrash++;
+                if (trashSet.has(c.uid)) {
+                    // anderswo endgültig gelöscht → liegt im Papierkorb
+                    cases = cases.filter((x) => x !== c);
+                    res.pulledChanged++;
                     return;
                 }
                 res.missingCases.push(c.uid);
@@ -4509,7 +4603,7 @@
         // nur in der Tabelle vorhandene Fälle -> in die App
         (state.cases || []).forEach((row) => {
             if (localByUid.has(row.uid) || queued.has(row.uid)) return;
-            const c = applySheetCase({ initials: '', notes: '', restored: true }, row);
+            const c = applySheetCase({ restored: true }, row);
             c.rev = 1;
             let id = row.id ? String(row.id) : 'T' + row.ts;
             while (ids.has(id)) id += 'r';
@@ -4528,20 +4622,35 @@
         vorwerte.slice().forEach((v) => {
             if (v.isDemo || queued.has(String(v.id))) return;
             const row = sheetVw.get(String(v.id));
-            if (!row) { res.missingVw.push(String(v.id)); return; }
+            if (!row) {
+                if (trashSet.has(String(v.id))) { vorwerte = vorwerte.filter((x) => x !== v); res.pulledChanged++; return; }
+                res.missingVw.push(String(v.id));
+                return;
+            }
             if (row.ts > (v.ts || 0)) {
-                if (row.status === 'gelöscht') { vorwerte = vorwerte.filter((x) => x !== v); res.vwRemoved++; }
-                else { v.name = row.name; v.counts = row.counts || {}; v.ts = row.ts; res.pulledChanged++; }
+                v.name = row.name; v.counts = row.counts || {}; v.ts = row.ts;
+                if (row.status === 'storniert') v.cancelled = true; else delete v.cancelled;
+                res.pulledChanged++;
             } else if (row.ts < (v.ts || 0)) { q.push(vwOp('vw-upsert', v)); res.pushedNewer++; }
         });
         (state.vorwerte || []).forEach((row) => {
-            if (row.status === 'gelöscht' || queued.has(String(row.id))) return;
+            if (queued.has(String(row.id))) return;
             if (vorwerte.some((v) => String(v.id) === String(row.id))) return;
-            vorwerte.push({ id: String(row.id), name: row.name || 'Vorwerte', counts: row.counts || {}, ts: row.ts, rev: 1 });
+            const nv = { id: String(row.id), name: row.name || 'Vorwerte', counts: row.counts || {}, ts: row.ts, rev: 1 };
+            if (row.status === 'storniert') nv.cancelled = true;
+            vorwerte.push(nv);
             res.pulledNew++;
         });
 
-        if (res.pulledNew > 0) cases.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        // Papierkorb = Stand der Tabelle (+ eigene, noch nicht übertragene)
+        if (Array.isArray(state.trashItems)) {
+            const pending = trash.filter((t) => queued.has(t.uid));
+            const sheetItems = state.trashItems.filter((t) => !queued.has(t.uid));
+            trash = pending.concat(sheetItems.filter((t) => !pending.some((p) => p.uid === t.uid)));
+            saveTrash();
+        }
+
+        if (res.pulledNew > 0 || res.pulledChanged > 0) sortCasesByDayOrder();
         saveSyncQueue(q);
         saveCases();
         storeSet('vorwerte', JSON.stringify(vorwerte));
@@ -4554,10 +4663,10 @@
         const prog = computeProgressFor(own.filter((c) => !c.cancelled), false);
         const vw = {};
         baekCategories.forEach((k) => { vw[k.id] = 0; });
-        vorwerte.filter((v) => !v.isDemo).forEach((v) => Object.entries(v.counts || {}).forEach(([id, n]) => { if (id in vw) vw[id] += parseInt(n, 10) || 0; }));
+        activeVorwerte().filter((v) => !v.isDemo).forEach((v) => Object.entries(v.counts || {}).forEach(([id, n]) => { if (id in vw) vw[id] += parseInt(n, 10) || 0; }));
         const logbook = {};
         baekCategories.forEach((k) => { logbook[k.id] = prog[k.id].logbook; });
-        return { activeCases: own.filter((c) => !c.cancelled).length, vorwerteBlocks: vorwerte.filter((v) => !v.isDemo).length, logbook, vorwerte: vw };
+        return { activeCases: own.filter((c) => !c.cancelled).length, vorwerteBlocks: activeVorwerte().filter((v) => !v.isDemo).length, logbook, vorwerte: vw };
     }
 
     function compareTotals(app, sheet) {
@@ -4613,7 +4722,7 @@
                 return;
             }
             // 2) Viele Stornos nur nach Rückfrage
-            const destructive = syncQueue().filter((o) => o.type === 'cancel' || o.type === 'purge').length;
+            const destructive = syncQueue().filter((o) => DESTRUCTIVE_OPS.includes(o.type)).length;
             let confirmBulk = false;
             if (destructive > SYNC_BULK_LIMIT) {
                 if (!manual) { setSyncStatus(`${destructive} Stornos/Löschungen warten auf Bestätigung – bitte „Jetzt synchronisieren“ tippen.`, 'warn'); return; }
@@ -4627,9 +4736,23 @@
             await pushQueue(confirmBulk, stats);
             // 4) Stand der Tabelle holen und abgleichen
             const state = await syncRequest({ action: 'state' });
+            // Einmalig nach Umstellung auf Skript 5: eigene Fälle, die schon
+            // in der Tabelle stehen, mit allen Angaben (Initialen,
+            // Geburtsdatum, Bemerkung, Nr.) neu senden. Aus der Tabelle
+            // geholte Fälle (restored) nicht – dort ist die Tabelle maßgeblich.
+            if (storeGet('syncFullData') !== '1') {
+                const inSheet = new Set((state.cases || []).map((r) => r.uid));
+                const q0 = syncQueue();
+                const queuedU = new Set(q0.map((o) => o.uid));
+                cases.filter((c) => !c.isDemo && !c.restored && inSheet.has(c.uid) && !queuedU.has(c.uid)).forEach((c) => { touchCase(c); q0.push(caseOp('upsert', c)); });
+                saveSyncQueue(q0);
+                saveCases();
+                storeSet('syncFullData', '1');
+            }
             const rec = reconcileWithSheet(state);
-            if (rec.pushedNewer > 0) await pushQueue(confirmBulk, stats);
-            const finalState = rec.pushedNewer > 0 || rec.pulledNew || rec.pulledChanged ? await syncRequest({ action: 'state' }) : state;
+            const hadMore = syncQueue().length > 0;
+            if (hadMore) await pushQueue(confirmBulk, stats);
+            const finalState = hadMore || rec.pulledNew || rec.pulledChanged ? await syncRequest({ action: 'state' }) : state;
             report = {
                 at: new Date().toISOString(), rec,
                 diffs: compareTotals(appSyncTotals(), finalState.eval),
@@ -4691,7 +4814,7 @@
             if (!ok) { renderSyncCard(); return; }
             const q2 = syncQueue();
             mc.forEach((u) => { const c = cases.find((x) => x.uid === u); if (c) { c.cancelled = true; touchCase(c); q2.push(caseOp('upsert', c)); } });
-            mv.forEach((id) => { vorwerte = vorwerte.filter((x) => String(x.id) !== id); });
+            mv.forEach((id) => { const v = vorwerte.find((x) => String(x.id) === id); if (v) { v.cancelled = true; touchCase(v); q2.push(vwOp('vw-upsert', v)); } });
             saveSyncQueue(q2);
             saveCases();
             storeSet('vorwerte', JSON.stringify(vorwerte));
@@ -4755,7 +4878,7 @@
     }
 
     function disconnectSync() {
-        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion'].forEach(removeStored);
+        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion', 'syncFullData'].forEach(removeStored);
         if ($('sync-url')) { $('sync-url').value = ''; $('sync-key').value = ''; }
         updateSyncUI();
     }
@@ -4817,10 +4940,145 @@
         if (!ok2) return;
         touchCase(c);
         enqueueSync('purge', c);
+        trash.unshift({ kind: 'case', uid: c.uid, ts: c.ts, deletedAt: new Date().toISOString(), date: c.date, description: [c.initials, caseProcedureLabel(c)].filter(Boolean).join(' · '), data: JSON.parse(JSON.stringify(c)) });
+        saveTrash();
         cases = cases.filter((x) => x.id !== id);
+        pushPositionChanges(renumberDay(c.date, false));
         saveCases();
         refreshAll();
-        showToast('Fall endgültig gelöscht');
+        showToast('In den Papierkorb verschoben');
+    }
+
+    // ---- Vorwerte: stornieren → endgültig löschen (Papierkorb) ----
+    async function cancelVorwert(id) {
+        const v = vorwerte.find((x) => x.id === id);
+        if (!v || v.cancelled) return;
+        const ok = await askConfirm(`Vorwerte-Block „${v.name}“ stornieren?\n\nEr bleibt sichtbar (grau), zählt aber nicht mehr mit. Das lässt sich rückgängig machen.`, { title: 'Vorwerte stornieren', confirmLabel: 'Stornieren', danger: true });
+        if (!ok) return;
+        v.cancelled = true;
+        touchCase(v);
+        storeSet('vorwerte', JSON.stringify(vorwerte));
+        enqueueVwSync('vw-cancel', v);
+        renderVorwerteList();
+        renderEvaluation();
+        showToast('Vorwerte storniert');
+    }
+
+    function uncancelVorwert(id) {
+        const v = vorwerte.find((x) => x.id === id);
+        if (!v || !v.cancelled) return;
+        delete v.cancelled;
+        touchCase(v);
+        storeSet('vorwerte', JSON.stringify(vorwerte));
+        enqueueVwSync('vw-uncancel', v);
+        renderVorwerteList();
+        renderEvaluation();
+        showToast('Storno aufgehoben');
+    }
+
+    async function purgeVorwert(id) {
+        const v = vorwerte.find((x) => x.id === id);
+        if (!v || !v.cancelled) return;
+        const ok1 = await askConfirm(`Stornierten Vorwerte-Block „${v.name}“ endgültig löschen?`, { title: 'Endgültig löschen', confirmLabel: 'Weiter', danger: true });
+        if (!ok1) return;
+        const ok2 = await askConfirm('Wirklich endgültig löschen? Der Block wandert in den Papierkorb und kann dort wiederhergestellt werden.', { title: 'Letzte Bestätigung', confirmLabel: 'Endgültig löschen', danger: true });
+        if (!ok2) return;
+        touchCase(v);
+        enqueueVwSync('vw-purge', v);
+        trash.unshift({ kind: 'vorwert', uid: String(v.id), ts: v.ts, deletedAt: new Date().toISOString(), date: '', description: 'Vorwerte: ' + v.name, data: JSON.parse(JSON.stringify(v)) });
+        saveTrash();
+        vorwerte = vorwerte.filter((x) => x.id !== id);
+        storeSet('vorwerte', JSON.stringify(vorwerte));
+        refreshAll();
+        showToast('In den Papierkorb verschoben');
+    }
+
+    // ---- Papierkorb ----
+    function trashCaseData(d) {
+        // Einträge aus der Tabelle haben BTM als Text und „status“
+        const c = applySheetCase({}, Object.assign({}, d, { uid: undefined, ts: undefined }));
+        ['id', 'isDemo'].forEach((k) => { if (d[k] !== undefined) c[k] = d[k]; });
+        return c;
+    }
+
+    async function restoreTrashItem(uid) {
+        const t = trash.find((x) => x.uid === uid);
+        if (!t) return;
+        if (t.kind === 'vorwert') {
+            const d = t.data || {};
+            const v = { id: String(d.id || t.uid), name: d.name || 'Vorwerte', counts: d.counts || {}, cancelled: true, ts: t.ts || 0, rev: 1 };
+            touchCase(v);
+            vorwerte.push(v);
+            storeSet('vorwerte', JSON.stringify(vorwerte));
+            if (!d.isDemo) enqueueRaw({ opId: newUid(), type: 'trash-restore', uid: t.uid, ts: v.ts, at: new Date().toISOString() });
+        } else {
+            const c = trashCaseData(t.data || {});
+            c.uid = t.uid; c.cancelled = true; c.ts = t.ts || 0;
+            let id = String(c.id || t.uid);
+            while (cases.some((x) => String(x.id) === id)) id += 'r';
+            c.id = id;
+            touchCase(c);
+            cases.push(c);
+            if (!c.isDemo) enqueueRaw({ opId: newUid(), type: 'trash-restore', uid: t.uid, ts: c.ts, at: new Date().toISOString() });
+            pushPositionChanges(renumberDay(c.date, true));
+            saveCases();
+        }
+        trash = trash.filter((x) => x.uid !== uid);
+        saveTrash();
+        refreshAll();
+        showToast('Wiederhergestellt (als storniert)');
+    }
+
+    async function deleteTrashItem(uid) {
+        const t = trash.find((x) => x.uid === uid);
+        if (!t) return;
+        const ok = await askConfirm(`„${t.description || 'Eintrag'}“ endgültig aus dem Papierkorb entfernen? Das kann nicht rückgängig gemacht werden.`, { title: 'Endgültig entfernen', confirmLabel: 'Entfernen', danger: true });
+        if (!ok) return;
+        if (!(t.data && t.data.isDemo)) enqueueRaw({ opId: newUid(), type: 'trash-delete', uid: t.uid, ts: Date.now(), at: new Date().toISOString() });
+        trash = trash.filter((x) => x.uid !== uid);
+        saveTrash();
+        renderTrash();
+        updateSettingsSummaries();
+    }
+
+    async function emptyTrash() {
+        if (!trash.length) return;
+        const ok1 = await askConfirm(`Papierkorb mit ${trash.length} ${trash.length === 1 ? 'Eintrag' : 'Einträgen'} leeren?`, { title: 'Papierkorb leeren', confirmLabel: 'Weiter', danger: true });
+        if (!ok1) return;
+        const ok2 = await askConfirm('Wirklich alles endgültig entfernen? Das kann nicht rückgängig gemacht werden – auch nicht in der Google-Tabelle.', { title: 'Letzte Bestätigung', confirmLabel: 'Leeren', danger: true });
+        if (!ok2) return;
+        const q = syncQueue();
+        trash.forEach((t) => { if (syncConfigured() && !(t.data && t.data.isDemo)) q.push({ opId: newUid(), type: 'trash-delete', uid: t.uid, ts: Date.now(), at: new Date().toISOString() }); });
+        saveSyncQueue(q);
+        trash = [];
+        saveTrash();
+        renderTrash();
+        updateSettingsSummaries();
+        updateSyncUI();
+        if (q.length) syncNow({ manual: true });
+    }
+
+    function renderTrash() {
+        const box = $('trash-list');
+        if (!box) return;
+        $('trash-empty').classList.toggle('hidden', trash.length > 0);
+        $('trash-empty-btn').classList.toggle('hidden', trash.length === 0);
+        box.innerHTML = trash.map((t) => {
+            const when = t.deletedAt ? syncTimeLabel(t.deletedAt) : '';
+            const kind = t.kind === 'vorwert' ? 'Vorwerte' : (t.date ? formatDate(t.date) : 'Fall');
+            return `
+                <div class="px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${esc(kind)}${when ? ' · gelöscht ' + esc(when) : ''}</p>
+                        <p class="text-[13px] text-slate-700 dark:text-slate-200 truncate">${esc(t.description || '–')}</p>
+                    </div>
+                    <div class="card-actions shrink-0">
+                        <button type="button" data-action="restore" data-uid="${esc(t.uid)}" class="card-action text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-md transition" title="Wiederherstellen" aria-label="Wiederherstellen"><i data-lucide="undo-2" class="w-4 h-4 pointer-events-none"></i></button>
+                        <button type="button" data-action="remove" data-uid="${esc(t.uid)}" class="card-action text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-md transition" title="Endgültig entfernen" aria-label="Endgültig entfernen"><i data-lucide="x" class="w-4 h-4 pointer-events-none"></i></button>
+                    </div>
+                </div>`;
+        }).join('');
+        refreshIcons();
     }
 
     // Übersicht: Verbindung, Skript, Abgleich App ↔ Tabelle
@@ -4915,6 +5173,17 @@
         });
         // Beim Öffnen abgleichen (holt auch Änderungen aus der Tabelle)
         scheduleSync(2500);
+        // Solange die App sichtbar ist, regelmäßig Änderungen anderer Geräte holen
+        setInterval(() => {
+            if (document.visibilityState === 'visible' && syncConfigured() && syncAuto() && !syncBusy) syncNow({ manual: false });
+        }, SYNC_POLL_MS);
+        $('trash-list').addEventListener('click', (e) => {
+            const b = e.target.closest('[data-action]');
+            if (!b) return;
+            if (b.dataset.action === 'restore') restoreTrashItem(b.dataset.uid);
+            if (b.dataset.action === 'remove') deleteTrashItem(b.dataset.uid);
+        });
+        renderTrash();
     }
 
     // ---------------------------------------------------------------
@@ -5071,9 +5340,9 @@
             const sumRows = summaryRows().map((s) => [s.cat.label, s.cat.target, s.cur, s.logbook, s.vorwerte, s.pct]);
             XLSX.utils.book_append_sheet(wb, sheetFromRows(sumHeaders, sumRows), 'Auswertung');
 
-            if (vorwerte.length > 0) {
+            if (activeVorwerte().length > 0) {
                 const vwHeaders = ['Bezeichnung', 'Demo'].concat(baekCategories.map((c) => c.label));
-                const vwRows = vorwerte.map((v) => [v.name, v.isDemo ? 'ja' : ''].concat(
+                const vwRows = activeVorwerte().map((v) => [v.name, v.isDemo ? 'ja' : ''].concat(
                     baekCategories.map((c) => (v.counts && v.counts[c.id]) ? Number(v.counts[c.id]) : '')));
                 XLSX.utils.book_append_sheet(wb, sheetFromRows(vwHeaders, vwRows), 'Vorwerte');
             }
@@ -5475,12 +5744,13 @@
         const overall = overallProgressPct(computeProgressFor(scope.cases, scope.withVorwerte));
         const dates = scope.cases.map((c) => c.date).filter(Boolean).sort();
         const period = dates.length ? `${formatDate(dates[0])} – ${formatDate(dates[dates.length - 1])}` : '–';
-        const vwTotal = vorwerte.reduce((acc, v) => acc + (parseInt(v.counts && v.counts.total, 10) || 0), 0);
+        const avw = activeVorwerte();
+        const vwTotal = avw.reduce((acc, v) => acc + (parseInt(v.counts && v.counts.total, 10) || 0), 0);
         const vwText = !scope.withVorwerte ? 'nicht enthalten (ohne Datum)'
-            : vorwerte.length ? `${vorwerte.length} ${vorwerte.length === 1 ? 'Block' : 'Blöcke'} · ${nf(vwTotal)} Anästhesien`
+            : avw.length ? `${avw.length} ${avw.length === 1 ? 'Block' : 'Blöcke'} · ${nf(vwTotal)} Anästhesien`
             : 'keine';
         const nCases = scope.cases.length;
-        const hasDemo = scope.cases.some((c) => c.isDemo) || (scope.withVorwerte && vorwerte.some((v) => v.isDemo));
+        const hasDemo = scope.cases.some((c) => c.isDemo) || (scope.withVorwerte && activeVorwerte().some((v) => v.isDemo));
 
         // --- Seite 1: Kopfbereich ------------------------------------------
         page = doc.addPage([W, H]);
@@ -5798,7 +6068,7 @@
 
     async function exportToJSON() {
         if (cases.length === 0 && vorwerte.length === 0) { showToast('Es gibt noch keine Daten zum Sichern.', 'warn'); return; }
-        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), profile: { name: userName() }, cases, vorwerte };
+        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), profile: { name: userName() }, cases, vorwerte, trash };
         const saved = await saveFile(`anaesthesie-logbuch-backup_${todayStr()}.json`, JSON.stringify(payload, null, 2), 'application/json');
         if (saved === false) return;
         storeSet('lastBackupAt', new Date().toISOString());
@@ -5918,6 +6188,8 @@
         if (txt.toUpperCase() !== 'LÖSCHEN') { showToast('Eingabe stimmt nicht überein – nichts gelöscht.', 'warn'); return; }
         cases = [];
         vorwerte = [];
+        trash = [];
+        saveTrash();
         disconnectSync();
         saveCases();
         storeSet('vorwerte', JSON.stringify(vorwerte));
@@ -6122,7 +6394,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 4)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 5)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -6133,31 +6405,34 @@
  *     Ausführungsprotokoll steht der GEHEIME SCHLÜSSEL.
  *  3. Bereitstellen → Neue Bereitstellung → Web-App, Ausführen als: Ich,
  *     Zugriff: Jeder → URL (…/exec) kopieren.
- *  4. In der App URL + Schlüssel eintragen → „Jetzt synchronisieren“.
+ *  4. In der App URL + Schlüssel eintragen → „Verbindung testen“.
  *
  * Update auf eine neue Skript-Version: Code ersetzen → speichern →
  * „einrichten“ ausführen → Bereitstellen → Bereitstellungen verwalten →
  * Stift → Version „Neue Version“ → Bereitstellen (URL bleibt gleich).
  * NICHT „Neue Bereitstellung“ – das erzeugt eine neue URL.
  *
- * So arbeiten App und Tabelle zusammen:
- *  - Jeder Fall hat eine eindeutige UID und eine Version (Zeitpunkt der
- *    letzten Änderung). Die neuere Fassung gewinnt – egal ob sie aus der
- *    App oder aus der Tabelle stammt. Ältere überschreiben nie neuere.
+ * Die Tabelle ist das vollständige Abbild der App (alle Geräte gleichen
+ * sich mit ihr ab) – inklusive Initialen, Geburtsdatum, Alter, Bemerkungen
+ * und der Reihenfolge je Tag (Spalte „Nr.“).
+ *  - Jeder Fall/Vorwerte-Block hat eine UID/ID und eine Version (Zeitpunkt
+ *    der letzten Änderung). Die neuere Fassung gewinnt – aus der App oder
+ *    aus der Tabelle. Ältere überschreiben nie neuere.
  *  - Die App schickt nur Aufträge (anlegen, bearbeiten, stornieren, Storno
- *    aufheben, endgültig löschen), nie „den Gesamtbestand“. Ein leerer
- *    App-Speicher verändert die Tabelle daher nicht.
- *  - In der Tabelle darfst du Werte ändern, neue Zeilen ergänzen und den
- *    Status auf „storniert“ setzen. Das Skript vergibt dann automatisch
- *    UID und Version; die App übernimmt es beim nächsten Abgleich.
- *  - Löschst du eine ganze Zeile (oder leerst Datum UND Eingriff), fehlt
- *    der Fall in der Tabelle. Die App bietet dann an, ihn wieder hochzuladen.
- *  - Jede UID zählt in der Auswertung nur einmal (keine Doppelzählung).
- *  - Keine Patientendaten: keine Initialen, kein Geburtsdatum, kein Alter,
- *    keine Bemerkungen – nur „Kind ≤ 5 J.“ als ja/nein für die Richtzahl.
+ *    aufheben, endgültig löschen, aus dem Papierkorb holen), nie „den
+ *    Gesamtbestand“. Ein leerer App-Speicher verändert die Tabelle nicht.
+ *  - In der Tabelle darfst du Werte ändern, Zeilen ergänzen und den Status
+ *    auf „storniert“ setzen; UID und Version vergibt das Skript.
+ *  - Endgültig gelöschte Fälle und Vorwerte liegen im „Papierkorb“ und
+ *    lassen sich aus der App wiederherstellen.
+ *  - Jede UID zählt in der Auswertung nur einmal.
+ *
+ * DATENSCHUTZ: Die Tabelle enthält patientenbezogene Daten (Initialen,
+ * Geburtsdatum). Tabelle nicht freigeben, Google-Konto mit 2-Faktor-
+ * Anmeldung schützen, geheimen Schlüssel nicht weitergeben.
  */
 
-var SCRIPT_VERSION = 4;
+var SCRIPT_VERSION = 5;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -6170,7 +6445,6 @@ var BULK_LIMIT = 5;            // mehr Stornos/Löschungen je Übertragung nur m
 var MAX_OPS_PER_REQUEST = 200;
 var STATUS_ACTIVE = 'aktiv';
 var STATUS_CANCELLED = 'storniert';
-var STATUS_DELETED = 'gelöscht'; // nur Vorwerte
 
 // Richtzahlen (wie in der App): [id, Kurzname, Langname, Soll]
 var RZ = [
@@ -6191,7 +6465,6 @@ var RZ = [
   ['ambulant', 'Ambulant', 'Anästhesien bei ambulanten Eingriffen', 50]
 ];
 
-// Eingriffe, die als Geburtshilfe zählen (wie in der App)
 var GEBURTSHILFE = ['Sectio Caesarea', 'Manuelle Plazentalösung', 'Curettage p.p.', 'Cerclage',
   'Geburtseinleitung (Analgesie)', 'PDK Kreissaal', 'Dammriss-Versorgung / Episiotomie-Naht',
   'Vaginal-operative Entbindung (Zange/Vakuum)', 'Äußere Wendung (Analgesie)',
@@ -6201,7 +6474,11 @@ var GEBURTSHILFE = ['Sectio Caesarea', 'Manuelle Plazentalösung', 'Curettage p.
 // über die Überschriften – eigene Zusatzspalten stören nicht.
 var CASE_COLS = [
   ['Datum', 'date', 'date'],
+  ['Nr.', 'pos', 'int'],
   ['Status', 'status', 'status'],
+  ['Initialen', 'initials', 'text'],
+  ['Geburtsdatum', 'dob', 'dob'],
+  ['Alter bei OP', 'ageAtCase', 'age'],
   ['Eingriff', 'procedure', 'text'],
   ['Eingriff 2', 'procedure2', 'text'],
   ['ASA', 'asa', 'asa'],
@@ -6223,7 +6500,8 @@ var CASE_COLS = [
   ['Fiberoptik', 'isFiberoptik', 'bool'],
   ['Videolaryngoskopie', 'isVideo', 'bool'],
   ['Sono-Gefäßpunktion', 'isSonoGefaess', 'bool'],
-  ['BTM (Ampullen)', 'btm', 'text']
+  ['BTM (Ampullen)', 'btm', 'text'],
+  ['Bemerkungen', 'notes', 'text']
 ].concat(RZ.map(function (r) { return ['RZ ' + r[1], 'rz:' + r[0], 'rz']; }))
  .concat([
   ['Letzte Aktion', 'lastAction', 'tech'],
@@ -6238,18 +6516,17 @@ var VW_COLS = [['Bezeichnung', 'name', 'text'], ['Status', 'status', 'status']]
   .concat(RZ.map(function (r) { return [r[1], 'n:' + r[0], 'num']; }))
   .concat([['Geändert am', 'changedAt', 'tech'], ['Version', 'ts', 'tech'], ['ID', 'id', 'tech']]);
 
-// Frühere Überschriften (Skript-Version 2/3) → Schlüssel, für die Umstellung
-var OLD_HEADERS = { 'BTM': 'btm', 'Daten (App)': '_json', 'Revision': '_rev' };
-RZ.forEach(function (r) { OLD_HEADERS[r[2]] = 'n:' + r[0]; });
+// Blatt „Papierkorb“ (Fälle und Vorwerte)
+var TRASH_HEADERS = ['Gelöscht am', 'Art', 'Datum', 'Beschreibung', 'UID', 'Version', 'Daten'];
 
 var BOOL_KEYS = CASE_COLS.filter(function (c) { return c[2] === 'bool'; }).map(function (c) { return c[1]; });
+var DATA_KEYS = CASE_COLS.filter(function (c) { return c[2] !== 'rz' && c[2] !== 'tech' && c[1] !== 'status'; }).map(function (c) { return c[1]; });
 
 // ------------------------------------------------------------------
 // Hilfen
 // ------------------------------------------------------------------
 function ss_() { return SpreadsheetApp.getActiveSpreadsheet(); }
 
-// Überschrift → Spaltenindex (0-basiert) aus Zeile 1
 function hmap_(sheet) {
   var lastCol = sheet.getLastColumn();
   var map = {};
@@ -6273,39 +6550,52 @@ function truthy_(v) {
   return s === 'ja' || s === 'x' || s === 'true' || s === 'wahr' || s === '1' || s === 'yes' || s === 'j' || s === '✓';
 }
 
-function normStatus_(v, forVw) {
+function normStatus_(v) {
   var s = String(v == null ? '' : v).trim().toLowerCase();
-  if (s.indexOf('storn') === 0) return STATUS_CANCELLED;
-  if (forVw && (s.indexOf('gelösch') === 0 || s.indexOf('geloesch') === 0)) return STATUS_DELETED;
-  return STATUS_ACTIVE;
+  return (s.indexOf('storn') === 0 || s.indexOf('gelösch') === 0 || s.indexOf('geloesch') === 0) ? STATUS_CANCELLED : STATUS_ACTIVE;
 }
 
 function safeText_(v) {
   var s = v == null ? '' : String(v);
-  if (s.length > 500) s = s.slice(0, 500);
+  if (s.length > 1000) s = s.slice(0, 1000);
   return /^[=+\-@]/.test(s) ? "'" + s : s; // keine Formeln aus App-Daten
 }
 
 function unsafe_(s) { return String(s == null ? '' : s).replace(/^'/, ''); }
 
-// Datum aus Zelle: Date-Objekt, "2026-09-24", "24.09.2026" oder "24.09.26"
-function toDate_(v) {
+function pad2_(n) { return (n < 10 ? '0' : '') + n; }
+
+// Datum aus Zelle: Date, "2026-09-24", "24.09.2026" oder "24.09.26"
+function toDate_(v, centuryCutoff) {
   if (v instanceof Date && !isNaN(v.getTime())) return new Date(v.getFullYear(), v.getMonth(), v.getDate());
   var s = String(v == null ? '' : v).trim();
   var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
   m = /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/.exec(s);
-  if (m) { var y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[2] - 1, +m[1]); }
+  if (m) {
+    var y = +m[3];
+    if (y < 100) y += (centuryCutoff && y > centuryCutoff) ? 1900 : 2000;
+    return new Date(y, +m[2] - 1, +m[1]);
+  }
   return null;
 }
 
-function isoDate_(d) {
-  if (!d) return '';
-  var p = function (n) { return (n < 10 ? '0' : '') + n; };
-  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+// Geburtsdatum als Text "TT.MM.JJJJ"
+function dobText_(v) {
+  if (v == null || v === '') return '';
+  var yy = new Date().getFullYear() % 100;
+  var d = toDate_(v, yy);
+  if (!d) return unsafe_(v).trim();
+  return pad2_(d.getDate()) + '.' + pad2_(d.getMonth() + 1) + '.' + d.getFullYear();
 }
 
-function colLetter_(n) { // 1-basiert
+function ageAt_(dob, ref) {
+  var a = ref.getFullYear() - dob.getFullYear();
+  if (ref.getMonth() < dob.getMonth() || (ref.getMonth() === dob.getMonth() && ref.getDate() < dob.getDate())) a--;
+  return a;
+}
+
+function colLetter_(n) {
   var s = '';
   while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
   return s;
@@ -6313,7 +6603,6 @@ function colLetter_(n) { // 1-basiert
 
 function newUid_() { return Utilities.getUuid(); }
 
-// BTM als lesbarer Text "Sufentanil 50 µg × 1; Remifentanil 2 mg × 2"
 function btmToText_(btm) {
   if (typeof btm === 'string') return btm;
   return (Array.isArray(btm) ? btm : []).slice(0, 20).map(function (e) {
@@ -6321,12 +6610,22 @@ function btmToText_(btm) {
   }).join('; ');
 }
 
-// Richtzahl-Kriterien – gleiche Regeln wie in der App
+// Alter und „Kind ≤ 5“ aus Geburtsdatum bzw. gespeichertem Alter
+function deriveAge_(o) {
+  var date = o.date instanceof Date ? o.date : toDate_(o.date);
+  var yy = new Date().getFullYear() % 100;
+  var dob = o.dob ? toDate_(o.dob, yy) : null;
+  if (dob && date) { var a = ageAt_(dob, date); if (a >= 0) return a; }
+  var n = parseInt(o.ageAtCase, 10);
+  return isNaN(n) ? null : n;
+}
+
 function computeRz_(o) {
   var procs = [o.procedure, o.procedure2].map(function (x) { return String(x || '').trim(); }).filter(String);
   var ga = !!o.isVollnarkose;
   var asa = parseInt(o.asa, 10);
   var geb = !!o.isSectio || procs.some(function (p) { return GEBURTSHILFE.indexOf(p) > -1; });
+  var age = deriveAge_(o);
   return {
     total: ga,
     abdominell: ga && !!o.isAbdominell,
@@ -6335,7 +6634,7 @@ function computeRz_(o) {
     video: !!o.isVideo,
     ultraschall: !!o.isSonoGefaess,
     intrakraniell: !!o.isIntrakraniell,
-    kinder: !!o.kindLe5,
+    kinder: age !== null ? age <= 5 : !!o.kindLe5,
     geburtshilfe: geb,
     sectio: procs.indexOf('Sectio Caesarea') > -1,
     intrathorakal: !!o.isIntrathorakal,
@@ -6346,7 +6645,6 @@ function computeRz_(o) {
   };
 }
 
-// Zeile (Array) → Fall-Objekt
 function rowToCase_(row, km) {
   var o = {};
   CASE_COLS.forEach(function (c) {
@@ -6357,6 +6655,8 @@ function rowToCase_(row, km) {
     else if (c[2] === 'date') o[k] = toDate_(v);
     else if (c[2] === 'status') o[k] = normStatus_(v);
     else if (c[2] === 'asa') { var n = parseInt(v, 10); o[k] = isNaN(n) ? '' : String(n); }
+    else if (c[2] === 'int' || c[2] === 'age') { var i = parseInt(v, 10); o[k] = isNaN(i) ? null : i; }
+    else if (c[2] === 'dob') o[k] = dobText_(v);
     else if (k === 'ts') o[k] = Number(v) || 0;
     else if (k === 'changedAt') o[k] = v instanceof Date ? v : null;
     else o[k] = unsafe_(v).trim();
@@ -6364,16 +6664,20 @@ function rowToCase_(row, km) {
   return o;
 }
 
-// Fall-Objekt → Werte in eine bestehende Zeile schreiben (nur bekannte Spalten)
 function fillCaseRow_(row, km, o) {
   var rz = computeRz_(o);
+  var age = deriveAge_(o);
   CASE_COLS.forEach(function (c) {
     var k = c[1];
     if (!(k in km)) return;
     var v;
     if (c[2] === 'rz') v = rz[k.slice(3)] ? 'x' : '';
+    else if (k === 'kindLe5') v = rz.kinder ? 'ja' : '';
     else if (c[2] === 'bool') v = o[k] ? 'ja' : '';
     else if (c[2] === 'date') v = o[k] instanceof Date ? o[k] : (toDate_(o[k]) || '');
+    else if (c[2] === 'dob') v = dobText_(o.dob);
+    else if (c[2] === 'age') v = age === null ? '' : age;
+    else if (c[2] === 'int') v = o[k] == null || o[k] === '' ? '' : Number(o[k]) || '';
     else if (k === 'btm') v = safeText_(btmToText_(o.btm));
     else if (k === 'ts') v = Number(o.ts) || 0;
     else if (k === 'changedAt') v = o.changedAt || new Date();
@@ -6385,6 +6689,10 @@ function fillCaseRow_(row, km, o) {
 
 function hasCaseContent_(o) { return !!(o.date || o.procedure); }
 
+function caseDescription_(o) {
+  return [o.initials, [o.procedure, o.procedure2].filter(String).join(' + ')].filter(String).join(' · ');
+}
+
 // ------------------------------------------------------------------
 // Einrichtung (auch zum Aktualisieren – Daten bleiben erhalten)
 // ------------------------------------------------------------------
@@ -6393,7 +6701,7 @@ function einrichten() {
   setupCases_(ss);
   setupVorwerte_(ss);
   setupSimple_(ss, SHEET_HISTORY, ['Gesichert am', 'Anlass', 'Auftrag-ID'].concat(CASE_COLS.map(function (c) { return c[0]; })), '#f1f5f9');
-  setupSimple_(ss, SHEET_TRASH, ['Gelöscht am', 'Auftrag-ID'].concat(CASE_COLS.map(function (c) { return c[0]; })), '#fee2e2');
+  setupTrash_(ss);
   setupSimple_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis'], '#f1f5f9');
   setupEval_(ss);
 
@@ -6420,7 +6728,6 @@ function neuenSchluesselErzeugen() {
 
 function neuerSchluessel_() { return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''); }
 
-// Liest alle Zeilen eines Blatts als Objekte {Überschrift: Wert}
 function readByHeader_(sheet) {
   var last = sheet.getLastRow(), lastCol = sheet.getLastColumn();
   if (last < 2 || lastCol < 1) return [];
@@ -6438,6 +6745,15 @@ function headersMatch_(sheet, headers) {
   return headers.every(function (h, i) { return String(cur[i]) === h; });
 }
 
+function resetSheet_(sh) {
+  sh.clear();
+  sh.setConditionalFormatRules([]);
+  sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).clearDataValidations();
+  sh.showColumns(1, sh.getMaxColumns());
+}
+
+function identityKm_(cols) { var m = {}; cols.forEach(function (c, i) { m[c[1]] = i; }); return m; }
+
 function setupCases_(ss) {
   var headers = CASE_COLS.map(function (c) { return c[0]; });
   var sh = ss.getSheetByName(SHEET_CASES);
@@ -6448,32 +6764,25 @@ function setupCases_(ss) {
     rows = readByHeader_(sh).map(function (r) {
       var o = {};
       CASE_COLS.forEach(function (c) { if (c[0] in r) o[c[1]] = r[c[0]]; });
-      if (!o.btm && r['BTM']) o.btm = r['BTM'];
+      if (o.btm == null && r['BTM'] != null) o.btm = r['BTM'];
       return o;
     });
-    // ab hier: rows[i][schlüssel]
-    sh.clear();
-    try { sh.clearConditionalFormatRules && sh.clearConditionalFormatRules(); } catch (e) {}
-    sh.setConditionalFormatRules([]);
-    sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).clearDataValidations();
-    sh.showColumns(1, sh.getMaxColumns());
+    resetSheet_(sh);
   }
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#e0effe').setWrap(true);
   var km = keyMap_(CASE_COLS, hmap_(sh));
 
   if (rows) {
-    var now = new Date();
+    var now = new Date(), ikm = identityKm_(CASE_COLS);
     var out = [];
     rows.forEach(function (r) {
-      var fake = CASE_COLS.map(function (c) { return r[c[1]]; });
-      // r ist hier schon nach Schlüsseln abgelegt (siehe oben)
-      var o = rowToCase_(fake, keyMap_(CASE_COLS, CASE_COLS.reduce(function (m, c, i) { m[c[0]] = i; return m; }, {})));
-      if (!hasCaseContent_(o)) return; // in der Tabelle geleerte Zeilen fallen weg
+      var o = rowToCase_(CASE_COLS.map(function (c) { return r[c[1]]; }), ikm);
+      if (!hasCaseContent_(o)) return; // geleerte Zeilen fallen weg
       o.uid = o.uid || newUid_();
       o.ts = o.ts || now.getTime();
       o.lastAction = o.lastAction || 'übernommen';
-      o.changedAt = o.changedAt instanceof Date ? o.changedAt : now;
+      o.changedAt = o.changedAt || now;
       out.push(fillCaseRow_(new Array(headers.length).fill(''), km, o));
     });
     if (out.length) sh.getRange(2, 1, out.length, headers.length).setValues(out);
@@ -6482,13 +6791,13 @@ function setupCases_(ss) {
   var maxRows = sh.getMaxRows();
   var body = function (key, n) { return sh.getRange(2, km[key] + 1, maxRows - 1, n || 1); };
   sh.setFrozenRows(1);
-  sh.setFrozenColumns(1);
+  sh.setFrozenColumns(2);
   body('date').setNumberFormat('dd.MM.yyyy');
+  body('dob').setNumberFormat('@');
   body('ts').setNumberFormat('0');
   body('changedAt').setNumberFormat('dd.MM.yyyy HH:mm');
   body('uid', 2).setNumberFormat('@');
 
-  // Auswahllisten zum bequemen Bearbeiten
   var dv = function (list, strict) {
     return SpreadsheetApp.newDataValidation().requireValueInList(list, true).setAllowInvalid(!strict).build();
   };
@@ -6498,12 +6807,14 @@ function setupCases_(ss) {
   body('airway').setDataValidation(dv(['ITN', 'Video-ITN', 'LAMA'], false));
   BOOL_KEYS.forEach(function (k) { body(k).setDataValidation(dv(['ja'], false)); });
 
-  // Berechnete und technische Spalten grau
   CASE_COLS.forEach(function (c) {
-    if (c[2] === 'rz' || c[2] === 'tech') sh.getRange(1, km[c[1]] + 1).setBackground('#e2e8f0').setFontColor('#475569');
+    if (c[2] === 'rz' || c[2] === 'tech' || c[2] === 'age' || c[1] === 'kindLe5') sh.getRange(1, km[c[1]] + 1).setBackground('#e2e8f0').setFontColor('#475569');
   });
   sh.getRange(1, km['rz:total'] + 1).setNote('RZ-Spalten rechnet das Skript aus den Angaben links aus.');
-  sh.getRange(1, km.uid + 1).setNote('Nicht ändern: eindeutige Kennung des Falls. Leer lassen bei neuen Zeilen – wird automatisch vergeben.');
+  sh.getRange(1, km.ageAtCase + 1).setNote('Wird aus Geburtsdatum und OP-Datum berechnet. Ohne Geburtsdatum (Datenschutz-Modus) steht hier das in der App gespeicherte Alter.');
+  sh.getRange(1, km.kindLe5 + 1).setNote('Ergibt sich aus dem Alter (≤ 5 Jahre). Nur ohne Alter von Hand setzen.');
+  sh.getRange(1, km.pos + 1).setNote('Reihenfolge des Falls an diesem Tag (wie in der App).');
+  sh.getRange(1, km.uid + 1).setNote('Nicht ändern: eindeutige Kennung des Falls. Bei neuen Zeilen leer lassen – wird automatisch vergeben.');
 
   var statusCol = colLetter_(km.status + 1);
   sh.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
@@ -6511,6 +6822,7 @@ function setupCases_(ss) {
     .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
     .setRanges([sh.getRange(2, 1, maxRows - 1, headers.length)]).build()]);
   sh.setColumnWidth(km.procedure + 1, 220);
+  sh.setColumnWidth(km.notes + 1, 220);
 }
 
 function setupVorwerte_(ss) {
@@ -6518,14 +6830,13 @@ function setupVorwerte_(ss) {
   var sh = ss.getSheetByName(SHEET_VW);
   var rows = null;
   if (!sh) sh = ss.insertSheet(SHEET_VW);
-  else if (!headersMatch_(sh, headers)) {
+  else if (!headersMatch_(sh, headers) || sh.getLastRow() > 1) {
     rows = readByHeader_(sh).map(function (r) {
       var o = { name: r['Bezeichnung'], status: r['Status'], id: r['ID'], ts: r['Version'], changedAt: r['Geändert am'] };
       RZ.forEach(function (x) { o['n:' + x[0]] = r[x[1]] != null ? r[x[1]] : r[x[2]]; });
       return o;
     });
-    sh.clear();
-    sh.setConditionalFormatRules([]);
+    resetSheet_(sh);
   }
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
   sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#e0effe').setWrap(true);
@@ -6533,7 +6844,8 @@ function setupVorwerte_(ss) {
   if (rows) {
     var out = rows.filter(function (o) { return o.name || RZ.some(function (x) { return Number(o['n:' + x[0]]) > 0; }); })
       .map(function (o) {
-        o.id = String(o.id || newUid_()); o.ts = Number(o.ts) || Date.now(); o.status = normStatus_(o.status, true);
+        o.id = String(o.id || newUid_()); o.ts = Number(o.ts) || Date.now(); o.status = normStatus_(o.status);
+        if (!(o.changedAt instanceof Date)) o.changedAt = new Date();
         return fillVwRow_(new Array(headers.length).fill(''), km, o);
       });
     if (out.length) sh.getRange(2, 1, out.length, headers.length).setValues(out);
@@ -6544,11 +6856,11 @@ function setupVorwerte_(ss) {
   sh.getRange(2, km.id + 1, maxRows - 1, 1).setNumberFormat('@');
   sh.getRange(2, km.changedAt + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm');
   sh.getRange(2, km.status + 1, maxRows - 1, 1).setDataValidation(
-    SpreadsheetApp.newDataValidation().requireValueInList([STATUS_ACTIVE, STATUS_DELETED], true).setAllowInvalid(false).build());
+    SpreadsheetApp.newDataValidation().requireValueInList([STATUS_ACTIVE, STATUS_CANCELLED], true).setAllowInvalid(false).build());
   ['changedAt', 'ts', 'id'].forEach(function (k) { sh.getRange(1, km[k] + 1).setBackground('#e2e8f0').setFontColor('#475569'); });
   var statusCol = colLetter_(km.status + 1);
   sh.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_DELETED + '"')
+    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_CANCELLED + '"')
     .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
     .setRanges([sh.getRange(2, 1, maxRows - 1, headers.length)]).build()]);
   sh.setColumnWidth(km.name + 1, 200);
@@ -6562,7 +6874,7 @@ function fillVwRow_(row, km, o) {
     if (c[2] === 'num') v = Math.max(0, parseInt(o[k], 10) || 0);
     else if (k === 'ts') v = Number(o.ts) || 0;
     else if (k === 'changedAt') v = o.changedAt instanceof Date ? o.changedAt : new Date();
-    else if (k === 'status') v = normStatus_(o.status, true);
+    else if (k === 'status') v = normStatus_(o.status);
     else v = safeText_(o[k] == null ? '' : o[k]);
     row[km[k]] = v;
   });
@@ -6570,7 +6882,7 @@ function fillVwRow_(row, km, o) {
 }
 
 function rowToVw_(row, km) {
-  var o = { name: unsafe_(row[km.name]).trim(), status: normStatus_(row[km.status], true), ts: Number(row[km.ts]) || 0, id: String(row[km.id] || '').trim(), counts: {} };
+  var o = { name: unsafe_(row[km.name]).trim(), status: normStatus_(row[km.status]), ts: Number(row[km.ts]) || 0, id: String(row[km.id] || '').trim(), counts: {} };
   RZ.forEach(function (x) { var n = parseInt(row[km['n:' + x[0]]], 10) || 0; if (n > 0) o.counts[x[0]] = n; });
   return o;
 }
@@ -6578,7 +6890,6 @@ function rowToVw_(row, km) {
 function setupSimple_(ss, name, headers, color) {
   var sh = ss.getSheetByName(name);
   if (sh && sh.getLastRow() > 1 && !headersMatch_(sh, headers)) {
-    // alter Aufbau mit Daten: als Archiv behalten, neues Blatt anlegen
     var alt = name + ' (alt)', i = 2;
     while (ss.getSheetByName(alt)) alt = name + ' (alt ' + (i++) + ')';
     sh.setName(alt);
@@ -6591,16 +6902,45 @@ function setupSimple_(ss, name, headers, color) {
   return sh;
 }
 
+// Papierkorb: frühere Aufbauten (Fall-Spalten) werden umgewandelt
+function setupTrash_(ss) {
+  var sh = ss.getSheetByName(SHEET_TRASH);
+  var rows = null;
+  if (sh && !headersMatch_(sh, TRASH_HEADERS)) {
+    var ikm = identityKm_(CASE_COLS);
+    rows = readByHeader_(sh).map(function (r) {
+      var src = CASE_COLS.map(function (c) { return r[c[0]] != null ? r[c[0]] : (c[1] === 'btm' ? r['BTM'] : ''); });
+      var o = rowToCase_(src, ikm);
+      o.status = STATUS_CANCELLED;
+      o.date = o.date ? isoDate_(o.date) : '';
+      return [r['Gelöscht am'] || new Date(), 'Fall', o.date ? toDate_(o.date) : '', caseDescription_(o), o.uid, o.ts, JSON.stringify(o)];
+    }).filter(function (r) { return r[4]; });
+    resetSheet_(sh);
+  }
+  if (!sh) sh = ss.insertSheet(SHEET_TRASH);
+  sh.getRange(1, 1, 1, TRASH_HEADERS.length).setValues([TRASH_HEADERS]).setFontWeight('bold').setBackground('#fee2e2');
+  sh.setFrozenRows(1);
+  if (rows && rows.length) sh.getRange(2, 1, rows.length, TRASH_HEADERS.length).setValues(rows);
+  sh.getRange(2, 1, sh.getMaxRows() - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm');
+  sh.getRange(2, 3, sh.getMaxRows() - 1, 1).setNumberFormat('dd.MM.yyyy');
+  sh.getRange(2, 5, sh.getMaxRows() - 1, 2).setNumberFormat('@');
+  sh.setColumnWidth(4, 260);
+}
+
+function isoDate_(d) {
+  if (!(d instanceof Date)) return String(d || '');
+  return d.getFullYear() + '-' + pad2_(d.getMonth() + 1) + '-' + pad2_(d.getDate());
+}
+
 function setupEval_(ss) {
   var sh = ss.getSheetByName(SHEET_EVAL) || ss.insertSheet(SHEET_EVAL, 0);
   sh.clear();
-  sh.getRange(1, 1).setValue('Auswertung – nur Fälle mit Status „aktiv“; jede UID zählt einmal').setFontWeight('bold');
+  sh.getRange(1, 1).setValue('Auswertung – nur Fälle und Vorwerte mit Status „aktiv“; jede UID zählt einmal').setFontWeight('bold');
   sh.getRange(2, 1).setFontColor('#64748b');
   sh.getRange(3, 1, 1, 6).setValues([['Richtzahl', 'Soll', 'Logbuch', 'Vorwerte', 'Gesamt', 'Erfüllt']]).setFontWeight('bold').setBackground('#e0effe');
   var n = RZ.length;
   sh.getRange(4, 1, n, 2).setValues(RZ.map(function (r) { return [r[2], r[3]]; }));
   sh.getRange(4, 3, n, 2).setValues(RZ.map(function () { return [0, 0]; }));
-  // Formeln ohne Trennzeichen – funktionieren in jeder Spracheinstellung
   sh.getRange(4, 5, n, 2).setFormulas(RZ.map(function (r, i) { var row = 4 + i; return ['=C' + row + '+D' + row, '=E' + row + '/B' + row]; }));
   sh.getRange(4, 6, n, 1).setNumberFormat('0%');
   sh.setColumnWidth(1, 330);
@@ -6608,7 +6948,7 @@ function setupEval_(ss) {
 }
 
 // ------------------------------------------------------------------
-// Zählen, sortieren, RZ-Spalten auffrischen
+// Zählen, sortieren, berechnete Spalten auffrischen
 // ------------------------------------------------------------------
 function computeEval_(ss) {
   var logbook = {}, vorwerte = {};
@@ -6632,8 +6972,9 @@ function computeEval_(ss) {
     var vkm = keyMap_(VW_COLS, hmap_(vs));
     vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues().forEach(function (row) {
       var o = rowToVw_(row, vkm);
-      if (o.status !== STATUS_ACTIVE || (!o.name && !Object.keys(o.counts).length)) return;
+      if (!o.name && !Object.keys(o.counts).length) return;
       if (o.id) { if (vseen[o.id]) { dup++; return; } vseen[o.id] = true; }
+      if (o.status !== STATUS_ACTIVE) return;
       vblocks++;
       RZ.forEach(function (r) { vorwerte[r[0]] += o.counts[r[0]] || 0; });
     });
@@ -6650,36 +6991,41 @@ function writeEval_(ss, ev) {
     + (ev.duplicates ? ' · ACHTUNG: ' + ev.duplicates + ' doppelte Zeile(n) nicht gezählt' : ''));
 }
 
-// RZ-Spalten aller Zeilen neu berechnen (falls von Hand geändert)
-function refreshRzColumns_(sheet) {
+// RZ-Spalten, Alter und „Kind ≤ 5“ aller Zeilen neu berechnen
+function refreshComputedColumns_(sheet) {
   var last = sheet.getLastRow();
   if (last < 2) return;
   var km = keyMap_(CASE_COLS, hmap_(sheet));
   var values = sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).getValues();
-  var rz = values.map(function (row) {
+  var info = values.map(function (row) {
     var o = rowToCase_(row, km);
-    return hasCaseContent_(o) ? computeRz_(o) : {};
+    if (!hasCaseContent_(o)) return { rz: {}, age: '', kind: '' };
+    var rz = computeRz_(o), age = deriveAge_(o);
+    return { rz: rz, age: age === null ? '' : age, kind: rz.kinder ? 'ja' : '' };
   });
   RZ.forEach(function (r) {
     var col = km['rz:' + r[0]];
-    if (col == null) return;
-    sheet.getRange(2, col + 1, rz.length, 1).setValues(rz.map(function (c) { return [c[r[0]] ? 'x' : '']; }));
+    if (col != null) sheet.getRange(2, col + 1, info.length, 1).setValues(info.map(function (c) { return [c.rz[r[0]] ? 'x' : '']; }));
   });
+  if (km.ageAtCase != null) sheet.getRange(2, km.ageAtCase + 1, info.length, 1).setValues(info.map(function (c) { return [c.age]; }));
+  if (km.kindLe5 != null) sheet.getRange(2, km.kindLe5 + 1, info.length, 1).setValues(info.map(function (c) { return [c.kind]; }));
 }
 
+// Nach OP-Datum, dann Nr. (Reihenfolge am Tag), dann App-ID sortieren
 function sortCases_(sheet) {
   var last = sheet.getLastRow();
   if (last < 3) return;
   var km = keyMap_(CASE_COLS, hmap_(sheet));
   sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).sort([
     { column: km.date + 1, ascending: true },
+    { column: km.pos + 1, ascending: true },
     { column: km.id + 1, ascending: true }
   ]);
 }
 
 function refreshAll_(ss) {
   var cs = ss.getSheetByName(SHEET_CASES);
-  if (cs) { refreshRzColumns_(cs); sortCases_(cs); }
+  if (cs) { refreshComputedColumns_(cs); sortCases_(cs); }
   writeEval_(ss, computeEval_(ss));
 }
 
@@ -6718,15 +7064,14 @@ function handleCaseEdit_(sheet, r1, r2) {
   if (km.uid == null) return;
   var last = sheet.getLastRow();
   var lastCol = sheet.getLastColumn();
-  var all = sheet.getRange(2, km.uid + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return String(r[0] || ''); });
+  var allRows = sheet.getRange(2, 1, Math.max(1, last - 1), lastCol).getValues();
+  var all = allRows.map(function (r) { return String(r[km.uid] || ''); });
   var now = Date.now(), k = 0;
   for (var r = Math.min(r2, last); r >= r1; r--) {
     var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
     var o = rowToCase_(row, km);
     if (!hasCaseContent_(o)) {
-      // Datum und Eingriff geleert → Zeile entfernen (die App bietet dann an,
-      // den Fall wieder hochzuladen)
-      if (o.uid) { sheet.deleteRow(r); all.splice(r - 2, 1); }
+      if (o.uid) { sheet.deleteRow(r); all.splice(r - 2, 1); allRows.splice(r - 2, 1); }
       continue;
     }
     var dupe = o.uid && all.filter(function (u, i) { return u === o.uid && i !== r - 2; }).length > 0;
@@ -6738,9 +7083,21 @@ function handleCaseEdit_(sheet, r1, r2) {
     } else {
       o.lastAction = 'in Tabelle geändert';
     }
+    if (o.pos == null && o.date) {
+      // Nr. am Tag: hinter den letzten Fall dieses Tages
+      var iso = isoDate_(o.date), max = 0;
+      allRows.forEach(function (x, i) {
+        if (i === r - 2) return;
+        var d = toDate_(x[km.date]);
+        if (d && isoDate_(d) === iso) max = Math.max(max, parseInt(x[km.pos], 10) || 0);
+      });
+      o.pos = max + 1;
+    }
     o.ts = now + (k++);
     o.changedAt = new Date();
-    sheet.getRange(r, 1, 1, lastCol).setValues([fillCaseRow_(row, km, o)]);
+    var filled = fillCaseRow_(row, km, o);
+    allRows[r - 2] = filled;
+    sheet.getRange(r, 1, 1, lastCol).setValues([filled]);
   }
 }
 
@@ -6781,8 +7138,8 @@ function doPost(e) {
     if (!checkKey_(body.key)) {
       Utilities.sleep(800);
       res = { ok: false, error: 'key', message: 'Schlüssel falsch' };
-    } else if (!ss_().getSheetByName(SHEET_CASES) || !ss_().getSheetByName(SHEET_VW)) {
-      res = { ok: false, error: 'setup', message: 'Bitte im Skript „einrichten“ ausführen.', version: SCRIPT_VERSION };
+    } else if (!isSetUp_()) {
+      res = { ok: false, error: 'setup', message: 'Bitte im Skript „einrichten“ ausführen.' };
     } else if (body.action === 'ping') {
       res = ping_();
     } else if (body.action === 'push') {
@@ -6797,6 +7154,13 @@ function doPost(e) {
   }
   if (res && res.version == null) res.version = SCRIPT_VERSION;
   return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Tabelle im Aufbau dieser Skript-Version? (sonst „einrichten“ nötig)
+function isSetUp_() {
+  var ss = ss_();
+  var cs = ss.getSheetByName(SHEET_CASES), vs = ss.getSheetByName(SHEET_VW), ts = ss.getSheetByName(SHEET_TRASH);
+  return !!(cs && vs && ts && headersMatch_(cs, CASE_COLS.map(function (c) { return c[0]; })) && headersMatch_(ts, TRASH_HEADERS));
 }
 
 function checkKey_(given) {
@@ -6823,6 +7187,25 @@ function ping_() {
   };
 }
 
+function readTrash_(ss) {
+  var ts = ss.getSheetByName(SHEET_TRASH);
+  var out = [];
+  if (!ts || ts.getLastRow() < 2) return out;
+  var tz = ss.getSpreadsheetTimeZone();
+  ts.getRange(2, 1, ts.getLastRow() - 1, TRASH_HEADERS.length).getValues().forEach(function (r) {
+    if (!r[4]) return;
+    var data = {};
+    try { data = JSON.parse(r[6] || '{}'); } catch (e) { data = {}; }
+    out.push({
+      kind: r[1] === 'Vorwerte' ? 'vorwert' : 'case', uid: String(r[4]), ts: Number(r[5]) || 0,
+      deletedAt: r[0] instanceof Date ? r[0].toISOString() : String(r[0] || ''),
+      date: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : '',
+      description: String(r[3] || ''), data: data
+    });
+  });
+  return out;
+}
+
 // Gesamter Stand zum Abgleich (nur lesen)
 function state_() {
   var ss = ss_();
@@ -6836,15 +7219,10 @@ function state_() {
       if (!hasCaseContent_(o) || !o.uid || seen[o.uid]) return;
       seen[o.uid] = true;
       o.date = o.date ? Utilities.formatDate(o.date, tz, 'yyyy-MM-dd') : '';
+      o.kindLe5 = computeRz_(o).kinder;
       delete o.changedAt;
       cases.push(o);
     });
-  }
-  var trash = [];
-  var ts = ss.getSheetByName(SHEET_TRASH);
-  if (ts && ts.getLastRow() >= 2) {
-    var th = hmap_(ts);
-    if ('UID' in th) ts.getRange(2, th.UID + 1, ts.getLastRow() - 1, 1).getValues().forEach(function (r) { if (r[0]) trash.push(String(r[0])); });
   }
   var vs = ss.getSheetByName(SHEET_VW);
   var vkm = keyMap_(VW_COLS, hmap_(vs));
@@ -6857,7 +7235,8 @@ function state_() {
       vorwerte.push(o);
     });
   }
-  return { ok: true, version: SCRIPT_VERSION, cases: cases, trash: trash, vorwerte: vorwerte, eval: computeEval_(ss) };
+  var trash = readTrash_(ss);
+  return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss) };
 }
 
 // ------------------------------------------------------------------
@@ -6867,12 +7246,12 @@ function push_(ops, confirmBulk) {
   var ss = ss_();
   if (!Array.isArray(ops)) return { ok: false, error: 'input', message: 'Ungültige Aufträge' };
   if (ops.length > MAX_OPS_PER_REQUEST) return { ok: false, error: 'input', message: 'Zu viele Aufträge auf einmal' };
-  var destructive = ops.filter(function (o) { return o && (o.type === 'cancel' || o.type === 'purge'); }).length;
+  var destructive = ops.filter(function (o) { return o && /^(cancel|purge|vw-cancel|vw-purge|vw-delete|trash-delete)$/.test(o.type); }).length;
   if (destructive > BULK_LIMIT && !confirmBulk) {
     return { ok: false, error: 'bulk', count: destructive, message: destructive + ' Stornos/Löschungen – Bestätigung nötig' };
   }
   var ctx = {
-    cases: ss.getSheetByName(SHEET_CASES), vw: ss.getSheetByName(SHEET_VW),
+    ss: ss, cases: ss.getSheetByName(SHEET_CASES), vw: ss.getSheetByName(SHEET_VW),
     hist: ss.getSheetByName(SHEET_HISTORY), trash: ss.getSheetByName(SHEET_TRASH), log: ss.getSheetByName(SHEET_LOG)
   };
   ctx.km = keyMap_(CASE_COLS, hmap_(ctx.cases));
@@ -6884,8 +7263,10 @@ function push_(ops, confirmBulk) {
       if (!op || typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') status = 'ungültig';
       else if (findRow_(ctx.log, 1, op.opId)) status = 'doppelt';
       else {
-        status = String(op.type).indexOf('vw-') === 0 ? applyVwOp_(op, ctx) : applyCaseOp_(op, ctx);
-        ctx.log.appendRow([op.opId, new Date(), String(op.type), op.uid, String(op.ts), status]);
+        var t = String(op.type);
+        status = t.indexOf('trash-') === 0 ? applyTrashOp_(op, ctx)
+          : t.indexOf('vw-') === 0 ? applyVwOp_(op, ctx) : applyCaseOp_(op, ctx);
+        ctx.log.appendRow([op.opId, new Date(), t, op.uid, String(op.ts), status]);
       }
     } catch (err) {
       status = 'fehler: ' + (err && err.message || err);
@@ -6896,13 +7277,12 @@ function push_(ops, confirmBulk) {
   return { ok: true, version: SCRIPT_VERSION, results: results };
 }
 
-// Neue Zeile anhängen und Zahl-/Datumsformate setzen (angehängte Zeilen
-// erben diese nicht zuverlässig).
 function appendCase_(ctx, values) {
   var sh = ctx.cases, km = ctx.km;
   sh.appendRow(values);
   var r = sh.getLastRow();
   sh.getRange(r, km.date + 1).setNumberFormat('dd.MM.yyyy');
+  sh.getRange(r, km.dob + 1).setNumberFormat('@');
   sh.getRange(r, km.ts + 1).setNumberFormat('0');
   sh.getRange(r, km.changedAt + 1).setNumberFormat('dd.MM.yyyy HH:mm');
 }
@@ -6914,9 +7294,14 @@ function findRow_(sheet, col, value) { // col 1-basiert
   return cell ? cell.getRow() : 0;
 }
 
-function trashHas_(ctx, uid) {
-  var th = hmap_(ctx.trash);
-  return 'UID' in th ? !!findRow_(ctx.trash, th.UID + 1, uid) : false;
+function trashRow_(ctx, uid) { return findRow_(ctx.trash, 5, uid); }
+
+function toTrash_(ctx, kind, obj, opId) {
+  var date = kind === 'Fall' ? (obj.date instanceof Date ? obj.date : toDate_(obj.date)) : '';
+  var data = {};
+  Object.keys(obj).forEach(function (k) { data[k] = obj[k] instanceof Date ? (k === 'date' ? isoDate_(obj[k]) : obj[k].toISOString()) : obj[k]; });
+  var desc = kind === 'Fall' ? caseDescription_(obj) : 'Vorwerte: ' + (obj.name || '');
+  ctx.trash.appendRow([new Date(), kind, date || '', safeText_(desc), obj.uid || obj.id, obj.ts || 0, JSON.stringify(data)]);
 }
 
 function applyCaseOp_(op, ctx) {
@@ -6927,14 +7312,16 @@ function applyCaseOp_(op, ctx) {
   var d = op.data || {};
   var build = function (status, action, base) {
     var o = {};
-    ['date', 'procedure', 'procedure2', 'asa', 'opSaal', 'airway', 'spaPdkType', 'peripherType', 'btm'].forEach(function (k) { o[k] = d[k] == null ? '' : d[k]; });
+    DATA_KEYS.forEach(function (k) { o[k] = d[k] == null ? '' : d[k]; });
     BOOL_KEYS.forEach(function (k) { o[k] = !!d[k]; });
     o.airway = o.isVollnarkose ? o.airway : '';
+    o.pos = d.pos == null || d.pos === '' ? null : d.pos;
+    o.ageAtCase = d.ageAtCase == null || d.ageAtCase === '' ? null : d.ageAtCase;
     o.status = status; o.uid = op.uid; o.id = d.id || ''; o.ts = op.ts; o.lastAction = action; o.changedAt = new Date();
     return fillCaseRow_(base || new Array(lastCol).fill(''), km, o);
   };
   if (op.type === 'seed') {
-    if (row || trashHas_(ctx, op.uid)) return 'vorhanden';
+    if (row || trashRow_(ctx, op.uid)) return 'vorhanden';
     appendCase_(ctx, build(d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE, 'aus App übernommen'));
     return 'ok';
   }
@@ -6942,7 +7329,7 @@ function applyCaseOp_(op, ctx) {
     var status = op.type === 'cancel' ? STATUS_CANCELLED : op.type === 'uncancel' ? STATUS_ACTIVE : (d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE);
     var label = { upsert: row ? 'in App bearbeitet' : 'in App angelegt', cancel: 'storniert', uncancel: 'Storno aufgehoben' }[op.type];
     if (!row) {
-      if (trashHas_(ctx, op.uid)) return 'gelöscht';
+      if (trashRow_(ctx, op.uid)) return 'gelöscht';
       appendCase_(ctx, build(status, label));
       return 'ok';
     }
@@ -6952,10 +7339,12 @@ function applyCaseOp_(op, ctx) {
     return 'ok';
   }
   if (op.type === 'purge') {
-    if (!row) return trashHas_(ctx, op.uid) ? 'doppelt' : 'unbekannt';
+    if (!row) return trashRow_(ctx, op.uid) ? 'doppelt' : 'unbekannt';
     if (normStatus_(current[km.status]) !== STATUS_CANCELLED) return 'nicht storniert';
     if (op.ts <= currentTs) return 'veraltet';
-    ctx.trash.appendRow([new Date(), op.opId].concat(CASE_COLS.map(function (c) { return current[km[c[1]]]; })));
+    var o = rowToCase_(current, km);
+    o.ts = op.ts;
+    toTrash_(ctx, 'Fall', o, op.opId);
     sh.deleteRow(row);
     return 'ok';
   }
@@ -6973,25 +7362,63 @@ function applyVwOp_(op, ctx) {
     RZ.forEach(function (x) { o['n:' + x[0]] = (d.counts || {})[x[0]] || 0; });
     return fillVwRow_(base || new Array(lastCol).fill(''), km, o);
   };
-  if (op.type === 'vw-seed') {
-    if (row) return 'vorhanden';
-    sh.appendRow(build(STATUS_ACTIVE));
+  var type = op.type === 'vw-delete' ? 'vw-cancel' : op.type; // Version 4
+  if (type === 'vw-seed') {
+    if (row || trashRow_(ctx, op.uid)) return 'vorhanden';
+    sh.appendRow(build(d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE));
     return 'ok';
   }
-  if (op.type === 'vw-upsert') {
-    if (!row) { sh.appendRow(build(STATUS_ACTIVE)); return 'ok'; }
+  if (type === 'vw-upsert' || type === 'vw-cancel' || type === 'vw-uncancel') {
+    var status = type === 'vw-cancel' ? STATUS_CANCELLED : type === 'vw-uncancel' ? STATUS_ACTIVE : (d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE);
+    if (!row) {
+      if (trashRow_(ctx, op.uid)) return 'gelöscht';
+      if (!op.data) return 'unbekannt';
+      sh.appendRow(build(status));
+      return 'ok';
+    }
     if (op.ts <= currentTs) return 'veraltet';
-    sh.getRange(row, 1, 1, lastCol).setValues([build(STATUS_ACTIVE, current.slice())]);
+    if (op.data) sh.getRange(row, 1, 1, lastCol).setValues([build(status, current.slice())]);
+    else {
+      current[km.status] = status; current[km.ts] = op.ts; current[km.changedAt] = new Date();
+      sh.getRange(row, 1, 1, lastCol).setValues([current]);
+    }
     return 'ok';
   }
-  if (op.type === 'vw-delete') {
-    if (!row) return 'unbekannt';
+  if (type === 'vw-purge') {
+    if (!row) return trashRow_(ctx, op.uid) ? 'doppelt' : 'unbekannt';
+    if (normStatus_(current[km.status]) !== STATUS_CANCELLED) return 'nicht storniert';
     if (op.ts <= currentTs) return 'veraltet';
-    current[km.status] = STATUS_DELETED; current[km.ts] = op.ts; current[km.changedAt] = new Date();
-    sh.getRange(row, 1, 1, lastCol).setValues([current]);
+    var o = rowToVw_(current, km);
+    o.ts = op.ts;
+    toTrash_(ctx, 'Vorwerte', o, op.opId);
+    sh.deleteRow(row);
     return 'ok';
   }
   return 'ungültig';
+}
+
+// Papierkorb: wiederherstellen (als „storniert“) oder endgültig entfernen
+function applyTrashOp_(op, ctx) {
+  var r = trashRow_(ctx, op.uid);
+  if (!r) return 'unbekannt';
+  var vals = ctx.trash.getRange(r, 1, 1, TRASH_HEADERS.length).getValues()[0];
+  if (op.type === 'trash-delete') { ctx.trash.deleteRow(r); return 'ok'; }
+  if (op.type !== 'trash-restore') return 'ungültig';
+  var data = {};
+  try { data = JSON.parse(vals[6] || '{}'); } catch (e) { data = {}; }
+  if (vals[1] === 'Vorwerte') {
+    if (findRow_(ctx.vw, ctx.vkm.id + 1, op.uid)) { ctx.trash.deleteRow(r); return 'doppelt'; }
+    var vo = { id: op.uid, name: data.name || 'Vorwerte', status: STATUS_CANCELLED, ts: op.ts, changedAt: new Date() };
+    RZ.forEach(function (x) { vo['n:' + x[0]] = (data.counts || {})[x[0]] || 0; });
+    ctx.vw.appendRow(fillVwRow_(new Array(ctx.vw.getLastColumn()).fill(''), ctx.vkm, vo));
+  } else {
+    if (findRow_(ctx.cases, ctx.km.uid + 1, op.uid)) { ctx.trash.deleteRow(r); return 'doppelt'; }
+    var o = data;
+    o.uid = op.uid; o.status = STATUS_CANCELLED; o.ts = op.ts; o.lastAction = 'aus Papierkorb wiederhergestellt'; o.changedAt = new Date();
+    appendCase_(ctx, fillCaseRow_(new Array(ctx.cases.getLastColumn()).fill(''), ctx.km, o));
+  }
+  ctx.trash.deleteRow(r);
+  return 'ok';
 }
 </script>
 </body>
