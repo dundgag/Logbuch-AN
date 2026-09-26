@@ -385,6 +385,18 @@
         /* Stornierte Fälle: grau, Eingriff durchgestrichen */
         .case-card.is-cancelled { opacity: .6; }
         .case-card.is-cancelled .case-proc { text-decoration: line-through; }
+        /* Abgleich-Übersicht Google Sheets */
+        .sync-card { border: 1px solid #e2e8f0; border-radius: .75rem; overflow: hidden; }
+        .dark .sync-card { border-color: #334155; }
+        .sync-line { display: flex; gap: .5rem; align-items: flex-start; padding: .5rem .65rem; font-size: 11.5px; line-height: 1.45; color: #475569; border-top: 1px solid #f1f5f9; }
+        .sync-line:first-child { border-top: 0; }
+        .dark .sync-line { color: #cbd5e1; border-top-color: #334155; }
+        .sync-line.is-ok { color: #166534; background: #f0fdf4; }
+        .sync-line.is-warn { color: #92400e; background: #fffbeb; }
+        .sync-line.is-bad { color: #991b1b; background: #fef2f2; }
+        .dark .sync-line.is-ok { color: #86efac; background: rgba(22, 101, 52, 0.2); }
+        .dark .sync-line.is-warn { color: #fcd34d; background: rgba(120, 53, 15, 0.25); }
+        .dark .sync-line.is-bad { color: #fca5a5; background: rgba(127, 29, 29, 0.25); }
         /* Anleitung (aufklappbar) */
         .guide { border: 1px solid #e2e8f0; border-radius: .75rem; background: #f8fafc; }
         .dark .guide { border-color: #334155; background: rgba(51, 65, 85, 0.3); }
@@ -945,7 +957,7 @@
             </summary>
             <div class="set-sec-body">
                 <div class="set-row">
-                    <p class="set-row-hint">Überträgt nur deine Aktionen (anlegen, bearbeiten, stornieren) an deine Tabelle – ohne Initialen, Geburtsdatum, Alter und Bemerkungen.</p>
+                    <p class="set-row-hint">Hält App und deine Google-Tabelle abgeglichen – in beide Richtungen, ohne Initialen, Geburtsdatum, Alter und Bemerkungen.</p>
                     <details class="guide mb-3" id="sync-guide">
                         <summary><i data-lucide="book-open" class="w-4 h-4 shrink-0"></i><span class="flex-1">Anleitung: Google-Tabelle einrichten</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
                         <div class="guide-body">
@@ -957,7 +969,7 @@
                                 <li>Auf <b>„Leere Tabelle“</b> (großes Plus) klicken.</li>
                                 <li>Oben links auf „Unbenannte Tabelle“ klicken und einen Namen eingeben, z. B. <b>Anästhesie-Logbuch</b>, Enter.</li>
                             </ol>
-                            <p class="guide-note">Nicht in Excel anlegen und hochladen – es muss eine echte Google-Tabelle sein. Die Excel-Datei bekommst du am Ende per Download (Schritt 8).</p>
+                            <p class="guide-note">Nicht in Excel anlegen und hochladen – es muss eine echte Google-Tabelle sein. Die Excel-Datei bekommst du jederzeit per Download (Schritt 8).</p>
 
                             <h4>2 · Skript einfügen</h4>
                             <ol>
@@ -991,27 +1003,31 @@
                             </ol>
                             <p class="guide-note">„Zugriff: Jeder“ ist nötig, damit die App ohne Google-Anmeldung senden kann. Geschützt wird das Skript durch den geheimen Schlüssel – ohne ihn wird jede Anfrage abgelehnt.</p>
 
-                            <h4>5 · App verbinden</h4>
+                            <h4>5 · App verbinden &amp; hochladen</h4>
                             <ol>
-                                <li>Weiter oben in diesem Abschnitt die <b>Skript-Adresse</b> und den <b>geheimen Schlüssel</b> einfügen.</li>
-                                <li><b>Verbindung testen</b> → es erscheint „Verbunden mit ‚Anästhesie-Logbuch‘“.</li>
-                                <li>Auf jedem Gerät (iPhone, Computer) einmal eintragen. Tipp: Adresse und Schlüssel am Computer per Nachricht an dich selbst schicken und am iPhone einfügen – danach die Nachricht löschen.</li>
+                                <li>Weiter unten in diesem Abschnitt die <b>Skript-Adresse</b> und den <b>geheimen Schlüssel</b> einfügen.</li>
+                                <li><b>Verbindung testen</b> tippen. Die App gleicht danach sofort ab und fragt: „… Fälle stehen nicht in der Google-Tabelle – jetzt hochladen?“ → <b>Hochladen</b>. Deine Vorwerte-Blöcke werden mit hochgeladen.</li>
+                                <li>Unten erscheint <b>„App und Tabelle stimmen überein“</b> mit der Zahl der Fälle – dann ist alles drüben.</li>
+                                <li>Auf jedem weiteren Gerät nur Adresse und Schlüssel eintragen – die App holt sich die Fälle aus der Tabelle. Tipp: beides am Computer per Nachricht an dich selbst schicken, am iPhone einfügen, Nachricht löschen.</li>
                             </ol>
 
-                            <h4>6 · Bisherige Daten einmalig hochladen</h4>
-                            <ol>
-                                <li>Unten auf <b>Fälle &amp; Vorwerte hochladen</b> tippen und bestätigen.</li>
-                                <li>Nur auf <b>einem</b> Gerät nötig. Mehrfaches Tippen schadet nicht – Vorhandenes wird nie überschrieben.</li>
-                            </ol>
-
-                            <h4>7 · Tabelle prüfen</h4>
+                            <h4>6 · Was steht in der Tabelle?</h4>
                             <ul>
-                                <li><b>Fälle</b>: ein Fall je Zeile, nach OP-Datum sortiert. Stornierte grau.</li>
-                                <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jeder Synchronisierung und beim Öffnen der Tabelle neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
-                                <li><b>Vorwerte</b>: deine Vorwerte-Blöcke aus der App.</li>
-                                <li><b>Verlauf</b> (alte Fassungen), <b>Papierkorb</b> (endgültig gelöschte Fälle), <b>Protokoll</b> (jeder empfangene Auftrag).</li>
+                                <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jedem Abgleich und beim Öffnen neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
+                                <li><b>Fälle</b>: ein Fall je Zeile, nach OP-Datum sortiert, stornierte grau. Graue Spalten rechnet das Skript (RZ …) bzw. sind technisch (Version, UID).</li>
+                                <li><b>Vorwerte</b>: deine Vorwerte-Blöcke.</li>
+                                <li><b>Verlauf</b> (alte Fassungen), <b>Papierkorb</b> (endgültig gelöschte Fälle), <b>Protokoll</b> (jeder Auftrag aus der App).</li>
                             </ul>
-                            <p class="guide-note">Bitte in „Fälle“ und „Vorwerte“ nichts von Hand ändern – Änderungen immer in der App machen.</p>
+
+                            <h4>7 · In der Tabelle bearbeiten</h4>
+                            <ul>
+                                <li><b>Werte ändern</b> (z. B. Eingriff, ASA, „ja“ in einer Spalte): einfach überschreiben. Die Auswahllisten helfen. Die App übernimmt die Änderung beim nächsten Abgleich.</li>
+                                <li><b>Neuer Fall</b>: unten eine Zeile mit mindestens Datum und Eingriff ausfüllen – UID und Version vergibt das Skript. In der App erscheint er ohne Initialen/Geburtsdatum.</li>
+                                <li><b>Fall stornieren</b>: Status auf <b>storniert</b> setzen. Zählt dann nirgends mehr, auch nicht in der App.</li>
+                                <li><b>Zeile löschen</b>: Die App merkt, dass der Fall fehlt, und fragt: <b>Hochladen</b> (war ein Versehen) oder <b>In App stornieren</b> (war Absicht).</li>
+                                <li>Nicht ändern: die grauen Spalten <b>UID</b> und <b>Version</b>. Eine kopierte Zeile bekommt automatisch eine neue UID und gilt als eigener Fall.</li>
+                                <li>Initialen, Geburtsdatum und Bemerkungen gibt es nur in der App – sie bleiben dort erhalten.</li>
+                            </ul>
 
                             <h4>8 · Excel-Datei herunterladen</h4>
                             <ul>
@@ -1019,13 +1035,14 @@
                                 <li>in Google Sheets: <b>Datei → Herunterladen → Microsoft Excel (.xlsx)</b>.</li>
                             </ul>
 
-                            <h4>Skript aktualisieren (bei neuer App-Version)</h4>
+                            <h4>Skript aktualisieren (wenn die App „Skript veraltet“ meldet)</h4>
                             <ol>
-                                <li>Hier <b>Skript kopieren</b>, im Editor Code.gs komplett ersetzen und speichern.</li>
-                                <li>Funktion <b>einrichten</b> einmal ausführen (Schlüssel und Daten bleiben).</li>
-                                <li><b>Bereitstellen → Bereitstellungen verwalten</b> → Stift ✎ → bei Version <b>„Neue Version“</b> wählen → <b>Bereitstellen</b>. Die URL bleibt gleich, in der App ist nichts zu ändern.</li>
+                                <li>Hier <b>Skript kopieren</b>, im Editor Code.gs komplett markieren, ersetzen, speichern.</li>
+                                <li>Funktion <b>einrichten</b> einmal ausführen. Schlüssel, Fälle und Vorwerte bleiben erhalten; ältere Tabellen werden dabei auf den neuen Aufbau umgestellt.</li>
+                                <li><b>Bereitstellen → Bereitstellungen verwalten</b> → Stift ✎ → bei „Version“ <b>Neue Version</b> wählen → <b>Bereitstellen</b>.</li>
+                                <li>In der App <b>Jetzt synchronisieren</b>.</li>
                             </ol>
-                            <p class="guide-note">Ohne diesen letzten Schritt läuft weiter das alte Skript. Die App zeigt dann „Skript in Google veraltet“.</p>
+                            <p class="guide-note"><b>Nicht</b> „Neue Bereitstellung“ wählen – das erzeugt eine zweite Adresse, und die App spricht weiter mit dem alten Skript. Solange das Skript veraltet ist, schickt die App nichts und hebt alle Aufträge auf.</p>
                         </div>
                     </details>
 
@@ -1040,7 +1057,7 @@
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span id="sync-now-label">Jetzt synchronisieren</span>
                     </button>
                     <p id="sync-status" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
-                    <p id="sync-version-warn" class="hidden p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300"><strong>Skript in Google veraltet.</strong> Bitte die neue Version einspielen – Anleitung oben, Abschnitt „Skript aktualisieren“.</p>
+                    <div id="sync-card" class="hidden sync-card"></div>
                     <label class="checkbox-card items-start">
                         <input type="checkbox" id="sync-auto-toggle" onchange="setSyncAuto(this.checked)" class="mt-0.5">
                         <span><span class="font-medium">Automatisch, sobald Netz da ist</span><br>
@@ -1052,14 +1069,8 @@
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="set-row-head"><h3>Einmalig: vorhandene Daten hochladen</h3></div>
-                    <p class="set-row-hint">Übernimmt deine bisherigen Fälle und Vorwerte-Blöcke. Was schon in der Tabelle steht, bleibt unverändert. Danach läuft alles automatisch.</p>
-                    <button type="button" id="sync-seed-btn" onclick="seedSheetFromApp()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-upload" class="w-4 h-4"></i> Fälle &amp; Vorwerte hochladen</button>
-                </div>
-                <div class="set-row">
-                    <div class="set-row-head"><h3>Nach Datenverlust</h3></div>
-                    <p class="set-row-hint">Holt Fälle und Vorwerte aus der Tabelle zurück (ohne Initialen/Geburtsdatum). Die Tabelle wird dabei nicht verändert.</p>
-                    <button type="button" id="sync-restore-btn" onclick="restoreFromSheets()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-download" class="w-4 h-4"></i> Aus Google Sheets wiederherstellen</button>
+                    <div class="set-row-head"><h3>In der Tabelle bearbeiten</h3></div>
+                    <p class="set-row-hint">Du darfst in der Tabelle Werte ändern, Zeilen ergänzen und den Status auf „storniert“ setzen – die App übernimmt das beim nächsten Abgleich. Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt die App, ob sie ihn wieder hochladen oder in der App stornieren soll. Jeder Fall zählt dabei nur einmal.</p>
                 </div>
             </div>
         </details>
@@ -4288,17 +4299,20 @@
     // ---------------------------------------------------------------
     // Synchronisierung mit Google Sheets (Google Apps Script)
     // ---------------------------------------------------------------
-    // Grundsatz: Die App schickt nur Aufträge für ausdrückliche Aktionen
-    // (anlegen, bearbeiten, stornieren, Storno aufheben, endgültig löschen)
-    // - nie den Gesamtbestand. Die Warteschlange liegt im Gerätespeicher;
-    // geht dieser verloren, geht höchstens ein noch nicht übertragener
-    // Auftrag verloren, die Tabelle bleibt unverändert.
-    // Jeder Fall trägt uid (eindeutig), ts (Zeitpunkt der letzten Aktion =
-    // Version) und rev (Zähler). Das Skript übernimmt einen Auftrag nur,
-    // wenn seine Version neuer ist als die der Zeile.
+    // Zwei Richtungen:
+    //  App → Tabelle: nur Aufträge für ausdrückliche Aktionen (anlegen,
+    //    bearbeiten, stornieren, Storno aufheben, endgültig löschen) – nie
+    //    der Gesamtbestand. Ein leerer App-Speicher ändert die Tabelle nicht.
+    //  Tabelle → App: beim Abgleich holt die App den Stand der Tabelle und
+    //    übernimmt, was dort neuer ist (auch Änderungen von Hand).
+    // Jeder Fall/Vorwerte-Block hat eine uid bzw. id und eine Version (ts =
+    // Zeitpunkt der letzten Änderung). Es gewinnt immer die neuere Fassung.
+    // Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt
+    // die App, ob sie ihn wieder hochladen soll – nie stillschweigend.
     const SYNC_BULK_LIMIT = 5;
-    // Version von Logbuch-Sync.gs, die zu dieser App passt.
-    const SYNC_SCRIPT_VERSION = 3;
+    // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
+    // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
+    const SYNC_SCRIPT_VERSION = 4;
     const SYNC_BATCH = 100;
     let syncBusy = false;
     let syncTimer = null;
@@ -4317,8 +4331,7 @@
         return changed;
     }
 
-    // Neue Version eines Falls nach einer ausdrücklichen Aktion. Immer echt
-    // größer als die bisherige, auch wenn die Geräteuhr zurückgestellt wurde.
+    // Neue Version nach einer ausdrücklichen Aktion (immer größer als vorher).
     function touchCase(c) {
         c.ts = Math.max(Date.now(), (c.ts || 0) + 1);
         c.rev = (c.rev || 0) + 1;
@@ -4334,6 +4347,8 @@
     function syncAuto() { return storeGet('syncAuto') !== '0'; }
     function syncQueue() { return loadList('syncQueue'); }
     function saveSyncQueue(q) { storeSet('syncQueue', JSON.stringify(q)); }
+    function syncReport() { try { return JSON.parse(storeGet('syncReport') || 'null'); } catch (e) { return null; } }
+    function saveSyncReport(r) { storeSet('syncReport', JSON.stringify(r)); }
 
     // Was in die Tabelle darf: keine Initialen, kein Geburtsdatum, kein
     // Alter, keine Bemerkungen. Für die Richtzahl nur "Kind <= 5 J." ja/nein.
@@ -4348,37 +4363,38 @@
             isSedierung: !!c.isSedierung, isAbdominell: !!c.isAbdominell, isKopfHals: !!c.isKopfHals,
             isIntrathorakal: !!c.isIntrathorakal, isIntrakraniell: !!c.isIntrakraniell, isSectio: !!c.isSectio,
             isAmbulant: !!c.isAmbulant, isFiberoptik: !!c.isFiberoptik, isVideo: !!c.isVideo, isSonoGefaess: !!c.isSonoGefaess,
-            btm: (c.btm || []).map((e) => ({ substanceId: e.substanceId, label: e.label, unit: e.unit, amountPerUnit: e.amountPerUnit, count: e.count, total: e.total })),
+            btm: (c.btm || []).map((e) => ({ substanceId: e.substanceId, label: e.label, count: e.count })),
             cancelled: !!c.cancelled
         };
     }
 
-    // Auftrag in die Warteschlange (nur wenn eingerichtet, nie für Demo-Fälle).
+    function caseOp(type, c) {
+        const op = { opId: newUid(), type, uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString() };
+        if (type !== 'purge') op.data = sheetRecord(c);
+        return op;
+    }
+    function vwOp(type, v) {
+        return { opId: newUid(), type, uid: String(v.id), ts: v.ts || Date.now(), at: new Date().toISOString(),
+            data: type === 'vw-delete' ? undefined : { name: v.name, counts: v.counts || {} } };
+    }
+
+    // Auftrag in die Warteschlange (nur wenn eingerichtet, nie für Demo).
     function enqueueSync(type, c) {
         if (!syncConfigured() || !c || c.isDemo) return;
-        const op = { opId: newUid(), type, uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString() };
-        if (type !== 'purge') { op.data = sheetRecord(c); op.crit = c.cancelled ? [] : caseCategoryIds(c); }
         const q = syncQueue();
-        q.push(op);
+        q.push(caseOp(type, c));
         saveSyncQueue(q);
         updateSyncUI();
         scheduleSync();
     }
 
-    // Vorwerte-Block als Auftrag (anlegen/bearbeiten/löschen).
     function enqueueVwSync(type, v) {
         if (!syncConfigured() || !v || v.isDemo) return;
         const q = syncQueue();
-        q.push({ opId: newUid(), type, uid: String(v.id), ts: v.ts || Date.now(), at: new Date().toISOString(),
-            data: type === 'vw-delete' ? undefined : { name: v.name, counts: v.counts || {} } });
+        q.push(vwOp(type, v));
         saveSyncQueue(q);
         updateSyncUI();
         scheduleSync();
-    }
-
-    function rememberScriptVersion(v) {
-        storeSet('syncScriptVersion', String(Number(v) || 0));
-        updateSyncUI();
     }
 
     function scheduleSync(delay = 1500) {
@@ -4390,8 +4406,7 @@
     async function syncRequest(payload) {
         const res = await fetch(syncUrl(), {
             method: 'POST',
-            // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung,
-            // die Apps Script nicht beantworten könnte.
+            // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(Object.assign({ key: syncKey() }, payload)),
             redirect: 'follow',
@@ -4400,9 +4415,15 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         let data;
         try { data = await res.json(); } catch (e) { throw new Error('Antwort ist kein JSON – stimmt die Skript-Adresse (endet auf /exec)?'); }
+        if (data && data.version != null) storeSet('syncScriptVersion', String(Number(data.version) || 0));
         if (!data.ok && data.error === 'key') throw new Error('Geheimer Schlüssel falsch.');
-        if (!data.ok && data.error === 'setup') throw new Error(data.message || 'Skript nicht eingerichtet.');
+        if (!data.ok && data.error === 'setup') throw new Error(data.message || 'Skript nicht eingerichtet – „einrichten“ ausführen.');
         return data;
+    }
+
+    function scriptOutdated() {
+        const v = storeGet('syncScriptVersion');
+        return v !== null && Number(v) < SYNC_SCRIPT_VERSION;
     }
 
     function setSyncStatus(text, kind) {
@@ -4420,69 +4441,274 @@
         return (today ? 'heute' : formatDate(isoOf(d))) + ` ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
+    function netErrorText(m) {
+        return /Failed to fetch|NetworkError|Load failed/i.test(m) ? 'Skript nicht erreichbar (Adresse? Zugriff „Jeder“? Internet?)' : m;
+    }
+
+    // ---- Tabelle → App -------------------------------------------------
+    // "Sufentanil 50 µg × 1; Remifentanil 2 mg × 2" -> BTM-Einträge
+    function parseBtmText(text) {
+        return String(text || '').split(/[;,\n]/).map((part) => {
+            const m = /^\s*(.+?)\s*[×xX*]\s*(\d+(?:[.,]\d+)?)\s*(?:Amp\.?)?\s*$/.exec(part);
+            if (!m) return null;
+            const name = m[1].trim();
+            const count = parseFloat(m[2].replace(',', '.'));
+            if (!(count > 0)) return null;
+            const opt = BTM_OPTIONS.find((o) => o.label.split(' (')[0].toLowerCase() === name.toLowerCase());
+            if (opt) return { substanceId: opt.id, label: opt.label, unit: opt.unit, amountPerUnit: opt.amount, count, total: Math.round(opt.amount * count * 100) / 100 };
+            return { substanceId: 'tabelle:' + name, label: name, unit: '', amountPerUnit: 0, count, total: 0 };
+        }).filter(Boolean);
+    }
+    function btmText(btm) {
+        return (btm || []).map((e) => `${String(e.label || '').split(' (')[0]} × ${e.count}`).join('; ');
+    }
+
+    const SHEET_FIELDS = ['date', 'asa', 'opSaal', 'procedure', 'procedure2', 'airway', 'spaPdkType', 'peripherType',
+        'isVollnarkose', 'isSpaPdk', 'isPeripher', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal',
+        'isIntrakraniell', 'isSectio', 'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess'];
+
+    function applySheetCase(target, row) {
+        SHEET_FIELDS.forEach((k) => { if (row[k] !== undefined) target[k] = row[k]; });
+        if (!target.isVollnarkose) target.airway = '';
+        if (btmText(target.btm) !== String(row.btm || '')) target.btm = parseBtmText(row.btm);
+        if (row.status === 'storniert') target.cancelled = true; else delete target.cancelled;
+        target.kindLe5 = !!row.kindLe5;
+        target.uid = row.uid; target.ts = row.ts; target.rev = (target.rev || 0) + 1;
+        return target;
+    }
+
+    // Abgleich mit dem Stand der Tabelle. Übernimmt Neueres aus der Tabelle,
+    // merkt Neueres aus der App als Auftrag vor und meldet, was in der
+    // Tabelle fehlt (wird nicht automatisch hochgeladen).
+    function reconcileWithSheet(state) {
+        const queued = new Set(syncQueue().map((o) => o.uid));
+        const res = { pulledNew: 0, pulledChanged: 0, pushedNewer: 0, missingCases: [], missingVw: [], possibleDupes: 0, inTrash: 0, vwRemoved: 0 };
+        const trash = new Set(state.trash || []);
+        const sheetCases = new Map((state.cases || []).map((r) => [r.uid, r]));
+        const localByUid = new Map(cases.map((c) => [c.uid, c]));
+        const q = syncQueue();
+        const ids = new Set(cases.map((c) => String(c.id)));
+
+        // lokale Fälle
+        cases.slice().forEach((c) => {
+            if (c.isDemo || queued.has(c.uid)) return;
+            const row = sheetCases.get(c.uid);
+            if (!row) {
+                if (trash.has(c.uid)) {
+                    // auf einem anderen Gerät endgültig gelöscht
+                    if (c.cancelled) cases = cases.filter((x) => x !== c);
+                    else res.inTrash++;
+                    return;
+                }
+                res.missingCases.push(c.uid);
+                return;
+            }
+            if (row.ts > (c.ts || 0)) { applySheetCase(c, row); res.pulledChanged++; }
+            else if (row.ts < (c.ts || 0)) { q.push(caseOp('upsert', c)); res.pushedNewer++; }
+        });
+        // nur in der Tabelle vorhandene Fälle -> in die App
+        (state.cases || []).forEach((row) => {
+            if (localByUid.has(row.uid) || queued.has(row.uid)) return;
+            const c = applySheetCase({ initials: '', notes: '', restored: true }, row);
+            c.rev = 1;
+            let id = row.id ? String(row.id) : 'T' + row.ts;
+            while (ids.has(id)) id += 'r';
+            ids.add(id);
+            c.id = id;
+            cases.push(c);
+            res.pulledNew++;
+        });
+        // mögliche Doppelte: fehlender App-Fall mit gleichem Datum + Eingriff wie ein Tabellenfall
+        const sig = (x) => `${x.date}|${(x.procedure || '').trim().toLowerCase()}|${(x.procedure2 || '').trim().toLowerCase()}`;
+        const sheetSigs = new Set((state.cases || []).map(sig));
+        res.possibleDupes = res.missingCases.filter((u) => sheetSigs.has(sig(localByUid.get(u)))).length;
+
+        // Vorwerte
+        const sheetVw = new Map((state.vorwerte || []).map((v) => [String(v.id), v]));
+        vorwerte.slice().forEach((v) => {
+            if (v.isDemo || queued.has(String(v.id))) return;
+            const row = sheetVw.get(String(v.id));
+            if (!row) { res.missingVw.push(String(v.id)); return; }
+            if (row.ts > (v.ts || 0)) {
+                if (row.status === 'gelöscht') { vorwerte = vorwerte.filter((x) => x !== v); res.vwRemoved++; }
+                else { v.name = row.name; v.counts = row.counts || {}; v.ts = row.ts; res.pulledChanged++; }
+            } else if (row.ts < (v.ts || 0)) { q.push(vwOp('vw-upsert', v)); res.pushedNewer++; }
+        });
+        (state.vorwerte || []).forEach((row) => {
+            if (row.status === 'gelöscht' || queued.has(String(row.id))) return;
+            if (vorwerte.some((v) => String(v.id) === String(row.id))) return;
+            vorwerte.push({ id: String(row.id), name: row.name || 'Vorwerte', counts: row.counts || {}, ts: row.ts, rev: 1 });
+            res.pulledNew++;
+        });
+
+        if (res.pulledNew > 0) cases.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        saveSyncQueue(q);
+        saveCases();
+        storeSet('vorwerte', JSON.stringify(vorwerte));
+        return res;
+    }
+
+    // Zahlen der App (ohne Demo) – zum Vergleich mit der Tabelle
+    function appSyncTotals() {
+        const own = cases.filter((c) => !c.isDemo);
+        const prog = computeProgressFor(own.filter((c) => !c.cancelled), false);
+        const vw = {};
+        baekCategories.forEach((k) => { vw[k.id] = 0; });
+        vorwerte.filter((v) => !v.isDemo).forEach((v) => Object.entries(v.counts || {}).forEach(([id, n]) => { if (id in vw) vw[id] += parseInt(n, 10) || 0; }));
+        const logbook = {};
+        baekCategories.forEach((k) => { logbook[k.id] = prog[k.id].logbook; });
+        return { activeCases: own.filter((c) => !c.cancelled).length, vorwerteBlocks: vorwerte.filter((v) => !v.isDemo).length, logbook, vorwerte: vw };
+    }
+
+    function compareTotals(app, sheet) {
+        const diffs = [];
+        if (!sheet) return diffs;
+        if (app.activeCases !== sheet.activeCases) diffs.push(`Aktive Fälle: App ${app.activeCases} · Tabelle ${sheet.activeCases}`);
+        if (app.vorwerteBlocks !== sheet.vorwerteBlocks) diffs.push(`Vorwerte-Blöcke: App ${app.vorwerteBlocks} · Tabelle ${sheet.vorwerteBlocks}`);
+        baekCategories.forEach((k) => {
+            const a = app.logbook[k.id] + app.vorwerte[k.id];
+            const s = (sheet.logbook[k.id] || 0) + (sheet.vorwerte[k.id] || 0);
+            if (a !== s) diffs.push(`${k.short}: App ${a} · Tabelle ${s}`);
+        });
+        return diffs;
+    }
+
+    // ---- Ablauf --------------------------------------------------------
+    async function pushQueue(confirmBulk, stats) {
+        let q = syncQueue();
+        while (q.length > 0) {
+            const batch = q.slice(0, SYNC_BATCH);
+            const r = await syncRequest({ action: 'push', ops: batch, confirmBulk });
+            if (!r.ok && r.error === 'bulk') throw new Error(`${r.count} Stornos/Löschungen – bitte „Jetzt synchronisieren“ tippen und bestätigen.`);
+            if (!r.ok) throw new Error(r.message || 'Unbekannter Fehler');
+            const done = new Set();
+            (r.results || []).forEach((x) => {
+                if (String(x.status).startsWith('fehler')) { stats.fehler = (stats.fehler || 0) + 1; return; }
+                done.add(x.opId);
+                stats[x.status] = (stats[x.status] || 0) + 1;
+            });
+            const current = syncQueue().filter((o) => !done.has(o.opId));
+            saveSyncQueue(current);
+            if (done.size === 0) break;
+            q = current;
+        }
+    }
+
     async function syncNow(opts) {
         const manual = !!(opts && opts.manual);
         if (!syncConfigured()) { if (manual) showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
         if (syncBusy) return;
-        if (!navigator.onLine) { setSyncStatus('Offline – Aufträge werden übertragen, sobald wieder Netz da ist.', 'warn'); if (manual) showToast('Offline – später erneut versuchen.', 'warn'); return; }
-        let q = syncQueue();
-        const destructive = q.filter((o) => o.type === 'cancel' || o.type === 'purge').length;
-        let confirmBulk = false;
-        if (destructive > SYNC_BULK_LIMIT) {
-            if (!manual) { setSyncStatus(`${destructive} Stornos/Löschungen warten auf Bestätigung – bitte „Jetzt synchronisieren“ tippen.`, 'warn'); updateSyncUI(); return; }
-            const ok = await askConfirm(`Es sollen ${destructive} Fälle in Google Sheets storniert bzw. endgültig gelöscht werden. Ist das gewollt?`, { title: 'Viele Stornos auf einmal', confirmLabel: 'Ja, übertragen', danger: true });
-            if (!ok) return;
-            confirmBulk = true;
-        }
+        if (!navigator.onLine) { setSyncStatus('Offline – wird nachgeholt, sobald Netz da ist.', 'warn'); if (manual) showToast('Offline – später erneut versuchen.', 'warn'); return; }
         syncBusy = true;
         updateSyncUI();
         setSyncStatus('Synchronisiere …');
         const stats = {};
+        let report = null;
         try {
-            if (q.length === 0) {
-                const info = await syncRequest({ action: 'ping' });
-                storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
-                rememberScriptVersion(info.version);
+            // 1) Skript-Version prüfen – ein veraltetes Skript bekommt nichts
+            const info = await syncRequest({ action: 'ping' });
+            storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
+            if (scriptOutdated()) {
+                setSyncStatus('Nicht übertragen: Das Skript in Google ist veraltet. Aufträge bleiben gespeichert.', 'error');
+                return;
             }
-            while (q.length > 0) {
-                const batch = q.slice(0, SYNC_BATCH);
-                const r = await syncRequest({ action: 'push', ops: batch, confirmBulk });
-                if (!r.ok && r.error === 'bulk') throw new Error(`${r.count} Stornos/Löschungen – bitte bestätigen („Jetzt synchronisieren“).`);
-                if (!r.ok) throw new Error(r.message || 'Unbekannter Fehler');
-                rememberScriptVersion(r.version);
-                const done = new Set();
-                (r.results || []).forEach((x) => {
-                    // Fehler beim Ausführen -> Auftrag bleibt für einen neuen Versuch
-                    if (String(x.status).startsWith('fehler')) { stats.fehler = (stats.fehler || 0) + 1; return; }
-                    done.add(x.opId);
-                    stats[x.status] = (stats[x.status] || 0) + 1;
-                });
-                // Frisch laden: während der Übertragung neu hinzugekommene
-                // Aufträge bleiben erhalten.
-                const current = syncQueue().filter((o) => !done.has(o.opId));
-                saveSyncQueue(current);
-                if (done.size === 0) break;
-                q = current;
+            // 2) Viele Stornos nur nach Rückfrage
+            const destructive = syncQueue().filter((o) => o.type === 'cancel' || o.type === 'purge').length;
+            let confirmBulk = false;
+            if (destructive > SYNC_BULK_LIMIT) {
+                if (!manual) { setSyncStatus(`${destructive} Stornos/Löschungen warten auf Bestätigung – bitte „Jetzt synchronisieren“ tippen.`, 'warn'); return; }
+                syncBusy = false;
+                const ok = await askConfirm(`Es sollen ${destructive} Fälle in Google Sheets storniert bzw. endgültig gelöscht werden. Ist das gewollt?`, { title: 'Viele Stornos auf einmal', confirmLabel: 'Ja, übertragen', danger: true });
+                syncBusy = true;
+                if (!ok) { setSyncStatus('Abgebrochen – Aufträge bleiben gespeichert.', 'warn'); return; }
+                confirmBulk = true;
             }
-            storeSet('syncLastAt', new Date().toISOString());
+            // 3) Aufträge senden
+            await pushQueue(confirmBulk, stats);
+            // 4) Stand der Tabelle holen und abgleichen
+            const state = await syncRequest({ action: 'state' });
+            const rec = reconcileWithSheet(state);
+            if (rec.pushedNewer > 0) await pushQueue(confirmBulk, stats);
+            const finalState = rec.pushedNewer > 0 || rec.pulledNew || rec.pulledChanged ? await syncRequest({ action: 'state' }) : state;
+            report = {
+                at: new Date().toISOString(), rec,
+                diffs: compareTotals(appSyncTotals(), finalState.eval),
+                sheet: finalState.eval, duplicates: (finalState.eval && finalState.eval.duplicates) || 0,
+                missingCases: rec.missingCases, missingVw: rec.missingVw
+            };
+            saveSyncReport(report);
+            storeSet('syncLastAt', report.at);
+            refreshAll();
             const parts = [];
             if (stats.ok) parts.push(`${stats.ok} übertragen`);
-            if (stats.veraltet) parts.push(`${stats.veraltet} veraltet (neuere Fassung in der Tabelle)`);
-            if (stats.vorhanden) parts.push(`${stats.vorhanden} schon vorhanden`);
-            if (stats.doppelt) parts.push(`${stats.doppelt} bereits erledigt`);
-            if (stats.gelöscht) parts.push(`${stats.gelöscht} in der Tabelle schon gelöscht`);
-            if (stats.fehler) parts.push(`${stats.fehler} Fehler (neuer Versuch später)`);
-            const msg = parts.length ? parts.join(' · ') : 'Alles synchron';
-            setSyncStatus(msg, stats.fehler ? 'warn' : '');
-            if (manual) showToast(parts.length ? `Synchronisiert: ${msg}` : 'Alles synchron');
+            if (rec.pulledNew) parts.push(`${rec.pulledNew} aus Tabelle neu`);
+            if (rec.pulledChanged) parts.push(`${rec.pulledChanged} aus Tabelle aktualisiert`);
+            if (stats.veraltet) parts.push(`${stats.veraltet} veraltet (Tabelle neuer)`);
+            if (stats.fehler) parts.push(`${stats.fehler} Fehler`);
+            setSyncStatus(parts.length ? parts.join(' · ') : 'Alles synchron', stats.fehler ? 'warn' : '');
+            if (manual && (rec.missingCases.length || rec.missingVw.length)) {
+                syncBusy = false;
+                updateSyncUI();
+                await offerUploadMissing();
+                return;
+            }
+            if (manual) showToast(parts.length ? `Synchronisiert: ${parts.join(' · ')}` : 'Alles synchron');
         } catch (err) {
             const m = err && err.message ? err.message : String(err);
-            setSyncStatus(`Nicht synchronisiert: ${/Failed to fetch|NetworkError|Load failed/i.test(m) ? 'keine Verbindung zum Skript' : m}`, 'error');
+            setSyncStatus(`Nicht synchronisiert: ${netErrorText(m)}`, 'error');
             if (manual) showToast('Synchronisieren fehlgeschlagen', 'error');
         } finally {
             syncBusy = false;
             updateSyncUI();
         }
+    }
+
+    // In der Tabelle fehlende Fälle/Vorwerte wieder hochladen – nur nach
+    // Rückfrage (sie könnten dort absichtlich gelöscht worden sein).
+    async function offerUploadMissing() {
+        const rep = syncReport();
+        if (!rep) return;
+        const mc = (rep.missingCases || []).filter((u) => cases.some((c) => c.uid === u));
+        const mv = (rep.missingVw || []).filter((id) => vorwerte.some((v) => String(v.id) === id));
+        if (!mc.length && !mv.length) { renderSyncCard(); return; }
+        const parts = [];
+        if (mc.length) parts.push(`${mc.length} ${mc.length === 1 ? 'Fall' : 'Fälle'}`);
+        if (mv.length) parts.push(`${mv.length} Vorwerte-${mv.length === 1 ? 'Block' : 'Blöcke'}`);
+        const dupe = rep.rec && rep.rec.possibleDupes ? `\n\nAchtung: Bei ${rep.rec.possibleDupes} davon steht in der Tabelle schon ein Fall mit gleichem Datum und Eingriff – eventuell doppelt.` : '';
+        const r = await openDialog({
+            title: 'In der Tabelle fehlt etwas',
+            message: `${parts.join(' und ')} aus der App ${mc.length + mv.length === 1 ? 'steht' : 'stehen'} nicht in der Google-Tabelle (noch nie hochgeladen oder dort gelöscht).${dupe}\n\nJetzt hochladen? Bereits Vorhandenes wird dabei nie überschrieben.`,
+            buttons: [
+                { label: 'Später', value: 'later', kind: 'secondary' },
+                { label: 'In App stornieren', value: 'cancel', kind: 'danger' },
+                { label: 'Hochladen', value: 'upload', kind: 'primary' }
+            ]
+        });
+        if (r.value === 'cancel') {
+            // In der Tabelle absichtlich gelöscht: in der App stornieren bzw.
+            // Vorwerte-Block entfernen, damit beide Seiten gleich zählen.
+            const ok = await askConfirm(`${parts.join(' und ')} in der App stornieren bzw. entfernen? Stornierte Fälle erscheinen danach grau in der Tabelle und zählen nirgends mehr.`, { title: 'In der App stornieren', confirmLabel: 'Stornieren', danger: true });
+            if (!ok) { renderSyncCard(); return; }
+            const q2 = syncQueue();
+            mc.forEach((u) => { const c = cases.find((x) => x.uid === u); if (c) { c.cancelled = true; touchCase(c); q2.push(caseOp('upsert', c)); } });
+            mv.forEach((id) => { vorwerte = vorwerte.filter((x) => String(x.id) !== id); });
+            saveSyncQueue(q2);
+            saveCases();
+            storeSet('vorwerte', JSON.stringify(vorwerte));
+            rep.missingCases = []; rep.missingVw = [];
+            saveSyncReport(rep);
+            refreshAll();
+            await syncNow({ manual: true });
+            return;
+        }
+        if (r.value !== 'upload') { renderSyncCard(); return; }
+        const q = syncQueue();
+        mc.forEach((u) => { const c = cases.find((x) => x.uid === u); if (c) q.push(caseOp('seed', c)); });
+        mv.forEach((id) => { const v = vorwerte.find((x) => String(x.id) === id); if (v) q.push(vwOp('vw-seed', v)); });
+        saveSyncQueue(q);
+        rep.missingCases = []; rep.missingVw = [];
+        saveSyncReport(rep);
+        await syncNow({ manual: true });
     }
 
     async function testSyncConnection() {
@@ -4492,27 +4718,27 @@
         try {
             const info = await syncRequest({ action: 'ping' });
             storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
-            rememberScriptVersion(info.version);
-            setSyncStatus(`Verbunden mit „${info.name}“ · ${info.rows} ${info.rows === 1 ? 'Zeile' : 'Zeilen'} in „Fälle“.`);
-            showToast('Verbindung klappt');
+            updateSyncUI();
+            if (scriptOutdated()) { setSyncStatus('Verbunden, aber das Skript in Google ist veraltet – bitte aktualisieren (siehe Hinweis).', 'error'); return; }
+            setSyncStatus(`Verbunden mit „${info.name}“.`);
+            await syncNow({ manual: true });
         } catch (err) {
             const m = err && err.message ? err.message : String(err);
-            setSyncStatus(`Keine Verbindung: ${/Failed to fetch|NetworkError|Load failed/i.test(m) ? 'Skript nicht erreichbar (Adresse? Zugriff „Jeder“?)' : m}`, 'error');
+            setSyncStatus(`Keine Verbindung: ${netErrorText(m)}`, 'error');
+            updateSyncUI();
         }
-        updateSyncUI();
     }
 
     function saveSyncSettingsFromInputs() {
         const url = ($('sync-url').value || '').trim();
         const key = ($('sync-key').value || '').trim();
-        const wasConfigured = syncConfigured();
         if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) {
             setSyncStatus('Die Adresse muss mit https://script.google.com/ beginnen.', 'error');
             return;
         }
+        if (url !== syncUrl() || key !== syncKey()) { storeSet('syncReport', 'null'); removeStored('syncScriptVersion'); }
         storeSet('syncUrl', url);
         storeSet('syncKey', key);
-        if (!wasConfigured && syncConfigured()) setSyncStatus('Gespeichert. Tipp: „Verbindung testen“, dann einmalig „Vorhandene Fälle hochladen“.');
         updateSyncUI();
     }
 
@@ -4522,103 +4748,16 @@
         updateSyncUI();
     }
 
-    // Einmalig: bisherige Fälle in die Tabelle übernehmen. Das Skript fügt
-    // nur fehlende Fälle ein und ändert nie eine vorhandene Zeile.
-    async function seedSheetFromApp() {
-        if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
-        const list = cases.filter((c) => !c.isDemo);
-        const vws = vorwerte.filter((v) => !v.isDemo);
-        if (list.length === 0 && vws.length === 0) { showToast('Keine eigenen Fälle oder Vorwerte vorhanden.', 'warn'); return; }
-        const ok = await askConfirm(`${list.length} ${list.length === 1 ? 'Fall' : 'Fälle'} und ${vws.length} Vorwerte-${vws.length === 1 ? 'Block' : 'Blöcke'} in Google Sheets übernehmen?\n\nWas dort schon steht oder im Papierkorb liegt, wird nicht verändert.`, { title: 'Vorhandene Daten hochladen', confirmLabel: 'Hochladen' });
-        if (!ok) return;
-        const q = syncQueue();
-        vws.forEach((v) => {
-            if (typeof v.ts !== 'number') { v.ts = Number(v.id) > 1e12 ? Number(v.id) : Date.now(); v.rev = 1; }
-            q.push({ opId: newUid(), type: 'vw-seed', uid: String(v.id), ts: v.ts, at: new Date().toISOString(), data: { name: v.name, counts: v.counts || {} } });
-        });
-        storeSet('vorwerte', JSON.stringify(vorwerte));
-        list.forEach((c) => {
-            ensureCaseMeta(c);
-            q.push({ opId: newUid(), type: 'seed', uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString(), data: sheetRecord(c), crit: c.cancelled ? [] : caseCategoryIds(c) });
-        });
-        saveCases();
-        saveSyncQueue(q);
+    // Verbindung trennen (z. B. bei „Alles löschen“) – Tabelle bleibt unverändert
+    function removeStored(k) {
+        try { localStorage.removeItem(k); } catch (e) {}
+        try { delete memStore[k]; } catch (e) {}
+    }
+
+    function disconnectSync() {
+        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion'].forEach(removeStored);
+        if ($('sync-url')) { $('sync-url').value = ''; $('sync-key').value = ''; }
         updateSyncUI();
-        syncNow({ manual: true });
-    }
-
-    // Nach Cache-Verlust: Fälle aus der Tabelle zurückholen (nur lesen, es
-    // wird dabei nichts an die Tabelle geschickt). Initialen, Geburtsdatum
-    // und Bemerkungen stehen nicht in der Tabelle und fehlen danach.
-    async function restoreFromSheets() {
-        if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
-        const ok = await askConfirm('Fälle und Vorwerte aus Google Sheets in die App übernehmen?\n\nFehlendes wird ergänzt, ältere Fassungen in der App durch neuere aus der Tabelle ersetzt. Initialen, Geburtsdatum und Bemerkungen stehen nicht in der Tabelle – vorhandene bleiben erhalten, bei neu übernommenen Fällen fehlen sie.', { title: 'Aus Google Sheets wiederherstellen', confirmLabel: 'Wiederherstellen' });
-        if (!ok) return;
-        setSyncStatus('Lade aus Google Sheets …');
-        try {
-            const r = await syncRequest({ action: 'restore' });
-            rememberScriptVersion(r.version);
-            const res = mergeRestoredCases(r.cases || []);
-            const vw = mergeRestoredVorwerte(r.vorwerte || []);
-            saveCases();
-            storeSet('vorwerte', JSON.stringify(vorwerte));
-            refreshAll();
-            const msg = `${res.added} Fälle ergänzt · ${res.updated} aktualisiert · ${res.kept} unverändert` + (vw ? ` · ${vw} Vorwerte-${vw === 1 ? 'Block' : 'Blöcke'}` : '');
-            setSyncStatus(`Wiederhergestellt: ${msg}`);
-            showToast(`Wiederhergestellt: ${msg}`);
-        } catch (err) {
-            setSyncStatus(`Wiederherstellen fehlgeschlagen: ${err && err.message ? err.message : err}`, 'error');
-        }
-    }
-
-    const RESTORE_FIELDS = ['date', 'asa', 'opSaal', 'procedure', 'procedure2', 'isVollnarkose', 'airway', 'isSpaPdk', 'spaPdkType',
-        'isPeripher', 'peripherType', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal', 'isIntrakraniell', 'isSectio',
-        'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess'];
-
-    function mergeRestoredCases(remote) {
-        const res = { added: 0, updated: 0, kept: 0 };
-        const byUid = new Map(cases.map((c) => [c.uid, c]));
-        const ids = new Set(cases.map((c) => c.id));
-        remote.forEach((rc) => {
-            if (!rc || !rc.uid || !rc.data) return;
-            const d = rc.data;
-            const local = byUid.get(rc.uid);
-            if (local && (local.ts || 0) >= rc.ts) { res.kept++; return; }
-            const target = local || {};
-            RESTORE_FIELDS.forEach((k) => { if (d[k] !== undefined) target[k] = d[k]; });
-            target.btm = Array.isArray(d.btm) ? d.btm.filter((e) => e && e.label && e.count > 0) : [];
-            target.cancelled = rc.status === 'storniert';
-            target.uid = rc.uid; target.ts = rc.ts; target.rev = rc.rev || 1;
-            // Ohne Geburtsdatum/Alter zählt das gespeicherte "Kind <= 5 J."
-            target.kindLe5 = !!d.kindLe5;
-            if (local) { res.updated++; return; }
-            let id = d.id ? String(d.id) : String(rc.ts);
-            while (ids.has(id)) id = id + 'r';
-            ids.add(id);
-            target.id = id;
-            target.initials = '';
-            target.notes = '';
-            target.restored = true;
-            cases.push(target);
-            byUid.set(rc.uid, target);
-            res.added++;
-        });
-        // Nach Datum ordnen (stabil: die Reihenfolge innerhalb eines Tages
-        // bleibt, übernommene Fälle kommen ans Ende ihres Tages).
-        if (res.added > 0) cases.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-        return res;
-    }
-
-    function mergeRestoredVorwerte(remote) {
-        let n = 0;
-        remote.forEach((rv) => {
-            if (!rv || !rv.id) return;
-            const idx = vorwerte.findIndex((v) => String(v.id) === String(rv.id));
-            const block = { id: String(rv.id), name: rv.name || 'Vorwerte', counts: rv.counts || {}, ts: rv.ts || 0, rev: 1 };
-            if (idx === -1) { vorwerte.push(block); n++; }
-            else if ((vorwerte[idx].ts || 0) < block.ts) { vorwerte[idx] = block; n++; }
-        });
-        return n;
     }
 
     // Skript-Quelltext (eingebettet, passt immer zu dieser App-Version).
@@ -4684,17 +4823,60 @@
         showToast('Fall endgültig gelöscht');
     }
 
+    // Übersicht: Verbindung, Skript, Abgleich App ↔ Tabelle
+    function renderSyncCard() {
+        const box = $('sync-card');
+        if (!box) return;
+        const configured = syncConfigured();
+        box.classList.toggle('hidden', !configured);
+        if (!configured) return;
+        const rep = syncReport();
+        const n = syncQueue().length;
+        const line = (icon, cls, html) => `<div class="sync-line ${cls}"><i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i><div class="min-w-0 flex-1">${html}</div></div>`;
+        const lines = [];
+        const v = storeGet('syncScriptVersion');
+        if (scriptOutdated()) {
+            lines.push(line('alert-triangle', 'is-bad', `<b>Skript in Google veraltet</b> (Version ${esc(v)}, benötigt ${SYNC_SCRIPT_VERSION}). Es wird nichts übertragen, bis es aktualisiert ist – Anleitung oben, Abschnitt „Skript aktualisieren“. Wichtig: <b>Bereitstellungen verwalten → Neue Version</b>, nicht „Neue Bereitstellung“.`));
+        } else if (v) {
+            lines.push(line('circle-check', 'is-ok', `Verbunden · Skript-Version ${esc(v)}`));
+        }
+        if (n > 0) lines.push(line('cloud-upload', 'is-warn', `${n} ${n === 1 ? 'Auftrag wartet' : 'Aufträge warten'} auf Übertragung`));
+        if (rep && !scriptOutdated()) {
+            const mc = (rep.missingCases || []).filter((u) => cases.some((c) => c.uid === u)).length;
+            const mv = (rep.missingVw || []).filter((id) => vorwerte.some((x) => String(x.id) === id)).length;
+            if (mc || mv) {
+                const t = [mc ? `${mc} ${mc === 1 ? 'Fall' : 'Fälle'}` : '', mv ? `${mv} Vorwerte-${mv === 1 ? 'Block' : 'Blöcke'}` : ''].filter(Boolean).join(' und ');
+                lines.push(line('circle-alert', 'is-warn', `${t} aus der App ${mc + mv === 1 ? 'fehlt' : 'fehlen'} in der Tabelle. <button type="button" onclick="offerUploadMissing()" class="underline font-semibold">Hochladen …</button>`));
+            }
+            if (rep.duplicates) lines.push(line('copy', 'is-warn', `${rep.duplicates} doppelte Zeile(n) in der Tabelle (gleiche UID) – werden nur einmal gezählt. Bitte eine davon löschen.`));
+            if (n === 0 && !mc && !mv) {
+                if (rep.diffs && rep.diffs.length) {
+                    lines.push(line('alert-triangle', 'is-warn', `<b>Abweichung App ↔ Tabelle:</b><br>${rep.diffs.slice(0, 5).map(esc).join('<br>')}${rep.diffs.length > 5 ? '<br>…' : ''}`));
+                } else if (rep.sheet) {
+                    const tot = rep.sheet.logbook.total + rep.sheet.vorwerte.total;
+                    lines.push(line('circle-check', 'is-ok', `<b>App und Tabelle stimmen überein</b> · ${rep.sheet.activeCases} Fälle · ${rep.sheet.vorwerteBlocks} Vorwerte-${rep.sheet.vorwerteBlocks === 1 ? 'Block' : 'Blöcke'} · Gesamt ${tot}`));
+                }
+            }
+            lines.push(line('clock', '', `Letzter Abgleich: ${esc(syncTimeLabel(rep.at))}`));
+        }
+        box.innerHTML = lines.join('');
+        refreshIcons();
+    }
+
     function updateSyncUI() {
         const configured = syncConfigured();
-        const q = syncQueue();
-        const n = q.length;
+        const n = syncQueue().length;
         const info = (() => { try { return JSON.parse(storeGet('syncInfo') || 'null'); } catch (e) { return null; } })();
-        const last = storeGet('syncLastAt');
+        const rep = syncReport();
+        const missing = rep ? ((rep.missingCases || []).length + (rep.missingVw || []).length) : 0;
         const sum = $('set-sum-sync');
         if (sum) {
             sum.textContent = !configured ? 'Nicht eingerichtet'
+                : scriptOutdated() ? 'Skript veraltet – bitte aktualisieren'
                 : n > 0 ? `${n} ${n === 1 ? 'Auftrag' : 'Aufträge'} offen`
-                : last ? `Synchron · ${syncTimeLabel(last)}` : 'Eingerichtet';
+                : missing ? 'Nicht alles in der Tabelle'
+                : rep && rep.diffs && rep.diffs.length ? 'Abweichung – bitte prüfen'
+                : rep ? `Synchron · ${syncTimeLabel(rep.at)}` : 'Eingerichtet';
         }
         const btn = $('header-sync');
         if (btn) {
@@ -4702,15 +4884,15 @@
             btn.classList.toggle('is-busy', syncBusy);
             btn.title = n > 0 ? `${n} Aufträge offen – jetzt synchronisieren` : 'Mit Google Sheets synchronisieren';
             const b = $('header-sync-badge');
-            b.textContent = n > 99 ? '99+' : String(n);
-            b.classList.toggle('hidden', n === 0);
+            const warn = scriptOutdated() || missing > 0;
+            b.textContent = warn && n === 0 ? '!' : n > 99 ? '99+' : String(n);
+            b.classList.toggle('hidden', n === 0 && !warn);
         }
         const now = $('sync-now-btn');
         if (now) {
             now.disabled = !configured || syncBusy;
             $('sync-now-label').textContent = syncBusy ? 'Synchronisiere …' : n > 0 ? `Jetzt synchronisieren (${n})` : 'Jetzt synchronisieren';
         }
-        ['sync-seed-btn', 'sync-restore-btn'].forEach((idb) => { const el = $(idb); if (el) el.disabled = !configured || syncBusy; });
         const links = $('sync-links');
         if (links) {
             links.classList.toggle('hidden', !(configured && info && info.sheetUrl));
@@ -4718,11 +4900,7 @@
         }
         const auto = $('sync-auto-toggle');
         if (auto) auto.checked = syncAuto();
-        const warn = $('sync-version-warn');
-        if (warn) {
-            const v = Number(storeGet('syncScriptVersion') || 0);
-            warn.classList.toggle('hidden', !(configured && storeGet('syncScriptVersion') !== null && v < SYNC_SCRIPT_VERSION));
-        }
+        renderSyncCard();
     }
 
     function initSyncUI() {
@@ -4730,8 +4908,13 @@
         $('sync-key').value = syncKey();
         updateSyncUI();
         window.addEventListener('online', () => scheduleSync(500));
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && syncQueue().length) scheduleSync(800); });
-        if (syncQueue().length) scheduleSync(2500);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') return;
+            const last = new Date(storeGet('syncLastAt') || 0).getTime();
+            if (syncQueue().length || Date.now() - last > 2 * 60 * 1000) scheduleSync(800);
+        });
+        // Beim Öffnen abgleichen (holt auch Änderungen aus der Tabelle)
+        scheduleSync(2500);
     }
 
     // ---------------------------------------------------------------
@@ -5728,13 +5911,14 @@
     }
 
     async function resetAllData() {
-        const txt = await askText('Alle Fälle und Vorwerte werden auf diesem Gerät unwiderruflich gelöscht (Google Sheets bleibt unverändert).\nZur Bestätigung LÖSCHEN eingeben:', {
+        const txt = await askText('Alle Fälle und Vorwerte werden auf diesem Gerät unwiderruflich gelöscht. Die Verbindung zu Google Sheets wird getrennt, die Tabelle bleibt unverändert.\nZur Bestätigung LÖSCHEN eingeben:', {
             title: 'Alle Daten löschen', placeholder: 'LÖSCHEN', confirmLabel: 'Endgültig löschen', danger: true
         });
         if (txt === null) return;
         if (txt.toUpperCase() !== 'LÖSCHEN') { showToast('Eingabe stimmt nicht überein – nichts gelöscht.', 'warn'); return; }
         cases = [];
         vorwerte = [];
+        disconnectSync();
         saveCases();
         storeSet('vorwerte', JSON.stringify(vorwerte));
         resetCaseForm();
@@ -5938,93 +6122,90 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets
- * =======================================================
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 4)
+ * ===================================================================
  *
- * Eine ausführliche Schritt-für-Schritt-Anleitung steht in der App unter
- * Mehr → Google Sheets → „Anleitung“.
+ * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
+ * „Anleitung: Google-Tabelle einrichten“. Kurzfassung:
+ *  1. Neue Google-Tabelle → Erweiterungen → Apps Script → diesen Text in
+ *     „Code.gs“ einfügen → speichern.
+ *  2. Funktion „einrichten“ ausführen → Berechtigung erlauben → im
+ *     Ausführungsprotokoll steht der GEHEIME SCHLÜSSEL.
+ *  3. Bereitstellen → Neue Bereitstellung → Web-App, Ausführen als: Ich,
+ *     Zugriff: Jeder → URL (…/exec) kopieren.
+ *  4. In der App URL + Schlüssel eintragen → „Jetzt synchronisieren“.
  *
- * Einrichtung (einmalig, ca. 10 Minuten):
- *  1. Neue Google-Tabelle anlegen (z. B. „Anästhesie-Logbuch“).
- *  2. Erweiterungen → Apps Script. Den gesamten Inhalt dieser Datei in
- *     „Code.gs“ einfügen (vorhandenen Text ersetzen) und speichern.
- *  3. Oben in der Funktionsauswahl „einrichten“ wählen → Ausführen.
- *     Beim ersten Mal nach Berechtigung fragen lassen und zustimmen.
- *     Im Ausführungsprotokoll erscheint der GEHEIME SCHLÜSSEL.
- *  4. Bereitstellen → Neue Bereitstellung → Typ „Web-App“:
- *       Ausführen als: Ich
- *       Zugriff: Jeder
- *     → Bereitstellen. Die angezeigte Web-App-URL (endet auf /exec) kopieren.
- *  5. In der Logbuch-App: Mehr → Google Sheets → URL und Schlüssel eintragen
- *     → „Verbindung testen“.
+ * Update auf eine neue Skript-Version: Code ersetzen → speichern →
+ * „einrichten“ ausführen → Bereitstellen → Bereitstellungen verwalten →
+ * Stift → Version „Neue Version“ → Bereitstellen (URL bleibt gleich).
+ * NICHT „Neue Bereitstellung“ – das erzeugt eine neue URL.
  *
- * Grundsätze:
- *  - Die App schickt nur einzelne Aufträge (anlegen, bearbeiten, stornieren,
- *    Storno aufheben, endgültig löschen), nie den Gesamtbestand. Ein leerer
- *    App-Speicher kann die Tabelle daher nicht verändern.
- *  - Jeder Auftrag hat eine eindeutige ID und wird nur einmal ausgeführt.
- *  - Jeder Fall hat eine Version (Zeitstempel der letzten Aktion in der App).
- *    Ein Auftrag mit älterer oder gleicher Version als die Zeile wird
- *    ignoriert: ältere Fassungen überschreiben nie neuere.
- *  - Vor jeder Änderung wird die bisherige Zeile im Blatt „Verlauf“ gesichert.
- *  - Storno markiert nur (grau, zählt nicht in „Auswertung“). Endgültig
- *    gelöschte Zeilen wandern in den „Papierkorb“.
+ * So arbeiten App und Tabelle zusammen:
+ *  - Jeder Fall hat eine eindeutige UID und eine Version (Zeitpunkt der
+ *    letzten Änderung). Die neuere Fassung gewinnt – egal ob sie aus der
+ *    App oder aus der Tabelle stammt. Ältere überschreiben nie neuere.
+ *  - Die App schickt nur Aufträge (anlegen, bearbeiten, stornieren, Storno
+ *    aufheben, endgültig löschen), nie „den Gesamtbestand“. Ein leerer
+ *    App-Speicher verändert die Tabelle daher nicht.
+ *  - In der Tabelle darfst du Werte ändern, neue Zeilen ergänzen und den
+ *    Status auf „storniert“ setzen. Das Skript vergibt dann automatisch
+ *    UID und Version; die App übernimmt es beim nächsten Abgleich.
+ *  - Löschst du eine ganze Zeile (oder leerst Datum UND Eingriff), fehlt
+ *    der Fall in der Tabelle. Die App bietet dann an, ihn wieder hochzuladen.
+ *  - Jede UID zählt in der Auswertung nur einmal (keine Doppelzählung).
  *  - Keine Patientendaten: keine Initialen, kein Geburtsdatum, kein Alter,
  *    keine Bemerkungen – nur „Kind ≤ 5 J.“ als ja/nein für die Richtzahl.
- *
- * Nach Änderungen an diesem Skript: Bereitstellen → Bereitstellungen
- * verwalten → Bearbeiten (Stift) → Version „Neue Version“ → Bereitstellen.
- * So bleibt die URL gleich.
  */
 
+var SCRIPT_VERSION = 4;
+
 var SHEET_CASES = 'Fälle';
+var SHEET_VW = 'Vorwerte';
+var SHEET_EVAL = 'Auswertung';
 var SHEET_HISTORY = 'Verlauf';
 var SHEET_TRASH = 'Papierkorb';
 var SHEET_LOG = 'Protokoll';
-var SHEET_EVAL = 'Auswertung';
-var SHEET_VW = 'Vorwerte';
 
-// Muss zur App passen – die App warnt, wenn das bereitgestellte Skript
-// älter ist (dann „Neue Version“ bereitstellen).
-var SCRIPT_VERSION = 3;
-
-// Mehr Stornos/Löschungen als das in einer Übertragung nur mit
-// ausdrücklicher Bestätigung in der App.
-var BULK_LIMIT = 5;
+var BULK_LIMIT = 5;            // mehr Stornos/Löschungen je Übertragung nur mit Bestätigung
 var MAX_OPS_PER_REQUEST = 200;
-
 var STATUS_ACTIVE = 'aktiv';
 var STATUS_CANCELLED = 'storniert';
+var STATUS_DELETED = 'gelöscht'; // nur Vorwerte
 
-// Richtzahlen (identisch zur App). id = Schlüssel aus der App.
+// Richtzahlen (wie in der App): [id, Kurzname, Langname, Soll]
 var RZ = [
-  ['total', 'Anästhesieverfahren gesamt (Allgemeinanästhesien)', 1800],
-  ['abdominell', 'davon: Abdominelle Eingriffe', 300],
-  ['asa3', 'davon: Patienten ab ASA III', 100],
-  ['fiberoptik', 'Fiberoptische Techniken', 25],
-  ['video', 'Videoassistierte Intubation', 20],
-  ['ultraschall', 'Anästhesierelevante Ultraschallverfahren', 50],
-  ['intrakraniell', 'Mitwirkung: Intrakranielle Eingriffe', 25],
-  ['kinder', 'Säuglinge & Kleinkinder (≤ 5 Jahre)', 50],
-  ['geburtshilfe', 'Anästhesie in der Geburtshilfe', 50],
-  ['sectio', 'davon: Kaiserschnitte (Sectio)', 25],
-  ['intrathorakal', 'Mitwirkung: Intrathorakale Eingriffe', 25],
-  ['kopf_hals', 'Eingriffe Kopf-Hals-Bereich', 100],
-  ['regional_zentral', 'Rückenmarksnahe Regionalanästhesien', 50],
-  ['regional_peripher', 'Periphere Regionalanästhesieverfahren', 50],
-  ['ambulant', 'Anästhesien bei ambulanten Eingriffen', 50]
+  ['total', 'Gesamt', 'Anästhesieverfahren gesamt (Allgemeinanästhesien)', 1800],
+  ['abdominell', 'Abdominell', 'davon: Abdominelle Eingriffe', 300],
+  ['asa3', 'ASA ≥ III', 'davon: Patienten ab ASA III', 100],
+  ['fiberoptik', 'Fiberoptik', 'Fiberoptische Techniken', 25],
+  ['video', 'Video-Intubation', 'Videoassistierte Intubation', 20],
+  ['ultraschall', 'Ultraschall', 'Anästhesierelevante Ultraschallverfahren', 50],
+  ['intrakraniell', 'Intrakraniell', 'Mitwirkung: Intrakranielle Eingriffe', 25],
+  ['kinder', 'Kind ≤ 5 J.', 'Säuglinge & Kleinkinder (≤ 5 Jahre)', 50],
+  ['geburtshilfe', 'Geburtshilfe', 'Anästhesie in der Geburtshilfe', 50],
+  ['sectio', 'Sectio', 'davon: Kaiserschnitte (Sectio)', 25],
+  ['intrathorakal', 'Intrathorakal', 'Mitwirkung: Intrathorakale Eingriffe', 25],
+  ['kopf_hals', 'Kopf/Hals', 'Eingriffe Kopf-Hals-Bereich', 100],
+  ['regional_zentral', 'RM-RA', 'Rückenmarksnahe Regionalanästhesien', 50],
+  ['regional_peripher', 'Periphere RA', 'Periphere Regionalanästhesieverfahren', 50],
+  ['ambulant', 'Ambulant', 'Anästhesien bei ambulanten Eingriffen', 50]
 ];
 
-// Spalten im Blatt „Fälle“: [Überschrift, Schlüssel, Art]
-var COLS = [
-  ['UID', 'uid', 'text'],
-  ['App-ID', 'id', 'text'],
-  ['Status', 'status', 'text'],
+// Eingriffe, die als Geburtshilfe zählen (wie in der App)
+var GEBURTSHILFE = ['Sectio Caesarea', 'Manuelle Plazentalösung', 'Curettage p.p.', 'Cerclage',
+  'Geburtseinleitung (Analgesie)', 'PDK Kreissaal', 'Dammriss-Versorgung / Episiotomie-Naht',
+  'Vaginal-operative Entbindung (Zange/Vakuum)', 'Äußere Wendung (Analgesie)',
+  'Postpartale Blutung (PPH), operative Versorgung', 'CSE Kreißsaal', 'Remifentanil-PCA Kreißsaal'];
+
+// Blatt „Fälle“: [Überschrift, Schlüssel, Art]. Gelesen/geschrieben wird
+// über die Überschriften – eigene Zusatzspalten stören nicht.
+var CASE_COLS = [
   ['Datum', 'date', 'date'],
-  ['ASA', 'asa', 'text'],
-  ['Ort', 'opSaal', 'text'],
+  ['Status', 'status', 'status'],
   ['Eingriff', 'procedure', 'text'],
   ['Eingriff 2', 'procedure2', 'text'],
+  ['ASA', 'asa', 'asa'],
+  ['Ort', 'opSaal', 'text'],
   ['Kind ≤ 5 J.', 'kindLe5', 'bool'],
   ['Allgemeinanästhesie', 'isVollnarkose', 'bool'],
   ['Atemweg', 'airway', 'text'],
@@ -6042,228 +6223,555 @@ var COLS = [
   ['Fiberoptik', 'isFiberoptik', 'bool'],
   ['Videolaryngoskopie', 'isVideo', 'bool'],
   ['Sono-Gefäßpunktion', 'isSonoGefaess', 'bool'],
-  ['BTM', 'btmText', 'text']
+  ['BTM (Ampullen)', 'btm', 'text']
 ].concat(RZ.map(function (r) { return ['RZ ' + r[1], 'rz:' + r[0], 'rz']; }))
  .concat([
-  ['Version', 'ts', 'num'],
-  ['Revision', 'rev', 'num'],
-  ['Letzte Aktion', 'lastAction', 'text'],
-  ['Geändert am', 'changedAt', 'datetime'],
-  ['Daten (App)', 'json', 'text']
+  ['Letzte Aktion', 'lastAction', 'tech'],
+  ['Geändert am', 'changedAt', 'tech'],
+  ['Version', 'ts', 'tech'],
+  ['UID', 'uid', 'tech'],
+  ['App-ID', 'id', 'tech']
 ]);
 
-// Blatt „Vorwerte“: ein Block aus der App je Zeile
-var VW_COLS = [['ID', 'id'], ['Status', 'status'], ['Bezeichnung', 'name']]
-  .concat(RZ.map(function (r) { return [r[1], 'rz:' + r[0]]; }))
-  .concat([['Version', 'ts'], ['Geändert am', 'changedAt']]);
-function vwIndex_(key) {
-  for (var i = 0; i < VW_COLS.length; i++) if (VW_COLS[i][1] === key) return i;
-  throw new Error('Spalte fehlt: ' + key);
+// Blatt „Vorwerte“
+var VW_COLS = [['Bezeichnung', 'name', 'text'], ['Status', 'status', 'status']]
+  .concat(RZ.map(function (r) { return [r[1], 'n:' + r[0], 'num']; }))
+  .concat([['Geändert am', 'changedAt', 'tech'], ['Version', 'ts', 'tech'], ['ID', 'id', 'tech']]);
+
+// Frühere Überschriften (Skript-Version 2/3) → Schlüssel, für die Umstellung
+var OLD_HEADERS = { 'BTM': 'btm', 'Daten (App)': '_json', 'Revision': '_rev' };
+RZ.forEach(function (r) { OLD_HEADERS[r[2]] = 'n:' + r[0]; });
+
+var BOOL_KEYS = CASE_COLS.filter(function (c) { return c[2] === 'bool'; }).map(function (c) { return c[1]; });
+
+// ------------------------------------------------------------------
+// Hilfen
+// ------------------------------------------------------------------
+function ss_() { return SpreadsheetApp.getActiveSpreadsheet(); }
+
+// Überschrift → Spaltenindex (0-basiert) aus Zeile 1
+function hmap_(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var map = {};
+  if (lastCol < 1) return map;
+  sheet.getRange(1, 1, 1, lastCol).getValues()[0].forEach(function (h, i) {
+    var k = String(h || '').trim();
+    if (k && !(k in map)) map[k] = i;
+  });
+  return map;
 }
 
-function colIndex_(key) {
-  for (var i = 0; i < COLS.length; i++) if (COLS[i][1] === key) return i;
-  throw new Error('Spalte fehlt: ' + key);
+function keyMap_(cols, hm) {
+  var out = {};
+  cols.forEach(function (c) { if (c[0] in hm) out[c[1]] = hm[c[0]]; });
+  return out;
 }
+
+function truthy_(v) {
+  if (v === true || v === 1) return true;
+  var s = String(v == null ? '' : v).trim().toLowerCase();
+  return s === 'ja' || s === 'x' || s === 'true' || s === 'wahr' || s === '1' || s === 'yes' || s === 'j' || s === '✓';
+}
+
+function normStatus_(v, forVw) {
+  var s = String(v == null ? '' : v).trim().toLowerCase();
+  if (s.indexOf('storn') === 0) return STATUS_CANCELLED;
+  if (forVw && (s.indexOf('gelösch') === 0 || s.indexOf('geloesch') === 0)) return STATUS_DELETED;
+  return STATUS_ACTIVE;
+}
+
+function safeText_(v) {
+  var s = v == null ? '' : String(v);
+  if (s.length > 500) s = s.slice(0, 500);
+  return /^[=+\-@]/.test(s) ? "'" + s : s; // keine Formeln aus App-Daten
+}
+
+function unsafe_(s) { return String(s == null ? '' : s).replace(/^'/, ''); }
+
+// Datum aus Zelle: Date-Objekt, "2026-09-24", "24.09.2026" oder "24.09.26"
+function toDate_(v) {
+  if (v instanceof Date && !isNaN(v.getTime())) return new Date(v.getFullYear(), v.getMonth(), v.getDate());
+  var s = String(v == null ? '' : v).trim();
+  var m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/.exec(s);
+  if (m) { var y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[2] - 1, +m[1]); }
+  return null;
+}
+
+function isoDate_(d) {
+  if (!d) return '';
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
 function colLetter_(n) { // 1-basiert
   var s = '';
   while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
   return s;
 }
 
+function newUid_() { return Utilities.getUuid(); }
+
+// BTM als lesbarer Text "Sufentanil 50 µg × 1; Remifentanil 2 mg × 2"
+function btmToText_(btm) {
+  if (typeof btm === 'string') return btm;
+  return (Array.isArray(btm) ? btm : []).slice(0, 20).map(function (e) {
+    return String(e && e.label || '').split(' (')[0] + ' × ' + (Number(e && e.count) || 0);
+  }).join('; ');
+}
+
+// Richtzahl-Kriterien – gleiche Regeln wie in der App
+function computeRz_(o) {
+  var procs = [o.procedure, o.procedure2].map(function (x) { return String(x || '').trim(); }).filter(String);
+  var ga = !!o.isVollnarkose;
+  var asa = parseInt(o.asa, 10);
+  var geb = !!o.isSectio || procs.some(function (p) { return GEBURTSHILFE.indexOf(p) > -1; });
+  return {
+    total: ga,
+    abdominell: ga && !!o.isAbdominell,
+    asa3: ga && !isNaN(asa) && asa >= 3,
+    fiberoptik: !!o.isFiberoptik,
+    video: !!o.isVideo,
+    ultraschall: !!o.isSonoGefaess,
+    intrakraniell: !!o.isIntrakraniell,
+    kinder: !!o.kindLe5,
+    geburtshilfe: geb,
+    sectio: procs.indexOf('Sectio Caesarea') > -1,
+    intrathorakal: !!o.isIntrathorakal,
+    kopf_hals: !!o.isKopfHals,
+    regional_zentral: !!o.isSpaPdk,
+    regional_peripher: !!o.isPeripher,
+    ambulant: !!o.isAmbulant
+  };
+}
+
+// Zeile (Array) → Fall-Objekt
+function rowToCase_(row, km) {
+  var o = {};
+  CASE_COLS.forEach(function (c) {
+    var k = c[1];
+    if (!(k in km) || c[2] === 'rz') return;
+    var v = row[km[k]];
+    if (c[2] === 'bool') o[k] = truthy_(v);
+    else if (c[2] === 'date') o[k] = toDate_(v);
+    else if (c[2] === 'status') o[k] = normStatus_(v);
+    else if (c[2] === 'asa') { var n = parseInt(v, 10); o[k] = isNaN(n) ? '' : String(n); }
+    else if (k === 'ts') o[k] = Number(v) || 0;
+    else if (k === 'changedAt') o[k] = v instanceof Date ? v : null;
+    else o[k] = unsafe_(v).trim();
+  });
+  return o;
+}
+
+// Fall-Objekt → Werte in eine bestehende Zeile schreiben (nur bekannte Spalten)
+function fillCaseRow_(row, km, o) {
+  var rz = computeRz_(o);
+  CASE_COLS.forEach(function (c) {
+    var k = c[1];
+    if (!(k in km)) return;
+    var v;
+    if (c[2] === 'rz') v = rz[k.slice(3)] ? 'x' : '';
+    else if (c[2] === 'bool') v = o[k] ? 'ja' : '';
+    else if (c[2] === 'date') v = o[k] instanceof Date ? o[k] : (toDate_(o[k]) || '');
+    else if (k === 'btm') v = safeText_(btmToText_(o.btm));
+    else if (k === 'ts') v = Number(o.ts) || 0;
+    else if (k === 'changedAt') v = o.changedAt || new Date();
+    else v = safeText_(o[k] == null ? '' : o[k]);
+    row[km[k]] = v;
+  });
+  return row;
+}
+
+function hasCaseContent_(o) { return !!(o.date || o.procedure); }
+
 // ------------------------------------------------------------------
-// Einrichtung
+// Einrichtung (auch zum Aktualisieren – Daten bleiben erhalten)
 // ------------------------------------------------------------------
 function einrichten() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var headers = COLS.map(function (c) { return c[0]; });
+  var ss = ss_();
+  setupCases_(ss);
+  setupVorwerte_(ss);
+  setupSimple_(ss, SHEET_HISTORY, ['Gesichert am', 'Anlass', 'Auftrag-ID'].concat(CASE_COLS.map(function (c) { return c[0]; })), '#f1f5f9');
+  setupSimple_(ss, SHEET_TRASH, ['Gelöscht am', 'Auftrag-ID'].concat(CASE_COLS.map(function (c) { return c[0]; })), '#fee2e2');
+  setupSimple_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis'], '#f1f5f9');
+  setupEval_(ss);
 
-  var cases = ensureSheet_(ss, SHEET_CASES, headers);
-  cases.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#e0effe');
-  cases.setFrozenRows(1);
-  cases.setFrozenColumns(0);
-  var maxRows = cases.getMaxRows();
-  cases.getRange(2, colIndex_('uid') + 1, maxRows - 1, 2).setNumberFormat('@');
-  cases.getRange(2, colIndex_('date') + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy');
-  cases.getRange(2, colIndex_('ts') + 1, maxRows - 1, 2).setNumberFormat('0');
-  cases.getRange(2, colIndex_('changedAt') + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
-  cases.hideColumns(colIndex_('json') + 1);
-  cases.hideColumns(colIndex_('uid') + 1, 2);
-
-  // Stornierte Zeilen grau + durchgestrichen
-  var statusCol = colLetter_(colIndex_('status') + 1);
-  var rule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_CANCELLED + '"')
-    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
-    .setRanges([cases.getRange(2, 1, maxRows - 1, headers.length)])
-    .build();
-  var rules = cases.getConditionalFormatRules().filter(function (r) {
-    var c = r.getBooleanCondition();
-    return !(c && String(c.getCriteriaValues()[0]).indexOf(STATUS_CANCELLED) > -1);
-  });
-  rules.push(rule);
-  cases.setConditionalFormatRules(rules);
-
-  var hist = ensureSheet_(ss, SHEET_HISTORY, ['Gesichert am', 'Anlass', 'Auftrag-ID'].concat(headers));
-  hist.getRange(1, 1, 1, headers.length + 3).setFontWeight('bold').setBackground('#f1f5f9');
-  hist.setFrozenRows(1);
-
-  var trash = ensureSheet_(ss, SHEET_TRASH, ['Gelöscht am', 'Auftrag-ID'].concat(headers));
-  trash.getRange(1, 1, 1, headers.length + 2).setFontWeight('bold').setBackground('#fee2e2');
-  trash.setFrozenRows(1);
-
-  var log = ensureSheet_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis']);
-  log.getRange(1, 1, 1, 6).setFontWeight('bold').setBackground('#f1f5f9');
-  log.setFrozenRows(1);
-  log.getRange(2, 1, log.getMaxRows() - 1, 1).setNumberFormat('@');
-  log.getRange(2, 4, log.getMaxRows() - 1, 2).setNumberFormat('@');
-
-  var vw = ensureSheet_(ss, SHEET_VW, VW_COLS.map(function (c) { return c[0]; }));
-  vw.getRange(1, 1, 1, VW_COLS.length).setFontWeight('bold').setBackground('#e0effe');
-  vw.setFrozenRows(1);
-  vw.getRange(2, 1, vw.getMaxRows() - 1, 1).setNumberFormat('@');
-  vw.getRange(2, vwIndex_('ts') + 1, vw.getMaxRows() - 1, 1).setNumberFormat('0');
-  vw.getRange(2, vwIndex_('changedAt') + 1, vw.getMaxRows() - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
-  var vwStatus = colLetter_(vwIndex_('status') + 1);
-  vw.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=$' + vwStatus + '2="gelöscht"')
-    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
-    .setRanges([vw.getRange(2, 1, vw.getMaxRows() - 1, VW_COLS.length)]).build()]);
-
-  var sheet1 = ss.getSheetByName('Tabellenblatt1') || ss.getSheetByName('Sheet1');
-  if (sheet1 && sheet1.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(sheet1);
-
-  buildEvalSheet_(ss);
-  sortCases_(cases);
+  var empty = ss.getSheetByName('Tabellenblatt1') || ss.getSheetByName('Sheet1');
+  if (empty && empty.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(empty);
 
   var props = PropertiesService.getScriptProperties();
   var key = props.getProperty('SYNC_KEY');
-  if (!key) {
-    key = neuerSchluessel_();
-    props.setProperty('SYNC_KEY', key);
-  }
-  Logger.log('Einrichtung fertig.');
+  if (!key) { key = neuerSchluessel_(); props.setProperty('SYNC_KEY', key); }
+  refreshAll_(ss);
+  Logger.log('Einrichtung fertig (Skript-Version ' + SCRIPT_VERSION + ').');
   Logger.log('GEHEIMER SCHLÜSSEL (in der App eintragen, nicht weitergeben): ' + key);
 }
 
-// Zeigt den aktuellen Schlüssel im Ausführungsprotokoll.
 function schluesselAnzeigen() {
   Logger.log('GEHEIMER SCHLÜSSEL: ' + PropertiesService.getScriptProperties().getProperty('SYNC_KEY'));
 }
 
-// Neuer Schlüssel, z. B. wenn der alte bekannt geworden ist. Danach in der
-// App den neuen Schlüssel eintragen.
 function neuenSchluesselErzeugen() {
   var key = neuerSchluessel_();
   PropertiesService.getScriptProperties().setProperty('SYNC_KEY', key);
   Logger.log('NEUER GEHEIMER SCHLÜSSEL: ' + key);
 }
 
-function neuerSchluessel_() {
-  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+function neuerSchluessel_() { return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''); }
+
+// Liest alle Zeilen eines Blatts als Objekte {Überschrift: Wert}
+function readByHeader_(sheet) {
+  var last = sheet.getLastRow(), lastCol = sheet.getLastColumn();
+  if (last < 2 || lastCol < 1) return [];
+  var head = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h || '').trim(); });
+  return sheet.getRange(2, 1, last - 1, lastCol).getValues().map(function (r) {
+    var o = {};
+    head.forEach(function (h, i) { if (h && !(h in o)) o[h] = r[i]; });
+    return o;
+  });
 }
 
-function ensureSheet_(ss, name, headers) {
+function headersMatch_(sheet, headers) {
+  if (sheet.getLastColumn() < headers.length) return false;
+  var cur = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+  return headers.every(function (h, i) { return String(cur[i]) === h; });
+}
+
+function setupCases_(ss) {
+  var headers = CASE_COLS.map(function (c) { return c[0]; });
+  var sh = ss.getSheetByName(SHEET_CASES);
+  var rows = null;
+  if (!sh) sh = ss.insertSheet(SHEET_CASES, 0);
+  else if (!headersMatch_(sh, headers)) {
+    // Umstellung vom alten Aufbau: Werte über die Überschriften übernehmen
+    rows = readByHeader_(sh).map(function (r) {
+      var o = {};
+      CASE_COLS.forEach(function (c) { if (c[0] in r) o[c[1]] = r[c[0]]; });
+      if (!o.btm && r['BTM']) o.btm = r['BTM'];
+      return o;
+    });
+    // ab hier: rows[i][schlüssel]
+    sh.clear();
+    try { sh.clearConditionalFormatRules && sh.clearConditionalFormatRules(); } catch (e) {}
+    sh.setConditionalFormatRules([]);
+    sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).clearDataValidations();
+    sh.showColumns(1, sh.getMaxColumns());
+  }
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#e0effe').setWrap(true);
+  var km = keyMap_(CASE_COLS, hmap_(sh));
+
+  if (rows) {
+    var now = new Date();
+    var out = [];
+    rows.forEach(function (r) {
+      var fake = CASE_COLS.map(function (c) { return r[c[1]]; });
+      // r ist hier schon nach Schlüsseln abgelegt (siehe oben)
+      var o = rowToCase_(fake, keyMap_(CASE_COLS, CASE_COLS.reduce(function (m, c, i) { m[c[0]] = i; return m; }, {})));
+      if (!hasCaseContent_(o)) return; // in der Tabelle geleerte Zeilen fallen weg
+      o.uid = o.uid || newUid_();
+      o.ts = o.ts || now.getTime();
+      o.lastAction = o.lastAction || 'übernommen';
+      o.changedAt = o.changedAt instanceof Date ? o.changedAt : now;
+      out.push(fillCaseRow_(new Array(headers.length).fill(''), km, o));
+    });
+    if (out.length) sh.getRange(2, 1, out.length, headers.length).setValues(out);
+  }
+
+  var maxRows = sh.getMaxRows();
+  var body = function (key, n) { return sh.getRange(2, km[key] + 1, maxRows - 1, n || 1); };
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(1);
+  body('date').setNumberFormat('dd.MM.yyyy');
+  body('ts').setNumberFormat('0');
+  body('changedAt').setNumberFormat('dd.MM.yyyy HH:mm');
+  body('uid', 2).setNumberFormat('@');
+
+  // Auswahllisten zum bequemen Bearbeiten
+  var dv = function (list, strict) {
+    return SpreadsheetApp.newDataValidation().requireValueInList(list, true).setAllowInvalid(!strict).build();
+  };
+  body('status').setDataValidation(dv([STATUS_ACTIVE, STATUS_CANCELLED], true));
+  body('asa').setDataValidation(dv(['1', '2', '3', '4', '5', '6'], false));
+  body('opSaal').setDataValidation(dv(['OP 1', 'OP 2', 'OP 3', 'OP 4', 'KRS'], false));
+  body('airway').setDataValidation(dv(['ITN', 'Video-ITN', 'LAMA'], false));
+  BOOL_KEYS.forEach(function (k) { body(k).setDataValidation(dv(['ja'], false)); });
+
+  // Berechnete und technische Spalten grau
+  CASE_COLS.forEach(function (c) {
+    if (c[2] === 'rz' || c[2] === 'tech') sh.getRange(1, km[c[1]] + 1).setBackground('#e2e8f0').setFontColor('#475569');
+  });
+  sh.getRange(1, km['rz:total'] + 1).setNote('RZ-Spalten rechnet das Skript aus den Angaben links aus.');
+  sh.getRange(1, km.uid + 1).setNote('Nicht ändern: eindeutige Kennung des Falls. Leer lassen bei neuen Zeilen – wird automatisch vergeben.');
+
+  var statusCol = colLetter_(km.status + 1);
+  sh.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_CANCELLED + '"')
+    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
+    .setRanges([sh.getRange(2, 1, maxRows - 1, headers.length)]).build()]);
+  sh.setColumnWidth(km.procedure + 1, 220);
+}
+
+function setupVorwerte_(ss) {
+  var headers = VW_COLS.map(function (c) { return c[0]; });
+  var sh = ss.getSheetByName(SHEET_VW);
+  var rows = null;
+  if (!sh) sh = ss.insertSheet(SHEET_VW);
+  else if (!headersMatch_(sh, headers)) {
+    rows = readByHeader_(sh).map(function (r) {
+      var o = { name: r['Bezeichnung'], status: r['Status'], id: r['ID'], ts: r['Version'], changedAt: r['Geändert am'] };
+      RZ.forEach(function (x) { o['n:' + x[0]] = r[x[1]] != null ? r[x[1]] : r[x[2]]; });
+      return o;
+    });
+    sh.clear();
+    sh.setConditionalFormatRules([]);
+  }
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#e0effe').setWrap(true);
+  var km = keyMap_(VW_COLS, hmap_(sh));
+  if (rows) {
+    var out = rows.filter(function (o) { return o.name || RZ.some(function (x) { return Number(o['n:' + x[0]]) > 0; }); })
+      .map(function (o) {
+        o.id = String(o.id || newUid_()); o.ts = Number(o.ts) || Date.now(); o.status = normStatus_(o.status, true);
+        return fillVwRow_(new Array(headers.length).fill(''), km, o);
+      });
+    if (out.length) sh.getRange(2, 1, out.length, headers.length).setValues(out);
+  }
+  var maxRows = sh.getMaxRows();
+  sh.setFrozenRows(1);
+  sh.getRange(2, km.ts + 1, maxRows - 1, 1).setNumberFormat('0');
+  sh.getRange(2, km.id + 1, maxRows - 1, 1).setNumberFormat('@');
+  sh.getRange(2, km.changedAt + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm');
+  sh.getRange(2, km.status + 1, maxRows - 1, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList([STATUS_ACTIVE, STATUS_DELETED], true).setAllowInvalid(false).build());
+  ['changedAt', 'ts', 'id'].forEach(function (k) { sh.getRange(1, km[k] + 1).setBackground('#e2e8f0').setFontColor('#475569'); });
+  var statusCol = colLetter_(km.status + 1);
+  sh.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_DELETED + '"')
+    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
+    .setRanges([sh.getRange(2, 1, maxRows - 1, headers.length)]).build()]);
+  sh.setColumnWidth(km.name + 1, 200);
+}
+
+function fillVwRow_(row, km, o) {
+  VW_COLS.forEach(function (c) {
+    var k = c[1];
+    if (!(k in km)) return;
+    var v;
+    if (c[2] === 'num') v = Math.max(0, parseInt(o[k], 10) || 0);
+    else if (k === 'ts') v = Number(o.ts) || 0;
+    else if (k === 'changedAt') v = o.changedAt instanceof Date ? o.changedAt : new Date();
+    else if (k === 'status') v = normStatus_(o.status, true);
+    else v = safeText_(o[k] == null ? '' : o[k]);
+    row[km[k]] = v;
+  });
+  return row;
+}
+
+function rowToVw_(row, km) {
+  var o = { name: unsafe_(row[km.name]).trim(), status: normStatus_(row[km.status], true), ts: Number(row[km.ts]) || 0, id: String(row[km.id] || '').trim(), counts: {} };
+  RZ.forEach(function (x) { var n = parseInt(row[km['n:' + x[0]]], 10) || 0; if (n > 0) o.counts[x[0]] = n; });
+  return o;
+}
+
+function setupSimple_(ss, name, headers, color) {
   var sh = ss.getSheetByName(name);
+  if (sh && sh.getLastRow() > 1 && !headersMatch_(sh, headers)) {
+    // alter Aufbau mit Daten: als Archiv behalten, neues Blatt anlegen
+    var alt = name + ' (alt)', i = 2;
+    while (ss.getSheetByName(alt)) alt = name + ' (alt ' + (i++) + ')';
+    sh.setName(alt);
+    sh = null;
+  }
   if (!sh) sh = ss.insertSheet(name);
   if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground(color);
+  sh.setFrozenRows(1);
   return sh;
 }
 
-function buildEvalSheet_(ss) {
-  var sh = ss.getSheetByName(SHEET_EVAL) || ss.insertSheet(SHEET_EVAL);
+function setupEval_(ss) {
+  var sh = ss.getSheetByName(SHEET_EVAL) || ss.insertSheet(SHEET_EVAL, 0);
   sh.clear();
-  sh.getRange(1, 1).setValue('Auswertung – nur Fälle mit Status „aktiv“ (stornierte zählen nicht)').setFontWeight('bold');
+  sh.getRange(1, 1).setValue('Auswertung – nur Fälle mit Status „aktiv“; jede UID zählt einmal').setFontWeight('bold');
   sh.getRange(2, 1).setFontColor('#64748b');
-  var head = [['Richtzahl', 'Soll', 'Logbuch', 'Vorwerte (aus App)', 'Gesamt', 'Erfüllt']];
-  sh.getRange(3, 1, 1, 6).setValues(head).setFontWeight('bold').setBackground('#e0effe');
-  var statusCol = colLetter_(colIndex_('status') + 1);
-  // „Logbuch“ und „Vorwerte“ rechnet das Skript selbst aus (recalcEval_)
-  // – keine Tabellenformel mit Trennzeichen, die je nach Spracheinstellung
-  // (Komma/Semikolon) einen Fehler geben könnte. „Gesamt“ und „Erfüllt“
-  // sind Formeln ohne Trennzeichen.
+  sh.getRange(3, 1, 1, 6).setValues([['Richtzahl', 'Soll', 'Logbuch', 'Vorwerte', 'Gesamt', 'Erfüllt']]).setFontWeight('bold').setBackground('#e0effe');
   var n = RZ.length;
-  sh.getRange(4, 1, n, 2).setValues(RZ.map(function (r) { return [r[1], r[2]]; }));
-  sh.getRange(4, 3, n, 1).setValues(RZ.map(function () { return [0]; }));
-  sh.getRange(4, 4, n, 1).setValues(RZ.map(function () { return [0]; }));
+  sh.getRange(4, 1, n, 2).setValues(RZ.map(function (r) { return [r[2], r[3]]; }));
+  sh.getRange(4, 3, n, 2).setValues(RZ.map(function () { return [0, 0]; }));
+  // Formeln ohne Trennzeichen – funktionieren in jeder Spracheinstellung
   sh.getRange(4, 5, n, 2).setFormulas(RZ.map(function (r, i) { var row = 4 + i; return ['=C' + row + '+D' + row, '=E' + row + '/B' + row]; }));
   sh.getRange(4, 6, n, 1).setNumberFormat('0%');
   sh.setColumnWidth(1, 330);
   sh.setFrozenRows(3);
-  recalcEval_(ss);
 }
 
-// Zählt je Richtzahl alle Fälle mit Status „aktiv“ und „x“ in der
-// RZ-Spalte und schreibt die Zahl in „Auswertung“ Spalte C.
-function recalcEval_(ss) {
-  var cases = ss.getSheetByName(SHEET_CASES);
-  var ev = ss.getSheetByName(SHEET_EVAL);
-  if (!cases || !ev) return;
-  var counts = RZ.map(function () { return 0; });
-  var last = cases.getLastRow();
-  if (last >= 2) {
-    var values = cases.getRange(2, 1, last - 1, COLS.length).getValues();
-    var si = colIndex_('status');
-    var idx = RZ.map(function (r) { return colIndex_('rz:' + r[0]); });
-    values.forEach(function (row) {
-      if (row[si] !== STATUS_ACTIVE) return;
-      idx.forEach(function (ci, k) { if (row[ci] === 'x') counts[k]++; });
+// ------------------------------------------------------------------
+// Zählen, sortieren, RZ-Spalten auffrischen
+// ------------------------------------------------------------------
+function computeEval_(ss) {
+  var logbook = {}, vorwerte = {};
+  RZ.forEach(function (r) { logbook[r[0]] = 0; vorwerte[r[0]] = 0; });
+  var seen = {}, dup = 0, active = 0;
+  var cs = ss.getSheetByName(SHEET_CASES);
+  if (cs && cs.getLastRow() >= 2) {
+    var km = keyMap_(CASE_COLS, hmap_(cs));
+    cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues().forEach(function (row) {
+      var o = rowToCase_(row, km);
+      if (!hasCaseContent_(o)) return;
+      if (o.uid) { if (seen[o.uid]) { dup++; return; } seen[o.uid] = true; }
+      if (o.status !== STATUS_ACTIVE) return;
+      active++;
+      var rz = computeRz_(o);
+      RZ.forEach(function (r) { if (rz[r[0]]) logbook[r[0]]++; });
     });
   }
-  var vwSums = RZ.map(function () { return 0; });
-  var vw = ss.getSheetByName(SHEET_VW);
-  if (vw && vw.getLastRow() >= 2) {
-    vw.getRange(2, 1, vw.getLastRow() - 1, VW_COLS.length).getValues().forEach(function (row) {
-      if (row[vwIndex_('status')] !== STATUS_ACTIVE) return;
-      RZ.forEach(function (r, k) { vwSums[k] += Number(row[vwIndex_('rz:' + r[0])]) || 0; });
+  var vs = ss.getSheetByName(SHEET_VW), vseen = {}, vblocks = 0;
+  if (vs && vs.getLastRow() >= 2) {
+    var vkm = keyMap_(VW_COLS, hmap_(vs));
+    vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues().forEach(function (row) {
+      var o = rowToVw_(row, vkm);
+      if (o.status !== STATUS_ACTIVE || (!o.name && !Object.keys(o.counts).length)) return;
+      if (o.id) { if (vseen[o.id]) { dup++; return; } vseen[o.id] = true; }
+      vblocks++;
+      RZ.forEach(function (r) { vorwerte[r[0]] += o.counts[r[0]] || 0; });
     });
   }
-  ev.getRange(4, 3, RZ.length, 2).setValues(counts.map(function (c, k) { return [c, vwSums[k]]; }));
-  ev.getRange(2, 1).setValue('Stand: ' + Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'dd.MM.yyyy HH:mm') + ' · wird bei jeder Synchronisierung und beim Öffnen neu gezählt');
+  return { logbook: logbook, vorwerte: vorwerte, activeCases: active, vorwerteBlocks: vblocks, duplicates: dup };
 }
 
-// Fälle nach OP-Datum sortieren (bei gleichem Datum in Erfassungsreihenfolge).
+function writeEval_(ss, ev) {
+  var sh = ss.getSheetByName(SHEET_EVAL);
+  if (!sh) return;
+  sh.getRange(4, 3, RZ.length, 2).setValues(RZ.map(function (r) { return [ev.logbook[r[0]], ev.vorwerte[r[0]]]; }));
+  var tz = ss.getSpreadsheetTimeZone();
+  sh.getRange(2, 1).setValue('Stand: ' + Utilities.formatDate(new Date(), tz, 'dd.MM.yyyy HH:mm') + ' · ' + ev.activeCases + ' aktive Fälle · ' + ev.vorwerteBlocks + ' Vorwerte-Blöcke'
+    + (ev.duplicates ? ' · ACHTUNG: ' + ev.duplicates + ' doppelte Zeile(n) nicht gezählt' : ''));
+}
+
+// RZ-Spalten aller Zeilen neu berechnen (falls von Hand geändert)
+function refreshRzColumns_(sheet) {
+  var last = sheet.getLastRow();
+  if (last < 2) return;
+  var km = keyMap_(CASE_COLS, hmap_(sheet));
+  var values = sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).getValues();
+  var rz = values.map(function (row) {
+    var o = rowToCase_(row, km);
+    return hasCaseContent_(o) ? computeRz_(o) : {};
+  });
+  RZ.forEach(function (r) {
+    var col = km['rz:' + r[0]];
+    if (col == null) return;
+    sheet.getRange(2, col + 1, rz.length, 1).setValues(rz.map(function (c) { return [c[r[0]] ? 'x' : '']; }));
+  });
+}
+
 function sortCases_(sheet) {
   var last = sheet.getLastRow();
   if (last < 3) return;
-  sheet.getRange(2, 1, last - 1, COLS.length).sort([
-    { column: colIndex_('date') + 1, ascending: true },
-    { column: colIndex_('id') + 1, ascending: true }
+  var km = keyMap_(CASE_COLS, hmap_(sheet));
+  sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).sort([
+    { column: km.date + 1, ascending: true },
+    { column: km.id + 1, ascending: true }
   ]);
 }
 
-// Beim Öffnen der Tabelle: Menü „Logbuch“, Auswertung neu zählen und
-// Fälle sortieren – so stimmt die Ansicht immer.
-function onOpen() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  try {
-    SpreadsheetApp.getUi().createMenu('Logbuch')
-      .addItem('Auswertung aktualisieren', 'auswertungAktualisieren')
-      .addToUi();
-  } catch (e) {}
-  try {
-    recalcEval_(ss);
-    var sh = ss.getSheetByName(SHEET_CASES);
-    if (sh) sortCases_(sh);
-  } catch (e) {}
+function refreshAll_(ss) {
+  var cs = ss.getSheetByName(SHEET_CASES);
+  if (cs) { refreshRzColumns_(cs); sortCases_(cs); }
+  writeEval_(ss, computeEval_(ss));
 }
 
-// Falls die Auswertung einmal nicht aktuell wirkt: diese Funktion im
-// Skript-Editor ausführen.
-function auswertungAktualisieren() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  recalcEval_(ss);
-  var sh = ss.getSheetByName(SHEET_CASES);
-  if (sh) sortCases_(sh);
+function auswertungAktualisieren() { refreshAll_(ss_()); }
+
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi().createMenu('Logbuch')
+      .addItem('Auswertung aktualisieren & sortieren', 'auswertungAktualisieren')
+      .addToUi();
+  } catch (e) {}
+  try { refreshAll_(ss_()); } catch (e) {}
+}
+
+// ------------------------------------------------------------------
+// Bearbeiten direkt in der Tabelle (einfacher Trigger, läuft automatisch)
+// ------------------------------------------------------------------
+function onEdit(e) {
+  try {
+    if (!e || !e.range) return;
+    var sheet = e.range.getSheet();
+    var name = sheet.getName();
+    if (name !== SHEET_CASES && name !== SHEET_VW) return;
+    var r1 = Math.max(2, e.range.getRow()), r2 = e.range.getLastRow();
+    if (r2 < r1) return;
+    if (name === SHEET_CASES) handleCaseEdit_(sheet, r1, r2);
+    else handleVwEdit_(sheet, r1, r2);
+    writeEval_(ss_(), computeEval_(ss_()));
+  } catch (err) {
+    try { ss_().toast('Logbuch: ' + (err && err.message || err)); } catch (e2) {}
+  }
+}
+
+function handleCaseEdit_(sheet, r1, r2) {
+  var km = keyMap_(CASE_COLS, hmap_(sheet));
+  if (km.uid == null) return;
+  var last = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  var all = sheet.getRange(2, km.uid + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return String(r[0] || ''); });
+  var now = Date.now(), k = 0;
+  for (var r = Math.min(r2, last); r >= r1; r--) {
+    var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
+    var o = rowToCase_(row, km);
+    if (!hasCaseContent_(o)) {
+      // Datum und Eingriff geleert → Zeile entfernen (die App bietet dann an,
+      // den Fall wieder hochzuladen)
+      if (o.uid) { sheet.deleteRow(r); all.splice(r - 2, 1); }
+      continue;
+    }
+    var dupe = o.uid && all.filter(function (u, i) { return u === o.uid && i !== r - 2; }).length > 0;
+    if (!o.uid || dupe) {
+      o.uid = newUid_();
+      o.id = 'T' + (now + k);
+      o.lastAction = dupe ? 'in Tabelle kopiert (neuer Fall)' : 'in Tabelle angelegt';
+      all[r - 2] = o.uid;
+    } else {
+      o.lastAction = 'in Tabelle geändert';
+    }
+    o.ts = now + (k++);
+    o.changedAt = new Date();
+    sheet.getRange(r, 1, 1, lastCol).setValues([fillCaseRow_(row, km, o)]);
+  }
+}
+
+function handleVwEdit_(sheet, r1, r2) {
+  var km = keyMap_(VW_COLS, hmap_(sheet));
+  if (km.id == null) return;
+  var last = sheet.getLastRow(), lastCol = sheet.getLastColumn();
+  var all = sheet.getRange(2, km.id + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return String(r[0] || ''); });
+  var now = Date.now(), k = 0;
+  for (var r = Math.min(r2, last); r >= r1; r--) {
+    var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
+    var o = rowToVw_(row, km);
+    if (!o.name && !Object.keys(o.counts).length) {
+      if (o.id) { sheet.deleteRow(r); all.splice(r - 2, 1); }
+      continue;
+    }
+    var dupe = o.id && all.filter(function (u, i) { return u === o.id && i !== r - 2; }).length > 0;
+    if (!o.id || dupe) { o.id = 'T' + (now + k); all[r - 2] = o.id; }
+    if (!o.name) o.name = 'Vorwerte';
+    o.ts = now + (k++);
+    RZ.forEach(function (x) { o['n:' + x[0]] = o.counts[x[0]] || 0; });
+    o.changedAt = new Date();
+    sheet.getRange(r, 1, 1, lastCol).setValues([fillVwRow_(row, km, o)]);
+  }
 }
 
 // ------------------------------------------------------------------
 // Web-App
 // ------------------------------------------------------------------
 function doGet() {
-  // Absichtlich keine Daten über GET (Adresse könnte in Verläufen landen).
-  return ContentService.createTextOutput('Logbuch-Sync ist aktiv.');
+  return ContentService.createTextOutput('Logbuch-Sync ist aktiv (Version ' + SCRIPT_VERSION + ').');
 }
 
 function doPost(e) {
@@ -6271,20 +6779,23 @@ function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (!checkKey_(body.key)) {
-      Utilities.sleep(800); // bremst Rateversuche
+      Utilities.sleep(800);
       res = { ok: false, error: 'key', message: 'Schlüssel falsch' };
+    } else if (!ss_().getSheetByName(SHEET_CASES) || !ss_().getSheetByName(SHEET_VW)) {
+      res = { ok: false, error: 'setup', message: 'Bitte im Skript „einrichten“ ausführen.', version: SCRIPT_VERSION };
     } else if (body.action === 'ping') {
       res = ping_();
     } else if (body.action === 'push') {
       res = withLock_(function () { return push_(body.ops || [], !!body.confirmBulk); });
-    } else if (body.action === 'restore') {
-      res = withLock_(restore_);
+    } else if (body.action === 'state' || body.action === 'restore') {
+      res = withLock_(state_);
     } else {
       res = { ok: false, error: 'action', message: 'Unbekannte Aktion' };
     }
   } catch (err) {
     res = { ok: false, error: 'server', message: String(err && err.message || err) };
   }
+  if (res && res.version == null) res.version = SCRIPT_VERSION;
   return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -6303,268 +6814,184 @@ function withLock_(fn) {
 }
 
 function ping_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(SHEET_CASES);
-  if (!sh) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
-  var id = ss.getId();
+  var ss = ss_();
+  var ev = computeEval_(ss);
   return {
-    ok: true,
-    name: ss.getName(),
-    sheetUrl: ss.getUrl(),
-    xlsxUrl: 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx',
-    rows: Math.max(0, sh.getLastRow() - 1),
-    version: SCRIPT_VERSION,
-    vorwerte: !!ss.getSheetByName(SHEET_VW)
+    ok: true, version: SCRIPT_VERSION, name: ss.getName(), sheetUrl: ss.getUrl(),
+    xlsxUrl: 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=xlsx',
+    rows: ev.activeCases, vorwerteBlocks: ev.vorwerteBlocks
   };
 }
 
+// Gesamter Stand zum Abgleich (nur lesen)
+function state_() {
+  var ss = ss_();
+  var tz = ss.getSpreadsheetTimeZone();
+  var cs = ss.getSheetByName(SHEET_CASES);
+  var km = keyMap_(CASE_COLS, hmap_(cs));
+  var cases = [], seen = {};
+  if (cs.getLastRow() >= 2) {
+    cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues().forEach(function (row) {
+      var o = rowToCase_(row, km);
+      if (!hasCaseContent_(o) || !o.uid || seen[o.uid]) return;
+      seen[o.uid] = true;
+      o.date = o.date ? Utilities.formatDate(o.date, tz, 'yyyy-MM-dd') : '';
+      delete o.changedAt;
+      cases.push(o);
+    });
+  }
+  var trash = [];
+  var ts = ss.getSheetByName(SHEET_TRASH);
+  if (ts && ts.getLastRow() >= 2) {
+    var th = hmap_(ts);
+    if ('UID' in th) ts.getRange(2, th.UID + 1, ts.getLastRow() - 1, 1).getValues().forEach(function (r) { if (r[0]) trash.push(String(r[0])); });
+  }
+  var vs = ss.getSheetByName(SHEET_VW);
+  var vkm = keyMap_(VW_COLS, hmap_(vs));
+  var vorwerte = [], vseen = {};
+  if (vs.getLastRow() >= 2) {
+    vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues().forEach(function (row) {
+      var o = rowToVw_(row, vkm);
+      if (!o.id || vseen[o.id] || (!o.name && !Object.keys(o.counts).length)) return;
+      vseen[o.id] = true;
+      vorwerte.push(o);
+    });
+  }
+  return { ok: true, version: SCRIPT_VERSION, cases: cases, trash: trash, vorwerte: vorwerte, eval: computeEval_(ss) };
+}
+
 // ------------------------------------------------------------------
-// Aufträge ausführen
+// Aufträge aus der App
 // ------------------------------------------------------------------
 function push_(ops, confirmBulk) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var cases = ss.getSheetByName(SHEET_CASES);
-  if (!cases) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
+  var ss = ss_();
   if (!Array.isArray(ops)) return { ok: false, error: 'input', message: 'Ungültige Aufträge' };
   if (ops.length > MAX_OPS_PER_REQUEST) return { ok: false, error: 'input', message: 'Zu viele Aufträge auf einmal' };
-
   var destructive = ops.filter(function (o) { return o && (o.type === 'cancel' || o.type === 'purge'); }).length;
   if (destructive > BULK_LIMIT && !confirmBulk) {
     return { ok: false, error: 'bulk', count: destructive, message: destructive + ' Stornos/Löschungen – Bestätigung nötig' };
   }
-
-  var hist = ss.getSheetByName(SHEET_HISTORY);
-  var trash = ss.getSheetByName(SHEET_TRASH);
-  var log = ss.getSheetByName(SHEET_LOG);
-  var vw = ss.getSheetByName(SHEET_VW);
+  var ctx = {
+    cases: ss.getSheetByName(SHEET_CASES), vw: ss.getSheetByName(SHEET_VW),
+    hist: ss.getSheetByName(SHEET_HISTORY), trash: ss.getSheetByName(SHEET_TRASH), log: ss.getSheetByName(SHEET_LOG)
+  };
+  ctx.km = keyMap_(CASE_COLS, hmap_(ctx.cases));
+  ctx.vkm = keyMap_(VW_COLS, hmap_(ctx.vw));
   var results = [];
-
   ops.forEach(function (op) {
     var status;
     try {
-      if (op && String(op.type).indexOf('vw-') === 0) {
-        status = vw ? applyVwOp_(op, vw, log) : 'fehler: Blatt „Vorwerte“ fehlt – bitte „einrichten“ erneut ausführen';
-      } else {
-        status = applyOp_(op, cases, hist, trash, log);
+      if (!op || typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') status = 'ungültig';
+      else if (findRow_(ctx.log, 1, op.opId)) status = 'doppelt';
+      else {
+        status = String(op.type).indexOf('vw-') === 0 ? applyVwOp_(op, ctx) : applyCaseOp_(op, ctx);
+        ctx.log.appendRow([op.opId, new Date(), String(op.type), op.uid, String(op.ts), status]);
       }
     } catch (err) {
       status = 'fehler: ' + (err && err.message || err);
     }
     results.push({ opId: op && op.opId, status: status });
   });
-  if (results.some(function (r) { return r.status === 'ok'; })) {
-    sortCases_(cases);
-    recalcEval_(ss);
-  }
-  return { ok: true, results: results, version: SCRIPT_VERSION };
-}
-
-function applyOp_(op, cases, hist, trash, log) {
-  if (!op || typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') {
-    return 'ungültig';
-  }
-  if (findRow_(log, 1, op.opId)) return 'doppelt'; // schon ausgeführt
-
-  var now = new Date();
-  var result;
-  var row = findRow_(cases, colIndex_('uid') + 1, op.uid);
-  var current = row ? cases.getRange(row, 1, 1, COLS.length).getValues()[0] : null;
-  var currentTs = current ? Number(current[colIndex_('ts')]) || 0 : 0;
-  var inTrash = !row && findRow_(trash, 3 + colIndex_('uid'), op.uid);
-
-  if (op.type === 'seed') {
-    // Einmaliges Hochladen: nur einfügen, niemals Vorhandenes ändern.
-    if (row || inTrash) result = 'vorhanden';
-    else { appendCaseRow_(cases, buildRow_(op, op.data && op.data.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE, 'übernommen', now)); result = 'ok'; }
-  } else if (op.type === 'upsert' || op.type === 'cancel' || op.type === 'uncancel') {
-    var newStatus = op.type === 'cancel' ? STATUS_CANCELLED
-      : op.type === 'uncancel' ? STATUS_ACTIVE
-      : (op.data && op.data.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE);
-    var label = { upsert: row ? 'bearbeitet' : 'angelegt', cancel: 'storniert', uncancel: 'Storno aufgehoben' }[op.type];
-    if (inTrash) {
-      result = 'gelöscht';
-    } else if (!row) {
-      appendCaseRow_(cases, buildRow_(op, newStatus, label, now));
-      result = 'ok';
-    } else if (op.ts <= currentTs) {
-      result = 'veraltet'; // ältere Fassung überschreibt nie eine neuere
-    } else {
-      hist.appendRow([now, label, op.opId].concat(current));
-      cases.getRange(row, 1, 1, COLS.length).setValues([buildRow_(op, newStatus, label, now)]);
-      result = 'ok';
-    }
-  } else if (op.type === 'purge') {
-    if (!row) result = inTrash ? 'doppelt' : 'unbekannt';
-    else if (current[colIndex_('status')] !== STATUS_CANCELLED) result = 'nicht storniert';
-    else if (op.ts <= currentTs) result = 'veraltet';
-    else {
-      trash.appendRow([now, op.opId].concat(current));
-      cases.deleteRow(row);
-      result = 'ok';
-    }
-  } else {
-    result = 'ungültig';
-  }
-
-  log.appendRow([op.opId, now, String(op.type), op.uid, String(op.ts), result]);
-  return result;
-}
-
-// Vorwerte-Blöcke: vw-upsert (anlegen/bearbeiten), vw-delete (als
-// „gelöscht“ markieren, zählt nicht mehr), vw-seed (nur einfügen).
-function applyVwOp_(op, vw, log) {
-  if (typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') return 'ungültig';
-  if (findRow_(log, 1, op.opId)) return 'doppelt';
-  var now = new Date();
-  var row = findRow_(vw, 1, op.uid);
-  var current = row ? vw.getRange(row, 1, 1, VW_COLS.length).getValues()[0] : null;
-  var currentTs = current ? Number(current[vwIndex_('ts')]) || 0 : 0;
-  var d = op.data || {};
-  var counts = d.counts || {};
-  var build = function (status) {
-    return VW_COLS.map(function (c) {
-      var k = c[1];
-      if (k === 'id') return safeText_(op.uid);
-      if (k === 'status') return status;
-      if (k === 'name') return safeText_(d.name || 'Vorwerte');
-      if (k === 'ts') return op.ts;
-      if (k === 'changedAt') return now;
-      return Math.max(0, parseInt(counts[k.slice(3)], 10) || 0);
-    });
-  };
-  var result;
-  if (op.type === 'vw-seed') {
-    if (row) result = 'vorhanden';
-    else { vw.appendRow(build(STATUS_ACTIVE)); result = 'ok'; }
-  } else if (op.type === 'vw-upsert' || op.type === 'vw-delete') {
-    var status = op.type === 'vw-delete' ? 'gelöscht' : STATUS_ACTIVE;
-    if (op.type === 'vw-delete' && !row) result = 'unbekannt';
-    else if (!row) { vw.appendRow(build(status)); result = 'ok'; }
-    else if (op.ts <= currentTs) result = 'veraltet';
-    else if (current[vwIndex_('status')] === 'gelöscht') result = 'gelöscht';
-    else {
-      var vals = op.type === 'vw-delete' ? current.slice() : build(status);
-      if (op.type === 'vw-delete') { vals[vwIndex_('status')] = status; vals[vwIndex_('ts')] = op.ts; vals[vwIndex_('changedAt')] = now; }
-      vw.getRange(row, 1, 1, VW_COLS.length).setValues([vals]);
-      result = 'ok';
-    }
-  } else {
-    result = 'ungültig';
-  }
-  log.appendRow([op.opId, now, String(op.type), op.uid, String(op.ts), result]);
-  return result;
+  if (results.some(function (r) { return r.status === 'ok'; })) refreshAll_(ss);
+  return { ok: true, version: SCRIPT_VERSION, results: results };
 }
 
 // Neue Zeile anhängen und Zahl-/Datumsformate setzen (angehängte Zeilen
 // erben diese nicht zuverlässig).
-function appendCaseRow_(sheet, values) {
-  sheet.appendRow(values);
-  var r = sheet.getLastRow();
-  sheet.getRange(r, colIndex_('id') + 1).setNumberFormat('0');
-  sheet.getRange(r, colIndex_('date') + 1).setNumberFormat('dd.MM.yyyy');
-  sheet.getRange(r, colIndex_('ts') + 1, 1, 2).setNumberFormat('0');
-  sheet.getRange(r, colIndex_('changedAt') + 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
+function appendCase_(ctx, values) {
+  var sh = ctx.cases, km = ctx.km;
+  sh.appendRow(values);
+  var r = sh.getLastRow();
+  sh.getRange(r, km.date + 1).setNumberFormat('dd.MM.yyyy');
+  sh.getRange(r, km.ts + 1).setNumberFormat('0');
+  sh.getRange(r, km.changedAt + 1).setNumberFormat('dd.MM.yyyy HH:mm');
 }
 
-function findRow_(sheet, col, value) {
+function findRow_(sheet, col, value) { // col 1-basiert
   var last = sheet.getLastRow();
-  if (last < 2) return 0;
+  if (last < 2 || col < 1) return 0;
   var cell = sheet.getRange(2, col, last - 1, 1).createTextFinder(String(value)).matchEntireCell(true).findNext();
   return cell ? cell.getRow() : 0;
 }
 
-function safeText_(v) {
-  var s = v == null ? '' : String(v);
-  if (s.length > 500) s = s.slice(0, 500);
-  return /^[=+\-@]/.test(s) ? "'" + s : s; // keine Formeln aus App-Daten
+function trashHas_(ctx, uid) {
+  var th = hmap_(ctx.trash);
+  return 'UID' in th ? !!findRow_(ctx.trash, th.UID + 1, uid) : false;
 }
 
-function parseIsoDate_(s) {
-  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
-  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : '';
-}
-
-// Nur erlaubte Felder – alles andere (z. B. Initialen) wird verworfen,
-// selbst wenn es mitgeschickt würde.
-var ALLOWED_FIELDS = ['id', 'date', 'asa', 'opSaal', 'procedure', 'procedure2', 'kindLe5', 'isVollnarkose', 'airway',
-  'isSpaPdk', 'spaPdkType', 'isPeripher', 'peripherType', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal',
-  'isIntrakraniell', 'isSectio', 'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess', 'btm', 'cancelled'];
-var ALLOWED_BTM = ['substanceId', 'label', 'unit', 'amountPerUnit', 'count', 'total'];
-
-function cleanData_(d) {
-  var out = {};
-  d = d || {};
-  ALLOWED_FIELDS.forEach(function (k) { if (d[k] !== undefined) out[k] = d[k]; });
-  out.btm = (Array.isArray(d.btm) ? d.btm : []).slice(0, 20).map(function (e) {
+function applyCaseOp_(op, ctx) {
+  var sh = ctx.cases, km = ctx.km, lastCol = sh.getLastColumn();
+  var row = findRow_(sh, km.uid + 1, op.uid);
+  var current = row ? sh.getRange(row, 1, 1, lastCol).getValues()[0] : null;
+  var currentTs = current ? Number(current[km.ts]) || 0 : 0;
+  var d = op.data || {};
+  var build = function (status, action, base) {
     var o = {};
-    ALLOWED_BTM.forEach(function (k) { if (e && e[k] !== undefined) o[k] = e[k]; });
-    return o;
-  });
-  return out;
+    ['date', 'procedure', 'procedure2', 'asa', 'opSaal', 'airway', 'spaPdkType', 'peripherType', 'btm'].forEach(function (k) { o[k] = d[k] == null ? '' : d[k]; });
+    BOOL_KEYS.forEach(function (k) { o[k] = !!d[k]; });
+    o.airway = o.isVollnarkose ? o.airway : '';
+    o.status = status; o.uid = op.uid; o.id = d.id || ''; o.ts = op.ts; o.lastAction = action; o.changedAt = new Date();
+    return fillCaseRow_(base || new Array(lastCol).fill(''), km, o);
+  };
+  if (op.type === 'seed') {
+    if (row || trashHas_(ctx, op.uid)) return 'vorhanden';
+    appendCase_(ctx, build(d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE, 'aus App übernommen'));
+    return 'ok';
+  }
+  if (op.type === 'upsert' || op.type === 'cancel' || op.type === 'uncancel') {
+    var status = op.type === 'cancel' ? STATUS_CANCELLED : op.type === 'uncancel' ? STATUS_ACTIVE : (d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE);
+    var label = { upsert: row ? 'in App bearbeitet' : 'in App angelegt', cancel: 'storniert', uncancel: 'Storno aufgehoben' }[op.type];
+    if (!row) {
+      if (trashHas_(ctx, op.uid)) return 'gelöscht';
+      appendCase_(ctx, build(status, label));
+      return 'ok';
+    }
+    if (op.ts <= currentTs) return 'veraltet';
+    ctx.hist.appendRow([new Date(), label, op.opId].concat(CASE_COLS.map(function (c) { return current[km[c[1]]]; })));
+    sh.getRange(row, 1, 1, lastCol).setValues([build(status, label, current.slice())]);
+    return 'ok';
+  }
+  if (op.type === 'purge') {
+    if (!row) return trashHas_(ctx, op.uid) ? 'doppelt' : 'unbekannt';
+    if (normStatus_(current[km.status]) !== STATUS_CANCELLED) return 'nicht storniert';
+    if (op.ts <= currentTs) return 'veraltet';
+    ctx.trash.appendRow([new Date(), op.opId].concat(CASE_COLS.map(function (c) { return current[km[c[1]]]; })));
+    sh.deleteRow(row);
+    return 'ok';
+  }
+  return 'ungültig';
 }
 
-function buildRow_(op, status, action, now) {
-  var d = cleanData_(op.data);
-  var crit = {};
-  (Array.isArray(op.crit) ? op.crit : []).forEach(function (id) { crit[id] = true; });
-  var btmText = d.btm.map(function (e) { return String(e.label || '').split(' (')[0] + ' × ' + (Number(e.count) || 0); }).join(', ');
-  return COLS.map(function (c) {
-    var key = c[1], kind = c[2];
-    if (key === 'uid') return safeText_(op.uid);
-    if (key === 'status') return status;
-    if (key === 'btmText') return safeText_(btmText);
-    if (key === 'ts') return op.ts;
-    if (key === 'rev') return Number(op.rev) || 1;
-    if (key === 'lastAction') return action;
-    if (key === 'changedAt') return now;
-    if (key === 'json') { d.cancelled = status === STATUS_CANCELLED; return JSON.stringify(d); }
-    if (kind === 'rz') return crit[key.slice(3)] ? 'x' : '';
-    if (kind === 'bool') return d[key] ? 'ja' : '';
-    if (kind === 'date') return parseIsoDate_(d[key]);
-    return safeText_(d[key]);
-  });
-}
-
-// ------------------------------------------------------------------
-// Wiederherstellen (nur lesen)
-// ------------------------------------------------------------------
-function restoreVorwerte_(ss) {
-  var vw = ss.getSheetByName(SHEET_VW);
-  if (!vw || vw.getLastRow() < 2) return [];
-  return vw.getRange(2, 1, vw.getLastRow() - 1, VW_COLS.length).getValues()
-    .filter(function (r) { return r[0] && r[vwIndex_('status')] === STATUS_ACTIVE; })
-    .map(function (r) {
-      var counts = {};
-      RZ.forEach(function (x) { var n = Number(r[vwIndex_('rz:' + x[0])]) || 0; if (n > 0) counts[x[0]] = n; });
-      return { id: String(r[0]), name: String(r[vwIndex_('name')] || 'Vorwerte'), counts: counts, ts: Number(r[vwIndex_('ts')]) || 0 };
-    });
-}
-
-function restore_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(SHEET_CASES);
-  if (!sh) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
-  var vorwerte = restoreVorwerte_(ss);
-  var last = sh.getLastRow();
-  if (last < 2) return { ok: true, cases: [], vorwerte: vorwerte, version: SCRIPT_VERSION };
-  var values = sh.getRange(2, 1, last - 1, COLS.length).getValues();
-  var out = [];
-  values.forEach(function (r) {
-    var uid = String(r[colIndex_('uid')] || '');
-    if (!uid) return;
-    var data = {};
-    // Quelle ist die (ausgeblendete) Spalte „Daten (App)“; die sichtbaren
-    // Spalten sind eine lesbare Kopie davon.
-    try { data = JSON.parse(r[colIndex_('json')] || '{}'); } catch (e) { data = {}; }
-    out.push({
-      uid: uid,
-      status: String(r[colIndex_('status')] || STATUS_ACTIVE),
-      ts: Number(r[colIndex_('ts')]) || 0,
-      rev: Number(r[colIndex_('rev')]) || 1,
-      data: cleanData_(data)
-    });
-  });
-  return { ok: true, cases: out, vorwerte: vorwerte, version: SCRIPT_VERSION };
+function applyVwOp_(op, ctx) {
+  var sh = ctx.vw, km = ctx.vkm, lastCol = sh.getLastColumn();
+  var row = findRow_(sh, km.id + 1, op.uid);
+  var current = row ? sh.getRange(row, 1, 1, lastCol).getValues()[0] : null;
+  var currentTs = current ? Number(current[km.ts]) || 0 : 0;
+  var d = op.data || {};
+  var build = function (status, base) {
+    var o = { id: op.uid, name: d.name || 'Vorwerte', status: status, ts: op.ts, changedAt: new Date() };
+    RZ.forEach(function (x) { o['n:' + x[0]] = (d.counts || {})[x[0]] || 0; });
+    return fillVwRow_(base || new Array(lastCol).fill(''), km, o);
+  };
+  if (op.type === 'vw-seed') {
+    if (row) return 'vorhanden';
+    sh.appendRow(build(STATUS_ACTIVE));
+    return 'ok';
+  }
+  if (op.type === 'vw-upsert') {
+    if (!row) { sh.appendRow(build(STATUS_ACTIVE)); return 'ok'; }
+    if (op.ts <= currentTs) return 'veraltet';
+    sh.getRange(row, 1, 1, lastCol).setValues([build(STATUS_ACTIVE, current.slice())]);
+    return 'ok';
+  }
+  if (op.type === 'vw-delete') {
+    if (!row) return 'unbekannt';
+    if (op.ts <= currentTs) return 'veraltet';
+    current[km.status] = STATUS_DELETED; current[km.ts] = op.ts; current[km.changedAt] = new Date();
+    sh.getRange(row, 1, 1, lastCol).setValues([current]);
+    return 'ok';
+  }
+  return 'ungültig';
 }
 </script>
 </body>
