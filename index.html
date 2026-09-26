@@ -348,6 +348,25 @@
             @page { size: A4; margin: 8mm; }
         }
 
+        /* „Mehr“: Gruppen im iOS-Stil */
+        .set-group-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin: 0 .5rem .4rem; }
+        .dark .set-group-title { color: #94a3b8; }
+        .set-group { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(15,23,42,.05); overflow: hidden; }
+        .dark .set-group { background: rgba(30, 41, 59, 0.9); border-color: rgba(51, 65, 85, 0.6); }
+        .set-group > .set-sec { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+        .set-group > .set-sec + .set-sec { border-top: 1px solid #f1f5f9; }
+        .dark .set-group > .set-sec + .set-sec { border-top-color: rgba(51, 65, 85, 0.6); }
+        .set-sec > summary .set-sec-icon { box-sizing: content-box; padding: 6px; border-radius: 8px; background: #e0effe; }
+        .dark .set-sec > summary .set-sec-icon { background: rgba(3, 105, 161, 0.25); }
+        .set-sec-danger > summary .set-sec-icon { background: #fee2e2; }
+        .dark .set-sec-danger > summary .set-sec-icon { background: rgba(185, 28, 28, 0.2); }
+        .set-sec[open] > summary { background: #f8fafc; }
+        .dark .set-sec[open] > summary { background: rgba(51, 65, 85, 0.25); }
+        .gs-code > summary { cursor: pointer; font-size: 11px; font-weight: 600; color: #035485; margin: .25rem 0; }
+        .dark .gs-code > summary { color: #7dd3fc; }
+        .gs-code textarea { width: 100%; font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; padding: .5rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: #fff; color: #334155; white-space: pre; overflow: auto; }
+        .dark .gs-code textarea { background: #0f172a; color: #cbd5e1; border-color: #334155; }
+        #header-user:empty { display: none; }
         /* Einstellungen: aufklappbare Abschnitte */
         .set-sec { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
         .dark .set-sec { background: rgba(30, 41, 59, 0.9); border-color: rgba(51, 65, 85, 0.6); }
@@ -431,7 +450,10 @@
             <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center shrink-0">
                 <i data-lucide="stethoscope" class="w-4 h-4"></i>
             </div>
-            <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">Anästhesie Logbuch</h1>
+            <div class="min-w-0 leading-tight">
+                <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">Anästhesie Logbuch</h1>
+                <p id="header-user" class="text-[11px] text-slate-500 dark:text-slate-400 truncate"></p>
+            </div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
             <button type="button" id="header-progress" onclick="switchTab('evaluation')" class="progress-ring" aria-label="Gesamtfortschritt – zur Statistik" title="Gesamtfortschritt Weiterbildung">
@@ -859,11 +881,13 @@
         </div>
     </main>
 
-    <!-- TAB: EINSTELLUNGEN -->
-    <!-- Aufklappbare Abschnitte: eingeklappt zeigt jede Überschrift eine
-         Kurzinfo (updateSettingsSummaries), ein Tippen klappt sie auf. -->
-    <main id="tab-content-settings" class="tab-content hidden flex-1 pb-12 space-y-2">
-        <!-- PROFIL -->
+    <!-- TAB: EINSTELLUNGEN („Mehr“) -->
+    <!-- In Gruppen gegliedert; jeder Abschnitt ist aufklappbar und zeigt
+         eingeklappt eine Kurzinfo (updateSettingsSummaries). -->
+    <main id="tab-content-settings" class="tab-content hidden flex-1 pb-12 space-y-5">
+        <section>
+            <h2 class="set-group-title">Du</h2>
+            <div class="set-group">
         <details class="set-sec" id="set-sec-profil">
             <summary>
                 <i data-lucide="user" class="set-sec-icon"></i>
@@ -876,8 +900,11 @@
                 <p class="text-[11px] text-slate-500 dark:text-slate-400">Steht auf allen PDF-Berichten.</p>
             </div>
         </details>
-
-        <!-- VORWERTE -->
+            </div>
+        </section>
+        <section>
+            <h2 class="set-group-title">Logbuch-Daten</h2>
+            <div class="set-group">
         <details class="set-sec" id="set-sec-vorwerte">
             <summary>
                 <i data-lucide="building-2" class="set-sec-icon"></i>
@@ -893,73 +920,61 @@
                 </button>
             </div>
         </details>
-
-        <!-- EXPORT & BACKUP -->
-        <details class="set-sec" id="set-sec-export">
+        <details class="set-sec" id="set-sec-trash">
             <summary>
-                <i data-lucide="database" class="set-sec-icon"></i>
-                <span class="set-sec-text"><span class="set-sec-title">Export &amp; Backup</span><span class="set-sec-sub" id="set-sum-export"></span></span>
+                <i data-lucide="trash-2" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Papierkorb</span><span class="set-sec-sub" id="set-sum-trash"></span></span>
                 <i data-lucide="chevron-down" class="set-sec-chev"></i>
             </summary>
-            <div class="set-sec-body">
-                <div class="set-row">
-                    <div class="set-row-head"><h3>JSON-Backup</h3><span id="backup-status" class="text-[11px] text-slate-500 dark:text-slate-400"></span></div>
-                    <p class="set-row-hint">Alle Fälle &amp; Vorwerte zum Wiederherstellen. Dateiname mit Datum, nichts wird überschrieben.</p>
-                    <div class="flex gap-2">
-                        <button onclick="exportToJSON()" class="set-btn"><i data-lucide="download" class="w-4 h-4"></i> Sichern</button>
-                        <label class="set-btn cursor-pointer">
-                            <i data-lucide="upload" class="w-4 h-4"></i> Import
-                            <input type="file" id="import-file" class="hidden" accept=".json,application/json" onchange="importFromJSON(event)">
-                        </label>
-                    </div>
-                </div>
-                <div class="set-row">
-                    <div class="set-row-head"><h3>PDF-Bericht</h3></div>
-                    <p class="set-row-hint">Gesamter Zeitraum. Einzelne Zeiträume: Tab „Statistik“.</p>
-                    <div class="flex gap-2">
-                        <button onclick="exportPdf(false)" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> Vollständig</button>
-                        <button onclick="exportPdf(true)" title="Ohne Initialen und Geburtsdatum" class="set-btn"><i data-lucide="user-x" class="w-4 h-4"></i> Anonym</button>
-                    </div>
-                </div>
-                <div class="set-row">
-                    <div class="set-row-head"><h3>BTM-Liste</h3></div>
-                    <p class="set-row-hint">Initialen, Geburtsdatum und Ampullen je Fall, nach Tagen.</p>
-                    <div class="flex gap-2">
-                        <button onclick="exportBtmTxt()" class="set-btn"><i data-lucide="file-text" class="w-4 h-4"></i> TXT</button>
-                        <button onclick="exportBtmPdf()" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> PDF</button>
-                    </div>
-                </div>
-                <div class="set-row">
-                    <div class="set-row-head"><h3>Tabelle</h3></div>
-                    <div class="flex gap-2">
-                        <button onclick="exportToXLSX()" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel</button>
-                        <button onclick="exportToCSV()" class="set-btn"><i data-lucide="file-text" class="w-4 h-4"></i> CSV</button>
-                    </div>
-                </div>
-                <div class="set-row">
-                    <div class="set-row-head"><h3>Speicherort</h3></div>
-                    <label id="share-export-wrap" class="hidden checkbox-card items-start">
-                        <input type="checkbox" id="share-export-toggle" onchange="storeSet('exportShare', this.checked ? '1' : '0')" class="mt-0.5">
-                        <span><span class="font-medium">Bei jedem Export fragen</span><br>
-                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Teilen-Menü → „In Dateien sichern“ → z. B. iCloud Drive oder Google Drive.</span></span>
-                    </label>
-                    <p class="set-row-hint">iPhone-Standardordner: Einstellungen → Apps → Safari → Downloads.</p>
-                </div>
+            <div class="set-sec-body space-y-2">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Endgültig gelöschte Fälle und Vorwerte. „Wiederherstellen“ holt sie als <b>storniert</b> zurück – dort kannst du das Storno aufheben. Mit Google Sheets verbunden: gleicher Papierkorb auf allen Geräten und in der Tabelle.</p>
+                <div id="trash-list" class="space-y-1.5"></div>
+                <p id="trash-empty" class="py-2 text-xs text-slate-400">Der Papierkorb ist leer.</p>
+                <button type="button" id="trash-empty-btn" onclick="emptyTrash()" class="hidden w-full px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-700 dark:text-red-300 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <i data-lucide="trash" class="w-4 h-4"></i> Papierkorb leeren
+                </button>
             </div>
         </details>
-
-        <!-- GOOGLE SHEETS -->
+            </div>
+        </section>
+        <section>
+            <h2 class="set-group-title">Sichern &amp; Teilen</h2>
+            <div class="set-group">
         <details class="set-sec" id="set-sec-sync">
             <summary>
                 <i data-lucide="sheet" class="set-sec-icon"></i>
                 <span class="set-sec-text"><span class="set-sec-title">Google Sheets</span><span class="set-sec-sub" id="set-sum-sync"></span></span>
                 <i data-lucide="chevron-down" class="set-sec-chev"></i>
             </summary>
-            <div class="set-sec-body">
-                <div class="set-row">
-                    <p class="set-row-hint">Hält alle Geräte über deine Google-Tabelle abgeglichen. Die Tabelle ist das vollständige Abbild der App – inkl. Initialen, Geburtsdatum, Bemerkungen, Reihenfolge je Tag und Papierkorb.</p>
-                    <p class="guide-note mb-2"><b>Datenschutz:</b> Die Tabelle enthält damit patientenbezogene Daten. Tabelle nicht freigeben, Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten. Klinik-Vorgaben beachten; „Nur Alter speichern“ (Datenschutz) lässt das Geburtsdatum weg.</p>
-                    <details class="guide mb-3" id="sync-guide">
+            <div class="set-sec-body space-y-3">
+                <p class="set-row-hint !mb-0">Alle Geräte gleichen sich über deine Google-Tabelle ab. Sie ist das vollständige Abbild der App – inkl. Initialen, Geburtsdatum, Bemerkungen, Reihenfolge und Papierkorb. Änderungen in der Tabelle übernimmt die App ebenfalls.</p>
+                <div id="sync-main" class="space-y-2">
+                    <div id="sync-card" class="hidden sync-card"></div>
+                    <button type="button" id="sync-now-btn" onclick="syncNow({ manual: true })" class="w-full px-3 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span id="sync-now-label">Jetzt synchronisieren</span>
+                    </button>
+                    <p id="sync-status" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+                    <div id="sync-links" class="hidden grid grid-cols-2 gap-2">
+                        <a id="sync-open-sheet" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="external-link" class="w-4 h-4"></i> Tabelle öffnen</a>
+                        <a id="sync-xlsx" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Als Excel laden</a>
+                    </div>
+                    <label class="checkbox-card items-start">
+                        <input type="checkbox" id="sync-auto-toggle" onchange="setSyncAuto(this.checked)" class="mt-0.5">
+                        <span><span class="font-medium">Automatisch abgleichen</span><br>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Beim Öffnen, nach jeder Änderung und alle 2 Minuten. Offline Erfasstes wird nachgeholt; mehr als 5 Stornos auf einmal nur nach Rückfrage.</span></span>
+                    </label>
+                </div>
+                <details class="guide" id="sync-conn">
+                    <summary><i data-lucide="plug" class="w-4 h-4 shrink-0"></i><span class="flex-1">Verbindung: Adresse &amp; Schlüssel</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
+                    <div class="guide-body">
+                        <label for="sync-url" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1 mt-1">Skript-Adresse (Web-App)</label>
+                        <input type="url" id="sync-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+                        <label for="sync-key" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geheimer Schlüssel</label>
+                        <input type="password" id="sync-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="aus dem Skript-Protokoll" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+                        <button type="button" onclick="testSyncConnection()" class="set-btn w-full"><i data-lucide="plug" class="w-4 h-4"></i> Verbindung testen</button>
+                    </div>
+                </details>
+                    <details class="guide" id="sync-guide">
                         <summary><i data-lucide="book-open" class="w-4 h-4 shrink-0"></i><span class="flex-1">Anleitung: Google-Tabelle einrichten</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
                         <div class="guide-body">
                             <p><strong>Dauer:</strong> ca. 10 Minuten, einmalig. Am einfachsten <strong>am Computer</strong> (Chrome, Safari, Edge): Öffne diese App dort unter derselben Adresse wie am iPhone. Du brauchst ein Google-Konto (z. B. Gmail).</p>
@@ -980,6 +995,10 @@
                                         <button type="button" onclick="copyGsSource()" class="set-btn"><i data-lucide="copy" class="w-4 h-4"></i> Skript kopieren</button>
                                         <button type="button" onclick="downloadGsSource()" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> Als Datei</button>
                                     </div>
+                                    <details class="gs-code" ontoggle="if (this.open) fillGsView()">
+                                        <summary>Code ansehen</summary>
+                                        <textarea id="gs-view" readonly spellcheck="false" rows="10" aria-label="Skript-Code"></textarea>
+                                    </details>
                                 </li>
                                 <li>Im Editor den vorhandenen Text (<code>function myFunction() {…}</code>) komplett markieren (<b>Strg+A</b> bzw. <b>⌘+A</b>) und mit <b>Strg+V</b> bzw. <b>⌘+V</b> durch das kopierte Skript ersetzen.</li>
                                 <li>Speichern: Disketten-Symbol oder <b>Strg+S</b> / <b>⌘+S</b>. Oben links kannst du das Projekt „Unbenanntes Projekt“ z. B. in <b>Logbuch-Sync</b> umbenennen.</li>
@@ -1046,37 +1065,69 @@
                             <p class="guide-note"><b>Nicht</b> „Neue Bereitstellung“ wählen – das erzeugt eine zweite Adresse, und die App spricht weiter mit dem alten Skript. Solange das Skript veraltet ist, schickt die App nichts und hebt alle Aufträge auf.</p>
                         </div>
                     </details>
-
-                    <label for="sync-url" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Skript-Adresse (Web-App)</label>
-                    <input type="url" id="sync-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
-                    <label for="sync-key" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geheimer Schlüssel</label>
-                    <input type="password" id="sync-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="aus dem Skript-Protokoll" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
-                    <button type="button" onclick="testSyncConnection()" class="set-btn w-full"><i data-lucide="plug" class="w-4 h-4"></i> Verbindung testen</button>
-                </div>
-                <div class="set-row space-y-2">
-                    <button type="button" id="sync-now-btn" onclick="syncNow({ manual: true })" class="w-full px-3 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
-                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span id="sync-now-label">Jetzt synchronisieren</span>
-                    </button>
-                    <p id="sync-status" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
-                    <div id="sync-card" class="hidden sync-card"></div>
-                    <label class="checkbox-card items-start">
-                        <input type="checkbox" id="sync-auto-toggle" onchange="setSyncAuto(this.checked)" class="mt-0.5">
-                        <span><span class="font-medium">Automatisch, sobald Netz da ist</span><br>
-                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Offline Erfasstes wird später nachgeholt. Mehr als 5 Stornos auf einmal nur nach Rückfrage.</span></span>
-                    </label>
-                    <div id="sync-links" class="hidden flex gap-2">
-                        <a id="sync-open-sheet" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="external-link" class="w-4 h-4"></i> Tabelle öffnen</a>
-                        <a id="sync-xlsx" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel laden</a>
+                <p class="guide-note"><b>Datenschutz:</b> Die Tabelle enthält patientenbezogene Daten. Nicht freigeben, Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten, Klinik-Vorgaben beachten. „Nur Alter speichern“ (Datenschutz) lässt das Geburtsdatum weg.</p>
+            </div>
+        </details>
+        <details class="set-sec" id="set-sec-download">
+            <summary>
+                <i data-lucide="download" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Herunterladen</span><span class="set-sec-sub">Logbuch · BTM-Liste</span></span>
+                <i data-lucide="chevron-down" class="set-sec-chev"></i>
+            </summary>
+            <div class="set-sec-body">
+                <div class="set-row">
+                    <div class="set-row-head"><h3>Logbuch</h3></div>
+                    <p class="set-row-hint">Alle Fälle, gesamter Zeitraum. Für einen bestimmten Zeitraum: Tab „Statistik“.</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportToXLSX()" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel</button>
+                        <button onclick="exportToCSV()" class="set-btn"><i data-lucide="file-text" class="w-4 h-4"></i> CSV</button>
+                        <button onclick="exportPdf(false)" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> PDF-Bericht</button>
+                        <button onclick="exportPdf(true)" title="Ohne Initialen und Geburtsdatum" class="set-btn"><i data-lucide="user-x" class="w-4 h-4"></i> PDF anonym</button>
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="set-row-head"><h3>In der Tabelle bearbeiten</h3></div>
-                    <p class="set-row-hint">Du darfst in der Tabelle alles ändern (auch Initialen, Geburtsdatum, Bemerkungen, Nr.), Zeilen ergänzen und den Status auf „storniert“ setzen – alle Geräte übernehmen das beim nächsten Abgleich (automatisch alle 2 Minuten, beim Öffnen oder per Sync-Knopf). Fehlt ein Fall der App in der Tabelle (z. B. Zeile gelöscht), fragt die App, ob sie ihn wieder hochladen oder in der App stornieren soll. Jeder Fall zählt nur einmal.</p>
+                    <div class="set-row-head"><h3>BTM-Liste</h3></div>
+                    <p class="set-row-hint">Initialen, Geburtsdatum und Ampullen je Fall, nach Tagen.</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportBtmPdf()" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> PDF</button>
+                        <button onclick="exportBtmTxt()" class="set-btn"><i data-lucide="file-text" class="w-4 h-4"></i> TXT</button>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-row-head"><h3>Speicherort</h3></div>
+                    <label id="share-export-wrap" class="hidden checkbox-card items-start mb-1.5">
+                        <input type="checkbox" id="share-export-toggle" onchange="storeSet('exportShare', this.checked ? '1' : '0')" class="mt-0.5">
+                        <span><span class="font-medium">Bei jedem Download fragen</span><br>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Teilen-Menü → „In Dateien sichern“ → z. B. iCloud Drive oder Google Drive.</span></span>
+                    </label>
+                    <p class="set-row-hint !mb-0">iPhone-Standardordner: Einstellungen → Apps → Safari → Downloads.</p>
                 </div>
             </div>
         </details>
-
-        <!-- ERFASSUNGSFORMULAR ANPASSEN -->
+        <details class="set-sec" id="set-sec-backup">
+            <summary>
+                <i data-lucide="archive" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Datensicherung</span><span class="set-sec-sub" id="set-sum-export"></span></span>
+                <i data-lucide="chevron-down" class="set-sec-chev"></i>
+            </summary>
+            <div class="set-sec-body space-y-2">
+                <div class="flex items-baseline justify-between gap-2"><h3 class="text-[13px] font-semibold text-slate-700 dark:text-slate-200">Backup-Datei (JSON)</h3><span id="backup-status" class="text-[11px] text-slate-500 dark:text-slate-400"></span></div>
+                <p class="set-row-hint">Alle Fälle, Vorwerte und der Papierkorb in einer Datei – zum Wiederherstellen oder Umziehen. Dateiname mit Datum, nichts wird überschrieben.</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportToJSON()" class="set-btn"><i data-lucide="download" class="w-4 h-4"></i> Backup sichern</button>
+                    <label class="set-btn cursor-pointer">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Backup einspielen
+                        <input type="file" id="import-file" class="hidden" accept=".json,application/json" onchange="importFromJSON(event)">
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Mit Google Sheets verbunden? Dann ist die Tabelle zusätzlich eine laufende Sicherung.</p>
+            </div>
+        </details>
+            </div>
+        </section>
+        <section>
+            <h2 class="set-group-title">Einstellungen</h2>
+            <div class="set-group">
         <details class="set-sec" id="set-sec-form">
             <summary>
                 <i data-lucide="sliders-horizontal" class="set-sec-icon"></i>
@@ -1091,8 +1142,6 @@
                 <div id="form-field-settings" class="space-y-4"></div>
             </div>
         </details>
-
-        <!-- DATENSCHUTZ -->
         <details class="set-sec" id="set-sec-privacy">
             <summary>
                 <i data-lucide="shield" class="set-sec-icon"></i>
@@ -1116,8 +1165,11 @@
                 </div>
             </div>
         </details>
-
-        <!-- DEMO-DATEN -->
+            </div>
+        </section>
+        <section>
+            <h2 class="set-group-title">Sonstiges</h2>
+            <div class="set-group">
         <details class="set-sec" id="set-sec-demo">
             <summary>
                 <i data-lucide="flask-conical" class="set-sec-icon"></i>
@@ -1137,25 +1189,6 @@
                 </div>
             </div>
         </details>
-
-        <!-- PAPIERKORB -->
-        <details class="set-sec" id="set-sec-trash">
-            <summary>
-                <i data-lucide="trash-2" class="set-sec-icon"></i>
-                <span class="set-sec-text"><span class="set-sec-title">Papierkorb</span><span class="set-sec-sub" id="set-sum-trash"></span></span>
-                <i data-lucide="chevron-down" class="set-sec-chev"></i>
-            </summary>
-            <div class="set-sec-body space-y-2">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">Endgültig gelöschte Fälle und Vorwerte. „Wiederherstellen“ holt sie als <b>storniert</b> zurück – dort kannst du das Storno aufheben. Mit Google Sheets verbunden: gleicher Papierkorb auf allen Geräten und in der Tabelle.</p>
-                <div id="trash-list" class="space-y-1.5"></div>
-                <p id="trash-empty" class="py-2 text-xs text-slate-400">Der Papierkorb ist leer.</p>
-                <button type="button" id="trash-empty-btn" onclick="emptyTrash()" class="hidden w-full px-3 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-700 dark:text-red-300 text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
-                    <i data-lucide="trash" class="w-4 h-4"></i> Papierkorb leeren
-                </button>
-            </div>
-        </details>
-
-        <!-- GEFAHRENZONE -->
         <details class="set-sec set-sec-danger" id="set-sec-danger">
             <summary>
                 <i data-lucide="alert-triangle" class="set-sec-icon"></i>
@@ -1169,6 +1202,8 @@
                 </button>
             </div>
         </details>
+            </div>
+        </section>
     </main>
 
 </div>
@@ -1366,6 +1401,15 @@
     function setUserName(v) {
         storeSet('userName', String(v || '').trim());
         updateSettingsSummaries();
+        renderHeaderUser();
+    }
+
+    // Name aus dem Profil in der Kopfzeile ("von Dr. …") und im Tab-Titel
+    function renderHeaderUser() {
+        const n = userName();
+        const el = $('header-user');
+        if (el) el.textContent = n ? `von ${n}` : '';
+        document.title = n ? `Anästhesie Logbuch – ${n}` : 'Anästhesie Logbuch';
     }
 
     function privacyAgeOnly() {
@@ -2875,6 +2919,7 @@
         setDateField(todayStr());
         $('privacy-age-only-toggle').checked = privacyAgeOnly();
         $('input-user-name').value = userName();
+        renderHeaderUser();
         syncEvalRangeUI();
         if (canShareFiles()) {
             $('share-export-wrap').classList.remove('hidden');
@@ -4484,18 +4529,49 @@
         syncTimer = setTimeout(() => syncNow({ manual: false }), delay);
     }
 
+    // Google antwortet gelegentlich kurz mit einer Fehlerseite (HTTP 404/
+    // 429/5xx oder HTML statt JSON), z. B. direkt nach einer neuen
+    // Bereitstellung oder bei vielen Anfragen. Solche vorübergehenden Fehler
+    // werden automatisch wiederholt. Aufträge sind dabei sicher: jeder hat
+    // eine eigene ID und wird im Skript nur einmal ausgeführt.
+    const SYNC_RETRY_DELAYS = [1500, 4000, 9000];
+    class SyncTransientError extends Error {}
+
+    async function syncFetchOnce(payload) {
+        let res;
+        try {
+            res = await fetch(syncUrl(), {
+                method: 'POST',
+                // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(Object.assign({ key: syncKey() }, payload)),
+                redirect: 'follow',
+                cache: 'no-store',
+                // keine Google-Cookies mitschicken (mehrere angemeldete
+                // Google-Konten führen sonst gelegentlich zu 404)
+                credentials: 'omit'
+            });
+        } catch (e) {
+            throw new SyncTransientError(navigator.onLine ? 'Google nicht erreichbar' : 'offline');
+        }
+        if (!res.ok) throw new SyncTransientError(`Google antwortet mit HTTP ${res.status}`);
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (e) {
+            throw new SyncTransientError('Google hat keine gültige Antwort geschickt');
+        }
+    }
+
     async function syncRequest(payload) {
-        const res = await fetch(syncUrl(), {
-            method: 'POST',
-            // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(Object.assign({ key: syncKey() }, payload)),
-            redirect: 'follow',
-            cache: 'no-store'
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        let data;
-        try { data = await res.json(); } catch (e) { throw new Error('Antwort ist kein JSON – stimmt die Skript-Adresse (endet auf /exec)?'); }
+        let data, lastErr;
+        for (let attempt = 0; attempt <= SYNC_RETRY_DELAYS.length; attempt++) {
+            try { data = await syncFetchOnce(payload); lastErr = null; break; } catch (e) {
+                lastErr = e;
+                if (!(e instanceof SyncTransientError) || attempt === SYNC_RETRY_DELAYS.length || !navigator.onLine) break;
+                setSyncStatus(`${e.message} – neuer Versuch …`, 'warn');
+                await new Promise((r) => setTimeout(r, SYNC_RETRY_DELAYS[attempt]));
+            }
+        }
+        if (lastErr) throw lastErr;
         if (data && data.version != null) storeSet('syncScriptVersion', String(Number(data.version) || 0));
         if (data && !data.ok && data.error === 'action') { storeSet('syncScriptVersion', '0'); throw new Error('Das Skript in Google ist veraltet.'); }
         if (!data.ok && data.error === 'key') throw new Error('Geheimer Schlüssel falsch.');
@@ -4778,8 +4854,15 @@
             if (manual) showToast(parts.length ? `Synchronisiert: ${parts.join(' · ')}` : 'Alles synchron');
         } catch (err) {
             const m = err && err.message ? err.message : String(err);
-            setSyncStatus(`Nicht synchronisiert: ${netErrorText(m)}`, 'error');
-            if (manual) showToast('Synchronisieren fehlgeschlagen', 'error');
+            if (err instanceof SyncTransientError) {
+                // vorübergehend: später von selbst erneut versuchen
+                setSyncStatus(`${m}. Nichts geht verloren – neuer Versuch automatisch in 1 Minute.`, 'warn');
+                if (syncAuto()) { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow({ manual: false }), 60000); }
+                if (manual) showToast('Google antwortet gerade nicht – neuer Versuch in 1 Minute', 'warn');
+            } else {
+                setSyncStatus(`Nicht synchronisiert: ${netErrorText(m)}`, 'error');
+                if (manual) showToast('Synchronisieren fehlgeschlagen', 'error');
+            }
         } finally {
             syncBusy = false;
             updateSyncUI();
@@ -4847,7 +4930,10 @@
             await syncNow({ manual: true });
         } catch (err) {
             const m = err && err.message ? err.message : String(err);
-            setSyncStatus(`Keine Verbindung: ${netErrorText(m)}`, 'error');
+            setSyncStatus(err instanceof SyncTransientError
+                ? `Keine Verbindung: ${m}. Prüfe, ob die Adresse auf /exec endet und der Zugriff „Jeder“ ist – sonst in einer Minute erneut testen.`
+                : `Keine Verbindung: ${netErrorText(m)}`, 'error');
+            $('sync-conn').open = true;
             updateSyncUI();
         }
     }
@@ -5161,9 +5247,15 @@
         renderSyncCard();
     }
 
+    function fillGsView() {
+        const t = $('gs-view');
+        if (t && !t.value) t.value = gsSource();
+    }
+
     function initSyncUI() {
         $('sync-url').value = syncUrl();
         $('sync-key').value = syncKey();
+        $('sync-conn').open = !syncConfigured();
         updateSyncUI();
         window.addEventListener('online', () => scheduleSync(500));
         document.addEventListener('visibilitychange', () => {
