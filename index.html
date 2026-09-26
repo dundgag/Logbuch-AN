@@ -385,6 +385,25 @@
         /* Stornierte Fälle: grau, Eingriff durchgestrichen */
         .case-card.is-cancelled { opacity: .6; }
         .case-card.is-cancelled .case-proc { text-decoration: line-through; }
+        /* Anleitung (aufklappbar) */
+        .guide { border: 1px solid #e2e8f0; border-radius: .75rem; background: #f8fafc; }
+        .dark .guide { border-color: #334155; background: rgba(51, 65, 85, 0.3); }
+        .guide > summary { display: flex; align-items: center; gap: .5rem; padding: .6rem .75rem; font-size: .8125rem; font-weight: 600; color: #035485; cursor: pointer; list-style: none; }
+        .dark .guide > summary { color: #7dd3fc; }
+        .guide > summary::-webkit-details-marker { display: none; }
+        .guide[open] > summary .guide-chev { transform: rotate(180deg); }
+        .guide-body { padding: 0 .75rem .75rem; font-size: .75rem; line-height: 1.5; color: #334155; }
+        .dark .guide-body { color: #cbd5e1; }
+        .guide-body h4 { font-size: .8125rem; font-weight: 700; color: #0f172a; margin: .9rem 0 .3rem; }
+        .dark .guide-body h4 { color: #f1f5f9; }
+        .guide-body ol { list-style: decimal; padding-left: 1.2rem; }
+        .guide-body ul { list-style: disc; padding-left: 1.2rem; }
+        .guide-body li { margin: .2rem 0; }
+        .guide-body a { color: #0369a1; text-decoration: underline; }
+        .guide-body code { font-size: .6875rem; background: #e2e8f0; padding: 0 .25rem; border-radius: .25rem; word-break: break-all; }
+        .dark .guide-body code { background: #334155; }
+        .guide-note { margin-top: .35rem; padding: .4rem .55rem; border-radius: .5rem; background: #fffbeb; color: #92400e; font-size: 11px; }
+        .dark .guide-note { background: rgba(120, 53, 15, 0.3); color: #fcd34d; }
         #header-sync.is-busy .sync-icon { animation: sync-spin 1s linear infinite; }
         @keyframes sync-spin { to { transform: rotate(360deg); } }
     </style>
@@ -926,7 +945,90 @@
             </summary>
             <div class="set-sec-body">
                 <div class="set-row">
-                    <p class="set-row-hint">Überträgt nur deine Aktionen (anlegen, bearbeiten, stornieren) an deine Tabelle – ohne Initialen, Geburtsdatum, Alter und Bemerkungen. Einrichtung: Skript „Logbuch-Sync.gs“.</p>
+                    <p class="set-row-hint">Überträgt nur deine Aktionen (anlegen, bearbeiten, stornieren) an deine Tabelle – ohne Initialen, Geburtsdatum, Alter und Bemerkungen.</p>
+                    <details class="guide mb-3" id="sync-guide">
+                        <summary><i data-lucide="book-open" class="w-4 h-4 shrink-0"></i><span class="flex-1">Anleitung: Google-Tabelle einrichten</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
+                        <div class="guide-body">
+                            <p><strong>Dauer:</strong> ca. 10 Minuten, einmalig. Am einfachsten <strong>am Computer</strong> (Chrome, Safari, Edge): Öffne diese App dort unter derselben Adresse wie am iPhone. Du brauchst ein Google-Konto (z. B. Gmail).</p>
+
+                            <h4>1 · Neue Google-Tabelle anlegen</h4>
+                            <ol>
+                                <li><a href="https://sheets.google.com" target="_blank" rel="noopener noreferrer">sheets.google.com</a> öffnen und mit deinem Google-Konto anmelden.</li>
+                                <li>Auf <b>„Leere Tabelle“</b> (großes Plus) klicken.</li>
+                                <li>Oben links auf „Unbenannte Tabelle“ klicken und einen Namen eingeben, z. B. <b>Anästhesie-Logbuch</b>, Enter.</li>
+                            </ol>
+                            <p class="guide-note">Nicht in Excel anlegen und hochladen – es muss eine echte Google-Tabelle sein. Die Excel-Datei bekommst du am Ende per Download (Schritt 8).</p>
+
+                            <h4>2 · Skript einfügen</h4>
+                            <ol>
+                                <li>In der Tabelle im Menü <b>Erweiterungen → Apps Script</b>. Ein neuer Tab mit dem Skript-Editor öffnet sich, links ist <b>Code.gs</b> ausgewählt.</li>
+                                <li>Hier in der App tippen:
+                                    <div class="flex gap-2 my-1.5">
+                                        <button type="button" onclick="copyGsSource()" class="set-btn"><i data-lucide="copy" class="w-4 h-4"></i> Skript kopieren</button>
+                                        <button type="button" onclick="downloadGsSource()" class="set-btn"><i data-lucide="file-down" class="w-4 h-4"></i> Als Datei</button>
+                                    </div>
+                                </li>
+                                <li>Im Editor den vorhandenen Text (<code>function myFunction() {…}</code>) komplett markieren (<b>Strg+A</b> bzw. <b>⌘+A</b>) und mit <b>Strg+V</b> bzw. <b>⌘+V</b> durch das kopierte Skript ersetzen.</li>
+                                <li>Speichern: Disketten-Symbol oder <b>Strg+S</b> / <b>⌘+S</b>. Oben links kannst du das Projekt „Unbenanntes Projekt“ z. B. in <b>Logbuch-Sync</b> umbenennen.</li>
+                            </ol>
+
+                            <h4>3 · Tabelle einrichten &amp; Schlüssel holen</h4>
+                            <ol>
+                                <li>In der Symbolleiste oben steht neben „Debuggen“ eine Auswahl mit einem Funktionsnamen. Dort <b>einrichten</b> wählen und auf <b>▷ Ausführen</b> klicken.</li>
+                                <li>Beim ersten Mal: „Autorisierung erforderlich“ → <b>Berechtigungen prüfen</b> → dein Konto wählen.</li>
+                                <li>Es erscheint „Google hat diese App nicht überprüft“. Das ist normal, weil du das Skript selbst angelegt hast und es nur in deinem Konto läuft: <b>Erweitert</b> → <b>„Zu Logbuch-Sync (unsicher) wechseln“</b> → <b>Zulassen</b>.</li>
+                                <li>Unten öffnet sich das <b>Ausführungsprotokoll</b> mit „Einrichtung fertig“ und der Zeile <b>GEHEIMER SCHLÜSSEL: …</b>. Die lange Zeichenfolge dahinter kopieren (zunächst z. B. in eine Notiz).</li>
+                            </ol>
+                            <p class="guide-note">Schlüssel verloren? Funktion <b>schluesselAnzeigen</b> ausführen. Schlüssel womöglich bekannt geworden? <b>neuenSchluesselErzeugen</b> ausführen und den neuen hier eintragen.</p>
+
+                            <h4>4 · Als Web-App bereitstellen</h4>
+                            <ol>
+                                <li>Oben rechts <b>Bereitstellen → Neue Bereitstellung</b>.</li>
+                                <li>Links neben „Typ auswählen“ auf das <b>Zahnrad</b> → <b>Web-App</b>.</li>
+                                <li>Beschreibung beliebig (z. B. „Logbuch“). <b>Ausführen als: Ich</b> (deine E-Mail). <b>Zugriff: Jeder</b>.</li>
+                                <li><b>Bereitstellen</b> (evtl. noch einmal „Zugriff autorisieren“ wie in Schritt 3).</li>
+                                <li>Die <b>Web-App-URL</b> kopieren – sie beginnt mit <code>https://script.google.com/macros/s/</code> und endet auf <code>/exec</code>. (Nicht die „Bibliothek“-URL.)</li>
+                            </ol>
+                            <p class="guide-note">„Zugriff: Jeder“ ist nötig, damit die App ohne Google-Anmeldung senden kann. Geschützt wird das Skript durch den geheimen Schlüssel – ohne ihn wird jede Anfrage abgelehnt.</p>
+
+                            <h4>5 · App verbinden</h4>
+                            <ol>
+                                <li>Weiter oben in diesem Abschnitt die <b>Skript-Adresse</b> und den <b>geheimen Schlüssel</b> einfügen.</li>
+                                <li><b>Verbindung testen</b> → es erscheint „Verbunden mit ‚Anästhesie-Logbuch‘“.</li>
+                                <li>Auf jedem Gerät (iPhone, Computer) einmal eintragen. Tipp: Adresse und Schlüssel am Computer per Nachricht an dich selbst schicken und am iPhone einfügen – danach die Nachricht löschen.</li>
+                            </ol>
+
+                            <h4>6 · Bisherige Daten einmalig hochladen</h4>
+                            <ol>
+                                <li>Unten auf <b>Fälle &amp; Vorwerte hochladen</b> tippen und bestätigen.</li>
+                                <li>Nur auf <b>einem</b> Gerät nötig. Mehrfaches Tippen schadet nicht – Vorhandenes wird nie überschrieben.</li>
+                            </ol>
+
+                            <h4>7 · Tabelle prüfen</h4>
+                            <ul>
+                                <li><b>Fälle</b>: ein Fall je Zeile, nach OP-Datum sortiert. Stornierte grau.</li>
+                                <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jeder Synchronisierung und beim Öffnen der Tabelle neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
+                                <li><b>Vorwerte</b>: deine Vorwerte-Blöcke aus der App.</li>
+                                <li><b>Verlauf</b> (alte Fassungen), <b>Papierkorb</b> (endgültig gelöschte Fälle), <b>Protokoll</b> (jeder empfangene Auftrag).</li>
+                            </ul>
+                            <p class="guide-note">Bitte in „Fälle“ und „Vorwerte“ nichts von Hand ändern – Änderungen immer in der App machen.</p>
+
+                            <h4>8 · Excel-Datei herunterladen</h4>
+                            <ul>
+                                <li>In der App: <b>Excel laden</b> (erscheint nach dem Verbindungstest), oder</li>
+                                <li>in Google Sheets: <b>Datei → Herunterladen → Microsoft Excel (.xlsx)</b>.</li>
+                            </ul>
+
+                            <h4>Skript aktualisieren (bei neuer App-Version)</h4>
+                            <ol>
+                                <li>Hier <b>Skript kopieren</b>, im Editor Code.gs komplett ersetzen und speichern.</li>
+                                <li>Funktion <b>einrichten</b> einmal ausführen (Schlüssel und Daten bleiben).</li>
+                                <li><b>Bereitstellen → Bereitstellungen verwalten</b> → Stift ✎ → bei Version <b>„Neue Version“</b> wählen → <b>Bereitstellen</b>. Die URL bleibt gleich, in der App ist nichts zu ändern.</li>
+                            </ol>
+                            <p class="guide-note">Ohne diesen letzten Schritt läuft weiter das alte Skript. Die App zeigt dann „Skript in Google veraltet“.</p>
+                        </div>
+                    </details>
+
                     <label for="sync-url" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Skript-Adresse (Web-App)</label>
                     <input type="url" id="sync-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
                     <label for="sync-key" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geheimer Schlüssel</label>
@@ -938,6 +1040,7 @@
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span id="sync-now-label">Jetzt synchronisieren</span>
                     </button>
                     <p id="sync-status" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+                    <p id="sync-version-warn" class="hidden p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300"><strong>Skript in Google veraltet.</strong> Bitte die neue Version einspielen – Anleitung oben, Abschnitt „Skript aktualisieren“.</p>
                     <label class="checkbox-card items-start">
                         <input type="checkbox" id="sync-auto-toggle" onchange="setSyncAuto(this.checked)" class="mt-0.5">
                         <span><span class="font-medium">Automatisch, sobald Netz da ist</span><br>
@@ -949,13 +1052,13 @@
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="set-row-head"><h3>Einmalig: vorhandene Fälle hochladen</h3></div>
-                    <p class="set-row-hint">Übernimmt deine bisherigen Fälle als neue Zeilen. Was schon in der Tabelle steht, bleibt unverändert.</p>
-                    <button type="button" id="sync-seed-btn" onclick="seedSheetFromApp()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-upload" class="w-4 h-4"></i> Vorhandene Fälle hochladen</button>
+                    <div class="set-row-head"><h3>Einmalig: vorhandene Daten hochladen</h3></div>
+                    <p class="set-row-hint">Übernimmt deine bisherigen Fälle und Vorwerte-Blöcke. Was schon in der Tabelle steht, bleibt unverändert. Danach läuft alles automatisch.</p>
+                    <button type="button" id="sync-seed-btn" onclick="seedSheetFromApp()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-upload" class="w-4 h-4"></i> Fälle &amp; Vorwerte hochladen</button>
                 </div>
                 <div class="set-row">
                     <div class="set-row-head"><h3>Nach Datenverlust</h3></div>
-                    <p class="set-row-hint">Holt die Fälle aus der Tabelle zurück (ohne Initialen/Geburtsdatum). Die Tabelle wird dabei nicht verändert.</p>
+                    <p class="set-row-hint">Holt Fälle und Vorwerte aus der Tabelle zurück (ohne Initialen/Geburtsdatum). Die Tabelle wird dabei nicht verändert.</p>
                     <button type="button" id="sync-restore-btn" onclick="restoreFromSheets()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-download" class="w-4 h-4"></i> Aus Google Sheets wiederherstellen</button>
                 </div>
             </div>
@@ -4089,17 +4192,22 @@
             return;
         }
 
+        let saved = null;
         if (editingVorwertId) {
             const idx = vorwerte.findIndex((x) => x.id === editingVorwertId);
             if (idx > -1) {
-                const updated = { id: editingVorwertId, name, counts };
+                const updated = { id: editingVorwertId, name, counts, ts: vorwerte[idx].ts, rev: vorwerte[idx].rev };
                 if (vorwerte[idx].isDemo) updated.isDemo = true;
                 vorwerte[idx] = updated;
+                saved = updated;
             }
         } else {
-            vorwerte.push({ id: Date.now().toString(), name, counts });
+            saved = { id: Date.now().toString(), name, counts };
+            vorwerte.push(saved);
         }
+        if (saved) touchCase(saved);
         storeSet('vorwerte', JSON.stringify(vorwerte));
+        if (saved) enqueueVwSync('vw-upsert', saved);
         closeVorwertModal();
         renderVorwerteList();
         renderEvaluation();
@@ -4111,6 +4219,8 @@
         if (!v) return;
         const ok = await askConfirm(`Vorwerte-Block "${v.name}" wirklich löschen?`, { title: 'Vorwerte löschen', confirmLabel: 'Löschen', danger: true });
         if (!ok) return;
+        touchCase(v);
+        enqueueVwSync('vw-delete', v);
         vorwerte = vorwerte.filter((x) => x.id !== id);
         storeSet('vorwerte', JSON.stringify(vorwerte));
         renderVorwerteList();
@@ -4187,6 +4297,8 @@
     // Version) und rev (Zähler). Das Skript übernimmt einen Auftrag nur,
     // wenn seine Version neuer ist als die der Zeile.
     const SYNC_BULK_LIMIT = 5;
+    // Version von Logbuch-Sync.gs, die zu dieser App passt.
+    const SYNC_SCRIPT_VERSION = 3;
     const SYNC_BATCH = 100;
     let syncBusy = false;
     let syncTimer = null;
@@ -4253,6 +4365,22 @@
         scheduleSync();
     }
 
+    // Vorwerte-Block als Auftrag (anlegen/bearbeiten/löschen).
+    function enqueueVwSync(type, v) {
+        if (!syncConfigured() || !v || v.isDemo) return;
+        const q = syncQueue();
+        q.push({ opId: newUid(), type, uid: String(v.id), ts: v.ts || Date.now(), at: new Date().toISOString(),
+            data: type === 'vw-delete' ? undefined : { name: v.name, counts: v.counts || {} } });
+        saveSyncQueue(q);
+        updateSyncUI();
+        scheduleSync();
+    }
+
+    function rememberScriptVersion(v) {
+        storeSet('syncScriptVersion', String(Number(v) || 0));
+        updateSyncUI();
+    }
+
     function scheduleSync(delay = 1500) {
         if (!syncConfigured() || !syncAuto()) return;
         clearTimeout(syncTimer);
@@ -4314,12 +4442,14 @@
             if (q.length === 0) {
                 const info = await syncRequest({ action: 'ping' });
                 storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
+                rememberScriptVersion(info.version);
             }
             while (q.length > 0) {
                 const batch = q.slice(0, SYNC_BATCH);
                 const r = await syncRequest({ action: 'push', ops: batch, confirmBulk });
                 if (!r.ok && r.error === 'bulk') throw new Error(`${r.count} Stornos/Löschungen – bitte bestätigen („Jetzt synchronisieren“).`);
                 if (!r.ok) throw new Error(r.message || 'Unbekannter Fehler');
+                rememberScriptVersion(r.version);
                 const done = new Set();
                 (r.results || []).forEach((x) => {
                     // Fehler beim Ausführen -> Auftrag bleibt für einen neuen Versuch
@@ -4362,6 +4492,7 @@
         try {
             const info = await syncRequest({ action: 'ping' });
             storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
+            rememberScriptVersion(info.version);
             setSyncStatus(`Verbunden mit „${info.name}“ · ${info.rows} ${info.rows === 1 ? 'Zeile' : 'Zeilen'} in „Fälle“.`);
             showToast('Verbindung klappt');
         } catch (err) {
@@ -4396,10 +4527,16 @@
     async function seedSheetFromApp() {
         if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
         const list = cases.filter((c) => !c.isDemo);
-        if (list.length === 0) { showToast('Keine eigenen Fälle vorhanden.', 'warn'); return; }
-        const ok = await askConfirm(`${list.length} Fälle als neue Zeilen in Google Sheets übernehmen?\n\nFälle, die dort schon stehen oder im Papierkorb liegen, werden nicht verändert.`, { title: 'Vorhandene Fälle hochladen', confirmLabel: 'Hochladen' });
+        const vws = vorwerte.filter((v) => !v.isDemo);
+        if (list.length === 0 && vws.length === 0) { showToast('Keine eigenen Fälle oder Vorwerte vorhanden.', 'warn'); return; }
+        const ok = await askConfirm(`${list.length} ${list.length === 1 ? 'Fall' : 'Fälle'} und ${vws.length} Vorwerte-${vws.length === 1 ? 'Block' : 'Blöcke'} in Google Sheets übernehmen?\n\nWas dort schon steht oder im Papierkorb liegt, wird nicht verändert.`, { title: 'Vorhandene Daten hochladen', confirmLabel: 'Hochladen' });
         if (!ok) return;
         const q = syncQueue();
+        vws.forEach((v) => {
+            if (typeof v.ts !== 'number') { v.ts = Number(v.id) > 1e12 ? Number(v.id) : Date.now(); v.rev = 1; }
+            q.push({ opId: newUid(), type: 'vw-seed', uid: String(v.id), ts: v.ts, at: new Date().toISOString(), data: { name: v.name, counts: v.counts || {} } });
+        });
+        storeSet('vorwerte', JSON.stringify(vorwerte));
         list.forEach((c) => {
             ensureCaseMeta(c);
             q.push({ opId: newUid(), type: 'seed', uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString(), data: sheetRecord(c), crit: c.cancelled ? [] : caseCategoryIds(c) });
@@ -4415,15 +4552,18 @@
     // und Bemerkungen stehen nicht in der Tabelle und fehlen danach.
     async function restoreFromSheets() {
         if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
-        const ok = await askConfirm('Fälle aus Google Sheets in die App übernehmen?\n\nFehlende Fälle werden ergänzt, ältere Fassungen in der App durch neuere aus der Tabelle ersetzt. Initialen, Geburtsdatum und Bemerkungen stehen nicht in der Tabelle – vorhandene bleiben erhalten, bei neu übernommenen Fällen fehlen sie. Vorwerte bitte aus dem JSON-Backup oder neu eintragen.', { title: 'Aus Google Sheets wiederherstellen', confirmLabel: 'Wiederherstellen' });
+        const ok = await askConfirm('Fälle und Vorwerte aus Google Sheets in die App übernehmen?\n\nFehlendes wird ergänzt, ältere Fassungen in der App durch neuere aus der Tabelle ersetzt. Initialen, Geburtsdatum und Bemerkungen stehen nicht in der Tabelle – vorhandene bleiben erhalten, bei neu übernommenen Fällen fehlen sie.', { title: 'Aus Google Sheets wiederherstellen', confirmLabel: 'Wiederherstellen' });
         if (!ok) return;
         setSyncStatus('Lade aus Google Sheets …');
         try {
             const r = await syncRequest({ action: 'restore' });
+            rememberScriptVersion(r.version);
             const res = mergeRestoredCases(r.cases || []);
+            const vw = mergeRestoredVorwerte(r.vorwerte || []);
             saveCases();
+            storeSet('vorwerte', JSON.stringify(vorwerte));
             refreshAll();
-            const msg = `${res.added} ergänzt · ${res.updated} aktualisiert · ${res.kept} unverändert`;
+            const msg = `${res.added} Fälle ergänzt · ${res.updated} aktualisiert · ${res.kept} unverändert` + (vw ? ` · ${vw} Vorwerte-${vw === 1 ? 'Block' : 'Blöcke'}` : '');
             setSyncStatus(`Wiederhergestellt: ${msg}`);
             showToast(`Wiederhergestellt: ${msg}`);
         } catch (err) {
@@ -4467,6 +4607,40 @@
         // bleibt, übernommene Fälle kommen ans Ende ihres Tages).
         if (res.added > 0) cases.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
         return res;
+    }
+
+    function mergeRestoredVorwerte(remote) {
+        let n = 0;
+        remote.forEach((rv) => {
+            if (!rv || !rv.id) return;
+            const idx = vorwerte.findIndex((v) => String(v.id) === String(rv.id));
+            const block = { id: String(rv.id), name: rv.name || 'Vorwerte', counts: rv.counts || {}, ts: rv.ts || 0, rev: 1 };
+            if (idx === -1) { vorwerte.push(block); n++; }
+            else if ((vorwerte[idx].ts || 0) < block.ts) { vorwerte[idx] = block; n++; }
+        });
+        return n;
+    }
+
+    // Skript-Quelltext (eingebettet, passt immer zu dieser App-Version).
+    function gsSource() {
+        return ($('gs-source').textContent || '').replace(/^\s*\n/, '');
+    }
+
+    async function copyGsSource() {
+        const text = gsSource();
+        let ok = false;
+        try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+            ta.remove();
+        }
+        showToast(ok ? 'Skript kopiert – jetzt in Code.gs einfügen' : 'Kopieren nicht möglich – bitte „Als Datei“ nutzen', ok ? undefined : 'warn');
+    }
+
+    function downloadGsSource() {
+        saveFile('Logbuch-Sync.gs.txt', gsSource(), 'text/plain;charset=utf-8');
     }
 
     // Storno: Fall bleibt erhalten, zählt aber nirgends mehr mit.
@@ -4544,6 +4718,11 @@
         }
         const auto = $('sync-auto-toggle');
         if (auto) auto.checked = syncAuto();
+        const warn = $('sync-version-warn');
+        if (warn) {
+            const v = Number(storeGet('syncScriptVersion') || 0);
+            warn.classList.toggle('hidden', !(configured && storeGet('syncScriptVersion') !== null && v < SYNC_SCRIPT_VERSION));
+        }
     }
 
     function initSyncUI() {
@@ -5755,6 +5934,638 @@
         const banner = $('demo-banner');
         if (banner) banner.classList.toggle('hidden', !has);
     }
+</script>
+<!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
+<script type="text/plain" id="gs-source">
+/**
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets
+ * =======================================================
+ *
+ * Eine ausführliche Schritt-für-Schritt-Anleitung steht in der App unter
+ * Mehr → Google Sheets → „Anleitung“.
+ *
+ * Einrichtung (einmalig, ca. 10 Minuten):
+ *  1. Neue Google-Tabelle anlegen (z. B. „Anästhesie-Logbuch“).
+ *  2. Erweiterungen → Apps Script. Den gesamten Inhalt dieser Datei in
+ *     „Code.gs“ einfügen (vorhandenen Text ersetzen) und speichern.
+ *  3. Oben in der Funktionsauswahl „einrichten“ wählen → Ausführen.
+ *     Beim ersten Mal nach Berechtigung fragen lassen und zustimmen.
+ *     Im Ausführungsprotokoll erscheint der GEHEIME SCHLÜSSEL.
+ *  4. Bereitstellen → Neue Bereitstellung → Typ „Web-App“:
+ *       Ausführen als: Ich
+ *       Zugriff: Jeder
+ *     → Bereitstellen. Die angezeigte Web-App-URL (endet auf /exec) kopieren.
+ *  5. In der Logbuch-App: Mehr → Google Sheets → URL und Schlüssel eintragen
+ *     → „Verbindung testen“.
+ *
+ * Grundsätze:
+ *  - Die App schickt nur einzelne Aufträge (anlegen, bearbeiten, stornieren,
+ *    Storno aufheben, endgültig löschen), nie den Gesamtbestand. Ein leerer
+ *    App-Speicher kann die Tabelle daher nicht verändern.
+ *  - Jeder Auftrag hat eine eindeutige ID und wird nur einmal ausgeführt.
+ *  - Jeder Fall hat eine Version (Zeitstempel der letzten Aktion in der App).
+ *    Ein Auftrag mit älterer oder gleicher Version als die Zeile wird
+ *    ignoriert: ältere Fassungen überschreiben nie neuere.
+ *  - Vor jeder Änderung wird die bisherige Zeile im Blatt „Verlauf“ gesichert.
+ *  - Storno markiert nur (grau, zählt nicht in „Auswertung“). Endgültig
+ *    gelöschte Zeilen wandern in den „Papierkorb“.
+ *  - Keine Patientendaten: keine Initialen, kein Geburtsdatum, kein Alter,
+ *    keine Bemerkungen – nur „Kind ≤ 5 J.“ als ja/nein für die Richtzahl.
+ *
+ * Nach Änderungen an diesem Skript: Bereitstellen → Bereitstellungen
+ * verwalten → Bearbeiten (Stift) → Version „Neue Version“ → Bereitstellen.
+ * So bleibt die URL gleich.
+ */
+
+var SHEET_CASES = 'Fälle';
+var SHEET_HISTORY = 'Verlauf';
+var SHEET_TRASH = 'Papierkorb';
+var SHEET_LOG = 'Protokoll';
+var SHEET_EVAL = 'Auswertung';
+var SHEET_VW = 'Vorwerte';
+
+// Muss zur App passen – die App warnt, wenn das bereitgestellte Skript
+// älter ist (dann „Neue Version“ bereitstellen).
+var SCRIPT_VERSION = 3;
+
+// Mehr Stornos/Löschungen als das in einer Übertragung nur mit
+// ausdrücklicher Bestätigung in der App.
+var BULK_LIMIT = 5;
+var MAX_OPS_PER_REQUEST = 200;
+
+var STATUS_ACTIVE = 'aktiv';
+var STATUS_CANCELLED = 'storniert';
+
+// Richtzahlen (identisch zur App). id = Schlüssel aus der App.
+var RZ = [
+  ['total', 'Anästhesieverfahren gesamt (Allgemeinanästhesien)', 1800],
+  ['abdominell', 'davon: Abdominelle Eingriffe', 300],
+  ['asa3', 'davon: Patienten ab ASA III', 100],
+  ['fiberoptik', 'Fiberoptische Techniken', 25],
+  ['video', 'Videoassistierte Intubation', 20],
+  ['ultraschall', 'Anästhesierelevante Ultraschallverfahren', 50],
+  ['intrakraniell', 'Mitwirkung: Intrakranielle Eingriffe', 25],
+  ['kinder', 'Säuglinge & Kleinkinder (≤ 5 Jahre)', 50],
+  ['geburtshilfe', 'Anästhesie in der Geburtshilfe', 50],
+  ['sectio', 'davon: Kaiserschnitte (Sectio)', 25],
+  ['intrathorakal', 'Mitwirkung: Intrathorakale Eingriffe', 25],
+  ['kopf_hals', 'Eingriffe Kopf-Hals-Bereich', 100],
+  ['regional_zentral', 'Rückenmarksnahe Regionalanästhesien', 50],
+  ['regional_peripher', 'Periphere Regionalanästhesieverfahren', 50],
+  ['ambulant', 'Anästhesien bei ambulanten Eingriffen', 50]
+];
+
+// Spalten im Blatt „Fälle“: [Überschrift, Schlüssel, Art]
+var COLS = [
+  ['UID', 'uid', 'text'],
+  ['App-ID', 'id', 'text'],
+  ['Status', 'status', 'text'],
+  ['Datum', 'date', 'date'],
+  ['ASA', 'asa', 'text'],
+  ['Ort', 'opSaal', 'text'],
+  ['Eingriff', 'procedure', 'text'],
+  ['Eingriff 2', 'procedure2', 'text'],
+  ['Kind ≤ 5 J.', 'kindLe5', 'bool'],
+  ['Allgemeinanästhesie', 'isVollnarkose', 'bool'],
+  ['Atemweg', 'airway', 'text'],
+  ['Rückenmarksnahe RA', 'isSpaPdk', 'bool'],
+  ['Art RM-RA', 'spaPdkType', 'text'],
+  ['Periphere RA', 'isPeripher', 'bool'],
+  ['Art periphere RA', 'peripherType', 'text'],
+  ['Analgosedierung', 'isSedierung', 'bool'],
+  ['Abdominell', 'isAbdominell', 'bool'],
+  ['Kopf/Hals', 'isKopfHals', 'bool'],
+  ['Intrathorakal', 'isIntrathorakal', 'bool'],
+  ['Intrakraniell', 'isIntrakraniell', 'bool'],
+  ['Geburtshilfe', 'isSectio', 'bool'],
+  ['Ambulant', 'isAmbulant', 'bool'],
+  ['Fiberoptik', 'isFiberoptik', 'bool'],
+  ['Videolaryngoskopie', 'isVideo', 'bool'],
+  ['Sono-Gefäßpunktion', 'isSonoGefaess', 'bool'],
+  ['BTM', 'btmText', 'text']
+].concat(RZ.map(function (r) { return ['RZ ' + r[1], 'rz:' + r[0], 'rz']; }))
+ .concat([
+  ['Version', 'ts', 'num'],
+  ['Revision', 'rev', 'num'],
+  ['Letzte Aktion', 'lastAction', 'text'],
+  ['Geändert am', 'changedAt', 'datetime'],
+  ['Daten (App)', 'json', 'text']
+]);
+
+// Blatt „Vorwerte“: ein Block aus der App je Zeile
+var VW_COLS = [['ID', 'id'], ['Status', 'status'], ['Bezeichnung', 'name']]
+  .concat(RZ.map(function (r) { return [r[1], 'rz:' + r[0]]; }))
+  .concat([['Version', 'ts'], ['Geändert am', 'changedAt']]);
+function vwIndex_(key) {
+  for (var i = 0; i < VW_COLS.length; i++) if (VW_COLS[i][1] === key) return i;
+  throw new Error('Spalte fehlt: ' + key);
+}
+
+function colIndex_(key) {
+  for (var i = 0; i < COLS.length; i++) if (COLS[i][1] === key) return i;
+  throw new Error('Spalte fehlt: ' + key);
+}
+function colLetter_(n) { // 1-basiert
+  var s = '';
+  while (n > 0) { var m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+  return s;
+}
+
+// ------------------------------------------------------------------
+// Einrichtung
+// ------------------------------------------------------------------
+function einrichten() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var headers = COLS.map(function (c) { return c[0]; });
+
+  var cases = ensureSheet_(ss, SHEET_CASES, headers);
+  cases.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#e0effe');
+  cases.setFrozenRows(1);
+  cases.setFrozenColumns(0);
+  var maxRows = cases.getMaxRows();
+  cases.getRange(2, colIndex_('uid') + 1, maxRows - 1, 2).setNumberFormat('@');
+  cases.getRange(2, colIndex_('date') + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy');
+  cases.getRange(2, colIndex_('ts') + 1, maxRows - 1, 2).setNumberFormat('0');
+  cases.getRange(2, colIndex_('changedAt') + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
+  cases.hideColumns(colIndex_('json') + 1);
+  cases.hideColumns(colIndex_('uid') + 1, 2);
+
+  // Stornierte Zeilen grau + durchgestrichen
+  var statusCol = colLetter_(colIndex_('status') + 1);
+  var rule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_CANCELLED + '"')
+    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
+    .setRanges([cases.getRange(2, 1, maxRows - 1, headers.length)])
+    .build();
+  var rules = cases.getConditionalFormatRules().filter(function (r) {
+    var c = r.getBooleanCondition();
+    return !(c && String(c.getCriteriaValues()[0]).indexOf(STATUS_CANCELLED) > -1);
+  });
+  rules.push(rule);
+  cases.setConditionalFormatRules(rules);
+
+  var hist = ensureSheet_(ss, SHEET_HISTORY, ['Gesichert am', 'Anlass', 'Auftrag-ID'].concat(headers));
+  hist.getRange(1, 1, 1, headers.length + 3).setFontWeight('bold').setBackground('#f1f5f9');
+  hist.setFrozenRows(1);
+
+  var trash = ensureSheet_(ss, SHEET_TRASH, ['Gelöscht am', 'Auftrag-ID'].concat(headers));
+  trash.getRange(1, 1, 1, headers.length + 2).setFontWeight('bold').setBackground('#fee2e2');
+  trash.setFrozenRows(1);
+
+  var log = ensureSheet_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis']);
+  log.getRange(1, 1, 1, 6).setFontWeight('bold').setBackground('#f1f5f9');
+  log.setFrozenRows(1);
+  log.getRange(2, 1, log.getMaxRows() - 1, 1).setNumberFormat('@');
+  log.getRange(2, 4, log.getMaxRows() - 1, 2).setNumberFormat('@');
+
+  var vw = ensureSheet_(ss, SHEET_VW, VW_COLS.map(function (c) { return c[0]; }));
+  vw.getRange(1, 1, 1, VW_COLS.length).setFontWeight('bold').setBackground('#e0effe');
+  vw.setFrozenRows(1);
+  vw.getRange(2, 1, vw.getMaxRows() - 1, 1).setNumberFormat('@');
+  vw.getRange(2, vwIndex_('ts') + 1, vw.getMaxRows() - 1, 1).setNumberFormat('0');
+  vw.getRange(2, vwIndex_('changedAt') + 1, vw.getMaxRows() - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
+  var vwStatus = colLetter_(vwIndex_('status') + 1);
+  vw.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + vwStatus + '2="gelöscht"')
+    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
+    .setRanges([vw.getRange(2, 1, vw.getMaxRows() - 1, VW_COLS.length)]).build()]);
+
+  var sheet1 = ss.getSheetByName('Tabellenblatt1') || ss.getSheetByName('Sheet1');
+  if (sheet1 && sheet1.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(sheet1);
+
+  buildEvalSheet_(ss);
+  sortCases_(cases);
+
+  var props = PropertiesService.getScriptProperties();
+  var key = props.getProperty('SYNC_KEY');
+  if (!key) {
+    key = neuerSchluessel_();
+    props.setProperty('SYNC_KEY', key);
+  }
+  Logger.log('Einrichtung fertig.');
+  Logger.log('GEHEIMER SCHLÜSSEL (in der App eintragen, nicht weitergeben): ' + key);
+}
+
+// Zeigt den aktuellen Schlüssel im Ausführungsprotokoll.
+function schluesselAnzeigen() {
+  Logger.log('GEHEIMER SCHLÜSSEL: ' + PropertiesService.getScriptProperties().getProperty('SYNC_KEY'));
+}
+
+// Neuer Schlüssel, z. B. wenn der alte bekannt geworden ist. Danach in der
+// App den neuen Schlüssel eintragen.
+function neuenSchluesselErzeugen() {
+  var key = neuerSchluessel_();
+  PropertiesService.getScriptProperties().setProperty('SYNC_KEY', key);
+  Logger.log('NEUER GEHEIMER SCHLÜSSEL: ' + key);
+}
+
+function neuerSchluessel_() {
+  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+}
+
+function ensureSheet_(ss, name, headers) {
+  var sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  return sh;
+}
+
+function buildEvalSheet_(ss) {
+  var sh = ss.getSheetByName(SHEET_EVAL) || ss.insertSheet(SHEET_EVAL);
+  sh.clear();
+  sh.getRange(1, 1).setValue('Auswertung – nur Fälle mit Status „aktiv“ (stornierte zählen nicht)').setFontWeight('bold');
+  sh.getRange(2, 1).setFontColor('#64748b');
+  var head = [['Richtzahl', 'Soll', 'Logbuch', 'Vorwerte (aus App)', 'Gesamt', 'Erfüllt']];
+  sh.getRange(3, 1, 1, 6).setValues(head).setFontWeight('bold').setBackground('#e0effe');
+  var statusCol = colLetter_(colIndex_('status') + 1);
+  // „Logbuch“ und „Vorwerte“ rechnet das Skript selbst aus (recalcEval_)
+  // – keine Tabellenformel mit Trennzeichen, die je nach Spracheinstellung
+  // (Komma/Semikolon) einen Fehler geben könnte. „Gesamt“ und „Erfüllt“
+  // sind Formeln ohne Trennzeichen.
+  var n = RZ.length;
+  sh.getRange(4, 1, n, 2).setValues(RZ.map(function (r) { return [r[1], r[2]]; }));
+  sh.getRange(4, 3, n, 1).setValues(RZ.map(function () { return [0]; }));
+  sh.getRange(4, 4, n, 1).setValues(RZ.map(function () { return [0]; }));
+  sh.getRange(4, 5, n, 2).setFormulas(RZ.map(function (r, i) { var row = 4 + i; return ['=C' + row + '+D' + row, '=E' + row + '/B' + row]; }));
+  sh.getRange(4, 6, n, 1).setNumberFormat('0%');
+  sh.setColumnWidth(1, 330);
+  sh.setFrozenRows(3);
+  recalcEval_(ss);
+}
+
+// Zählt je Richtzahl alle Fälle mit Status „aktiv“ und „x“ in der
+// RZ-Spalte und schreibt die Zahl in „Auswertung“ Spalte C.
+function recalcEval_(ss) {
+  var cases = ss.getSheetByName(SHEET_CASES);
+  var ev = ss.getSheetByName(SHEET_EVAL);
+  if (!cases || !ev) return;
+  var counts = RZ.map(function () { return 0; });
+  var last = cases.getLastRow();
+  if (last >= 2) {
+    var values = cases.getRange(2, 1, last - 1, COLS.length).getValues();
+    var si = colIndex_('status');
+    var idx = RZ.map(function (r) { return colIndex_('rz:' + r[0]); });
+    values.forEach(function (row) {
+      if (row[si] !== STATUS_ACTIVE) return;
+      idx.forEach(function (ci, k) { if (row[ci] === 'x') counts[k]++; });
+    });
+  }
+  var vwSums = RZ.map(function () { return 0; });
+  var vw = ss.getSheetByName(SHEET_VW);
+  if (vw && vw.getLastRow() >= 2) {
+    vw.getRange(2, 1, vw.getLastRow() - 1, VW_COLS.length).getValues().forEach(function (row) {
+      if (row[vwIndex_('status')] !== STATUS_ACTIVE) return;
+      RZ.forEach(function (r, k) { vwSums[k] += Number(row[vwIndex_('rz:' + r[0])]) || 0; });
+    });
+  }
+  ev.getRange(4, 3, RZ.length, 2).setValues(counts.map(function (c, k) { return [c, vwSums[k]]; }));
+  ev.getRange(2, 1).setValue('Stand: ' + Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'dd.MM.yyyy HH:mm') + ' · wird bei jeder Synchronisierung und beim Öffnen neu gezählt');
+}
+
+// Fälle nach OP-Datum sortieren (bei gleichem Datum in Erfassungsreihenfolge).
+function sortCases_(sheet) {
+  var last = sheet.getLastRow();
+  if (last < 3) return;
+  sheet.getRange(2, 1, last - 1, COLS.length).sort([
+    { column: colIndex_('date') + 1, ascending: true },
+    { column: colIndex_('id') + 1, ascending: true }
+  ]);
+}
+
+// Beim Öffnen der Tabelle: Menü „Logbuch“, Auswertung neu zählen und
+// Fälle sortieren – so stimmt die Ansicht immer.
+function onOpen() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    SpreadsheetApp.getUi().createMenu('Logbuch')
+      .addItem('Auswertung aktualisieren', 'auswertungAktualisieren')
+      .addToUi();
+  } catch (e) {}
+  try {
+    recalcEval_(ss);
+    var sh = ss.getSheetByName(SHEET_CASES);
+    if (sh) sortCases_(sh);
+  } catch (e) {}
+}
+
+// Falls die Auswertung einmal nicht aktuell wirkt: diese Funktion im
+// Skript-Editor ausführen.
+function auswertungAktualisieren() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  recalcEval_(ss);
+  var sh = ss.getSheetByName(SHEET_CASES);
+  if (sh) sortCases_(sh);
+}
+
+// ------------------------------------------------------------------
+// Web-App
+// ------------------------------------------------------------------
+function doGet() {
+  // Absichtlich keine Daten über GET (Adresse könnte in Verläufen landen).
+  return ContentService.createTextOutput('Logbuch-Sync ist aktiv.');
+}
+
+function doPost(e) {
+  var res;
+  try {
+    var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (!checkKey_(body.key)) {
+      Utilities.sleep(800); // bremst Rateversuche
+      res = { ok: false, error: 'key', message: 'Schlüssel falsch' };
+    } else if (body.action === 'ping') {
+      res = ping_();
+    } else if (body.action === 'push') {
+      res = withLock_(function () { return push_(body.ops || [], !!body.confirmBulk); });
+    } else if (body.action === 'restore') {
+      res = withLock_(restore_);
+    } else {
+      res = { ok: false, error: 'action', message: 'Unbekannte Aktion' };
+    }
+  } catch (err) {
+    res = { ok: false, error: 'server', message: String(err && err.message || err) };
+  }
+  return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function checkKey_(given) {
+  var key = PropertiesService.getScriptProperties().getProperty('SYNC_KEY');
+  if (!key || typeof given !== 'string' || given.length !== key.length) return false;
+  var diff = 0;
+  for (var i = 0; i < key.length; i++) diff |= key.charCodeAt(i) ^ given.charCodeAt(i);
+  return diff === 0;
+}
+
+function withLock_(fn) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+
+function ping_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(SHEET_CASES);
+  if (!sh) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
+  var id = ss.getId();
+  return {
+    ok: true,
+    name: ss.getName(),
+    sheetUrl: ss.getUrl(),
+    xlsxUrl: 'https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx',
+    rows: Math.max(0, sh.getLastRow() - 1),
+    version: SCRIPT_VERSION,
+    vorwerte: !!ss.getSheetByName(SHEET_VW)
+  };
+}
+
+// ------------------------------------------------------------------
+// Aufträge ausführen
+// ------------------------------------------------------------------
+function push_(ops, confirmBulk) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var cases = ss.getSheetByName(SHEET_CASES);
+  if (!cases) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
+  if (!Array.isArray(ops)) return { ok: false, error: 'input', message: 'Ungültige Aufträge' };
+  if (ops.length > MAX_OPS_PER_REQUEST) return { ok: false, error: 'input', message: 'Zu viele Aufträge auf einmal' };
+
+  var destructive = ops.filter(function (o) { return o && (o.type === 'cancel' || o.type === 'purge'); }).length;
+  if (destructive > BULK_LIMIT && !confirmBulk) {
+    return { ok: false, error: 'bulk', count: destructive, message: destructive + ' Stornos/Löschungen – Bestätigung nötig' };
+  }
+
+  var hist = ss.getSheetByName(SHEET_HISTORY);
+  var trash = ss.getSheetByName(SHEET_TRASH);
+  var log = ss.getSheetByName(SHEET_LOG);
+  var vw = ss.getSheetByName(SHEET_VW);
+  var results = [];
+
+  ops.forEach(function (op) {
+    var status;
+    try {
+      if (op && String(op.type).indexOf('vw-') === 0) {
+        status = vw ? applyVwOp_(op, vw, log) : 'fehler: Blatt „Vorwerte“ fehlt – bitte „einrichten“ erneut ausführen';
+      } else {
+        status = applyOp_(op, cases, hist, trash, log);
+      }
+    } catch (err) {
+      status = 'fehler: ' + (err && err.message || err);
+    }
+    results.push({ opId: op && op.opId, status: status });
+  });
+  if (results.some(function (r) { return r.status === 'ok'; })) {
+    sortCases_(cases);
+    recalcEval_(ss);
+  }
+  return { ok: true, results: results, version: SCRIPT_VERSION };
+}
+
+function applyOp_(op, cases, hist, trash, log) {
+  if (!op || typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') {
+    return 'ungültig';
+  }
+  if (findRow_(log, 1, op.opId)) return 'doppelt'; // schon ausgeführt
+
+  var now = new Date();
+  var result;
+  var row = findRow_(cases, colIndex_('uid') + 1, op.uid);
+  var current = row ? cases.getRange(row, 1, 1, COLS.length).getValues()[0] : null;
+  var currentTs = current ? Number(current[colIndex_('ts')]) || 0 : 0;
+  var inTrash = !row && findRow_(trash, 3 + colIndex_('uid'), op.uid);
+
+  if (op.type === 'seed') {
+    // Einmaliges Hochladen: nur einfügen, niemals Vorhandenes ändern.
+    if (row || inTrash) result = 'vorhanden';
+    else { appendCaseRow_(cases, buildRow_(op, op.data && op.data.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE, 'übernommen', now)); result = 'ok'; }
+  } else if (op.type === 'upsert' || op.type === 'cancel' || op.type === 'uncancel') {
+    var newStatus = op.type === 'cancel' ? STATUS_CANCELLED
+      : op.type === 'uncancel' ? STATUS_ACTIVE
+      : (op.data && op.data.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE);
+    var label = { upsert: row ? 'bearbeitet' : 'angelegt', cancel: 'storniert', uncancel: 'Storno aufgehoben' }[op.type];
+    if (inTrash) {
+      result = 'gelöscht';
+    } else if (!row) {
+      appendCaseRow_(cases, buildRow_(op, newStatus, label, now));
+      result = 'ok';
+    } else if (op.ts <= currentTs) {
+      result = 'veraltet'; // ältere Fassung überschreibt nie eine neuere
+    } else {
+      hist.appendRow([now, label, op.opId].concat(current));
+      cases.getRange(row, 1, 1, COLS.length).setValues([buildRow_(op, newStatus, label, now)]);
+      result = 'ok';
+    }
+  } else if (op.type === 'purge') {
+    if (!row) result = inTrash ? 'doppelt' : 'unbekannt';
+    else if (current[colIndex_('status')] !== STATUS_CANCELLED) result = 'nicht storniert';
+    else if (op.ts <= currentTs) result = 'veraltet';
+    else {
+      trash.appendRow([now, op.opId].concat(current));
+      cases.deleteRow(row);
+      result = 'ok';
+    }
+  } else {
+    result = 'ungültig';
+  }
+
+  log.appendRow([op.opId, now, String(op.type), op.uid, String(op.ts), result]);
+  return result;
+}
+
+// Vorwerte-Blöcke: vw-upsert (anlegen/bearbeiten), vw-delete (als
+// „gelöscht“ markieren, zählt nicht mehr), vw-seed (nur einfügen).
+function applyVwOp_(op, vw, log) {
+  if (typeof op.opId !== 'string' || typeof op.uid !== 'string' || !op.uid || typeof op.ts !== 'number') return 'ungültig';
+  if (findRow_(log, 1, op.opId)) return 'doppelt';
+  var now = new Date();
+  var row = findRow_(vw, 1, op.uid);
+  var current = row ? vw.getRange(row, 1, 1, VW_COLS.length).getValues()[0] : null;
+  var currentTs = current ? Number(current[vwIndex_('ts')]) || 0 : 0;
+  var d = op.data || {};
+  var counts = d.counts || {};
+  var build = function (status) {
+    return VW_COLS.map(function (c) {
+      var k = c[1];
+      if (k === 'id') return safeText_(op.uid);
+      if (k === 'status') return status;
+      if (k === 'name') return safeText_(d.name || 'Vorwerte');
+      if (k === 'ts') return op.ts;
+      if (k === 'changedAt') return now;
+      return Math.max(0, parseInt(counts[k.slice(3)], 10) || 0);
+    });
+  };
+  var result;
+  if (op.type === 'vw-seed') {
+    if (row) result = 'vorhanden';
+    else { vw.appendRow(build(STATUS_ACTIVE)); result = 'ok'; }
+  } else if (op.type === 'vw-upsert' || op.type === 'vw-delete') {
+    var status = op.type === 'vw-delete' ? 'gelöscht' : STATUS_ACTIVE;
+    if (op.type === 'vw-delete' && !row) result = 'unbekannt';
+    else if (!row) { vw.appendRow(build(status)); result = 'ok'; }
+    else if (op.ts <= currentTs) result = 'veraltet';
+    else if (current[vwIndex_('status')] === 'gelöscht') result = 'gelöscht';
+    else {
+      var vals = op.type === 'vw-delete' ? current.slice() : build(status);
+      if (op.type === 'vw-delete') { vals[vwIndex_('status')] = status; vals[vwIndex_('ts')] = op.ts; vals[vwIndex_('changedAt')] = now; }
+      vw.getRange(row, 1, 1, VW_COLS.length).setValues([vals]);
+      result = 'ok';
+    }
+  } else {
+    result = 'ungültig';
+  }
+  log.appendRow([op.opId, now, String(op.type), op.uid, String(op.ts), result]);
+  return result;
+}
+
+// Neue Zeile anhängen und Zahl-/Datumsformate setzen (angehängte Zeilen
+// erben diese nicht zuverlässig).
+function appendCaseRow_(sheet, values) {
+  sheet.appendRow(values);
+  var r = sheet.getLastRow();
+  sheet.getRange(r, colIndex_('id') + 1).setNumberFormat('0');
+  sheet.getRange(r, colIndex_('date') + 1).setNumberFormat('dd.MM.yyyy');
+  sheet.getRange(r, colIndex_('ts') + 1, 1, 2).setNumberFormat('0');
+  sheet.getRange(r, colIndex_('changedAt') + 1).setNumberFormat('dd.MM.yyyy HH:mm:ss');
+}
+
+function findRow_(sheet, col, value) {
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var cell = sheet.getRange(2, col, last - 1, 1).createTextFinder(String(value)).matchEntireCell(true).findNext();
+  return cell ? cell.getRow() : 0;
+}
+
+function safeText_(v) {
+  var s = v == null ? '' : String(v);
+  if (s.length > 500) s = s.slice(0, 500);
+  return /^[=+\-@]/.test(s) ? "'" + s : s; // keine Formeln aus App-Daten
+}
+
+function parseIsoDate_(s) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : '';
+}
+
+// Nur erlaubte Felder – alles andere (z. B. Initialen) wird verworfen,
+// selbst wenn es mitgeschickt würde.
+var ALLOWED_FIELDS = ['id', 'date', 'asa', 'opSaal', 'procedure', 'procedure2', 'kindLe5', 'isVollnarkose', 'airway',
+  'isSpaPdk', 'spaPdkType', 'isPeripher', 'peripherType', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal',
+  'isIntrakraniell', 'isSectio', 'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess', 'btm', 'cancelled'];
+var ALLOWED_BTM = ['substanceId', 'label', 'unit', 'amountPerUnit', 'count', 'total'];
+
+function cleanData_(d) {
+  var out = {};
+  d = d || {};
+  ALLOWED_FIELDS.forEach(function (k) { if (d[k] !== undefined) out[k] = d[k]; });
+  out.btm = (Array.isArray(d.btm) ? d.btm : []).slice(0, 20).map(function (e) {
+    var o = {};
+    ALLOWED_BTM.forEach(function (k) { if (e && e[k] !== undefined) o[k] = e[k]; });
+    return o;
+  });
+  return out;
+}
+
+function buildRow_(op, status, action, now) {
+  var d = cleanData_(op.data);
+  var crit = {};
+  (Array.isArray(op.crit) ? op.crit : []).forEach(function (id) { crit[id] = true; });
+  var btmText = d.btm.map(function (e) { return String(e.label || '').split(' (')[0] + ' × ' + (Number(e.count) || 0); }).join(', ');
+  return COLS.map(function (c) {
+    var key = c[1], kind = c[2];
+    if (key === 'uid') return safeText_(op.uid);
+    if (key === 'status') return status;
+    if (key === 'btmText') return safeText_(btmText);
+    if (key === 'ts') return op.ts;
+    if (key === 'rev') return Number(op.rev) || 1;
+    if (key === 'lastAction') return action;
+    if (key === 'changedAt') return now;
+    if (key === 'json') { d.cancelled = status === STATUS_CANCELLED; return JSON.stringify(d); }
+    if (kind === 'rz') return crit[key.slice(3)] ? 'x' : '';
+    if (kind === 'bool') return d[key] ? 'ja' : '';
+    if (kind === 'date') return parseIsoDate_(d[key]);
+    return safeText_(d[key]);
+  });
+}
+
+// ------------------------------------------------------------------
+// Wiederherstellen (nur lesen)
+// ------------------------------------------------------------------
+function restoreVorwerte_(ss) {
+  var vw = ss.getSheetByName(SHEET_VW);
+  if (!vw || vw.getLastRow() < 2) return [];
+  return vw.getRange(2, 1, vw.getLastRow() - 1, VW_COLS.length).getValues()
+    .filter(function (r) { return r[0] && r[vwIndex_('status')] === STATUS_ACTIVE; })
+    .map(function (r) {
+      var counts = {};
+      RZ.forEach(function (x) { var n = Number(r[vwIndex_('rz:' + x[0])]) || 0; if (n > 0) counts[x[0]] = n; });
+      return { id: String(r[0]), name: String(r[vwIndex_('name')] || 'Vorwerte'), counts: counts, ts: Number(r[vwIndex_('ts')]) || 0 };
+    });
+}
+
+function restore_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(SHEET_CASES);
+  if (!sh) return { ok: false, error: 'setup', message: 'Bitte im Skript zuerst „einrichten“ ausführen.' };
+  var vorwerte = restoreVorwerte_(ss);
+  var last = sh.getLastRow();
+  if (last < 2) return { ok: true, cases: [], vorwerte: vorwerte, version: SCRIPT_VERSION };
+  var values = sh.getRange(2, 1, last - 1, COLS.length).getValues();
+  var out = [];
+  values.forEach(function (r) {
+    var uid = String(r[colIndex_('uid')] || '');
+    if (!uid) return;
+    var data = {};
+    // Quelle ist die (ausgeblendete) Spalte „Daten (App)“; die sichtbaren
+    // Spalten sind eine lesbare Kopie davon.
+    try { data = JSON.parse(r[colIndex_('json')] || '{}'); } catch (e) { data = {}; }
+    out.push({
+      uid: uid,
+      status: String(r[colIndex_('status')] || STATUS_ACTIVE),
+      ts: Number(r[colIndex_('ts')]) || 0,
+      rev: Number(r[colIndex_('rev')]) || 1,
+      data: cleanData_(data)
+    });
+  });
+  return { ok: true, cases: out, vorwerte: vorwerte, version: SCRIPT_VERSION };
+}
 </script>
 </body>
 </html>
