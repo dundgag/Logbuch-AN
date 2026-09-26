@@ -879,7 +879,7 @@
             </div>
         </div>
 
-        <!-- VERLAUF & PROGNOSE -->
+        <!-- FÄLLE PRO MONAT -->
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 space-y-3">
             <div class="flex items-baseline justify-between gap-2">
                 <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100">Fälle pro Monat</h2>
@@ -887,11 +887,6 @@
             </div>
             <div id="trend-chart" class="trend-chart" role="img"></div>
             <div id="trend-tip" class="trend-tip hidden"></div>
-            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50">
-                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Prognose</h3>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Bei deinem Tempo der letzten 6 Monate (inkl. Vorwerte, unabhängig vom gewählten Zeitraum)</p>
-                <div id="trend-forecast" class="space-y-1"></div>
-            </div>
         </div>
 
         <div id="demo-banner" class="hidden p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
@@ -2732,15 +2727,19 @@
 
     // Welche Auswertungs-Kategorien ein Fall erfüllt.
     // Gemeinsame Grundlage für Zähler, Tabellen-Export und PDF.
+    function isAnesthesiaCase(c) {
+        return !!(c.isVollnarkose || c.isSpaPdk || c.isPeripher || c.isSedierung);
+    }
+
     function caseCategoryIds(c) {
         const ids = [];
-        // "Anästhesieverfahren gesamt" (1.800) sowie die beiden "davon"-
-        // Teilmengen (Abdominell 300, ASA >= III 100) beziehen sich laut
-        // Logbuch ausdrücklich nur auf Allgemeinanästhesien - reine
-        // Regionalanästhesie-/Sedierungsfälle ohne Allgemeinanästhesie
-        // zählen hier nicht mit (werden aber weiterhin in ihren eigenen
-        // Kategorien wie "Rückenmarksnahe RA" erfasst).
-        if (c.isVollnarkose) {
+        // "Durchführung von Anästhesieverfahren" (1.800) sowie die beiden
+        // "davon"-Teilmengen (Abdominell 300, ASA 3–5 100) zählen jedes
+        // Anästhesieverfahren: Allgemeinanästhesie, rückenmarksnahe oder
+        // periphere Regionalanästhesie, Analgosedierung (WBO Nordrhein).
+        // Ein Fall zählt dabei einmal, auch bei mehreren Verfahren.
+        // Reine Intensiv-Maßnahmen (z. B. nur ZVK) zählen hier nicht.
+        if (isAnesthesiaCase(c)) {
             ids.push('total');
             if (c.isAbdominell) ids.push('abdominell');
             if (caseAsaAtLeast3(c)) ids.push('asa3');
@@ -4269,7 +4268,7 @@
         });
     }
 
-    // ---- Verlauf & Prognose -----------------------------------------------
+    // ---- Fälle pro Monat ---------------------------------------------------
     const MONTHS_DE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
     function renderTrend() {
@@ -4321,31 +4320,10 @@
         box.onpointermove = show; box.onclick = show;
         box.onpointerleave = () => { tip.classList.add('hidden'); box.querySelectorAll('.trend-hit').forEach((h) => h.classList.remove('is-active')); };
 
-        // Tempo: letzte 6 volle Monate + laufender Monat anteilig (≈ 182 Tage)
+        // Tempo: Durchschnitt der letzten 6 Monate (≈ 182 Tage)
         const since = new Date(now.getTime() - 182 * 86400000);
         const recent = list.filter((c) => { const d = parseIso(c.date); return d && d >= since && d <= now; });
-        const perMonth = recent.length / 6;
-        $('trend-avg').textContent = `Ø ${perMonth.toLocaleString('de-DE', { maximumFractionDigits: 1 })} Fälle/Monat`;
-        const pace = {};
-        baekCategories.forEach((c) => { pace[c.id] = 0; });
-        recent.forEach((c) => caseCategoryIds(c).forEach((id) => { pace[id] += 1 / 6; }));
-        const prog = computeProgressFor(list, true);
-        const rows = baekCategories.map((c) => {
-            const have = prog[c.id].logbook + prog[c.id].vorwerte;
-            const rest = c.target - have;
-            if (rest <= 0) return { c, done: true, sort: -1 };
-            if (pace[c.id] <= 0) return { c, rest, never: true, sort: 1e9 };
-            const monthsLeft = rest / pace[c.id];
-            const eta = new Date(now.getFullYear(), now.getMonth() + Math.ceil(monthsLeft), 1);
-            return { c, rest, eta, sort: monthsLeft };
-        }).sort((a, b) => a.sort - b.sort);
-        const open = rows.filter((r) => !r.done);
-        const doneN = rows.length - open.length;
-        $('trend-forecast').innerHTML = open.map((r) => `
-            <div class="flex items-baseline justify-between gap-2 text-[12.5px]">
-                <span class="text-slate-700 dark:text-slate-200 truncate">${esc(r.c.short)} <span class="text-slate-400 dark:text-slate-500">· noch ${r.rest}</span></span>
-                <span class="shrink-0 ${r.never ? 'text-slate-400 dark:text-slate-500' : 'font-medium text-slate-700 dark:text-slate-200'}">${r.never ? 'bei diesem Tempo offen' : 'ca. ' + MONTHS_DE[r.eta.getMonth()] + ' ' + r.eta.getFullYear()}</span>
-            </div>`).join('') + (doneN ? `<p class="text-[11px] text-green-700 dark:text-green-400 pt-1">${doneN} ${doneN === 1 ? 'Richtzahl' : 'Richtzahlen'} bereits erreicht ✓</p>` : '');
+        $('trend-avg').textContent = `Ø ${(recent.length / 6).toLocaleString('de-DE', { maximumFractionDigits: 1 })} Fälle/Monat`;
     }
 
     function renderEvaluation() {
@@ -4670,7 +4648,7 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 6;
+    const SYNC_SCRIPT_VERSION = 7;
     const SYNC_POLL_MS = 2 * 60 * 1000;
     const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
@@ -7023,7 +7001,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 6)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 7)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -7063,7 +7041,7 @@
  * Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten.
  */
 
-var SCRIPT_VERSION = 6;
+var SCRIPT_VERSION = 7;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -7079,7 +7057,7 @@ var STATUS_CANCELLED = 'storniert';
 
 // Richtzahlen (wie in der App): [id, Kurzname, Langname, Soll]
 var RZ = [
-  ['total', 'Gesamt', 'Anästhesieverfahren gesamt (Allgemeinanästhesien)', 1800],
+  ['total', 'Gesamt', 'Durchführung von Anästhesieverfahren (alle Verfahren)', 1800],
   ['abdominell', 'Abdominell', 'davon: Abdominelle Eingriffe', 300],
   ['asa3', 'ASA ≥ III', 'davon: Patienten ab ASA III', 100],
   ['fiberoptik', 'Fiberoptik', 'Fiberoptische Techniken', 25],
@@ -7265,7 +7243,9 @@ function deriveAge_(o) {
 
 function computeRz_(o) {
   var procs = [o.procedure, o.procedure2].map(function (x) { return String(x || '').trim(); }).filter(String);
-  var ga = !!o.isVollnarkose;
+  // Alle Anästhesieverfahren zählen (wie in der App): Allgemeinanästhesie,
+  // rückenmarksnahe/periphere Regionalanästhesie, Analgosedierung
+  var ga = !!(o.isVollnarkose || o.isSpaPdk || o.isPeripher || o.isSedierung);
   var asa = parseInt(o.asa, 10);
   var geb = !!o.isSectio || procs.some(function (p) { return GEBURTSHILFE.indexOf(p) > -1; });
   var age = deriveAge_(o);
