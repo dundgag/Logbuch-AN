@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <!-- Nicht in Suchmaschinen aufnehmen (Seite liegt öffentlich auf GitHub Pages) -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="referrer" content="no-referrer">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Anästhesie Logbuch">
@@ -378,6 +382,11 @@
         .dark .set-btn { background: #334155; color: #e2e8f0; }
         .dark .set-btn:hover { background: #475569; }
         .set-btn:disabled { opacity: .5; cursor: not-allowed; }
+        /* Stornierte Fälle: grau, Eingriff durchgestrichen */
+        .case-card.is-cancelled { opacity: .6; }
+        .case-card.is-cancelled .case-proc { text-decoration: line-through; }
+        #header-sync.is-busy .sync-icon { animation: sync-spin 1s linear infinite; }
+        @keyframes sync-spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 
@@ -397,6 +406,10 @@
             <button type="button" id="header-progress" onclick="switchTab('evaluation')" class="progress-ring" aria-label="Gesamtfortschritt – zur Statistik" title="Gesamtfortschritt Weiterbildung">
                 <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="ring-track" cx="18" cy="18" r="15.5"></circle><circle class="ring-value" id="header-progress-ring" cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="0 100"></circle></svg>
                 <span id="header-progress-pct">0%</span>
+            </button>
+            <button type="button" id="header-sync" onclick="syncNow({ manual: true })" class="hidden relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Mit Google Sheets synchronisieren" title="Mit Google Sheets synchronisieren">
+                <i data-lucide="refresh-cw" class="sync-icon w-4 h-4 pointer-events-none"></i>
+                <span id="header-sync-badge" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold leading-4 text-center pointer-events-none">0</span>
             </button>
             <button id="theme-toggle" type="button" aria-label="Dunkel/Hell Modus umschalten" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Dunkel/Hell Modus">
                 <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
@@ -904,6 +917,50 @@
             </div>
         </details>
 
+        <!-- GOOGLE SHEETS -->
+        <details class="set-sec" id="set-sec-sync">
+            <summary>
+                <i data-lucide="sheet" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Google Sheets</span><span class="set-sec-sub" id="set-sum-sync"></span></span>
+                <i data-lucide="chevron-down" class="set-sec-chev"></i>
+            </summary>
+            <div class="set-sec-body">
+                <div class="set-row">
+                    <p class="set-row-hint">Überträgt nur deine Aktionen (anlegen, bearbeiten, stornieren) an deine Tabelle – ohne Initialen, Geburtsdatum, Alter und Bemerkungen. Einrichtung: Skript „Logbuch-Sync.gs“.</p>
+                    <label for="sync-url" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Skript-Adresse (Web-App)</label>
+                    <input type="url" id="sync-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+                    <label for="sync-key" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geheimer Schlüssel</label>
+                    <input type="password" id="sync-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="aus dem Skript-Protokoll" onchange="saveSyncSettingsFromInputs()" class="w-full px-3 py-2 mb-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+                    <button type="button" onclick="testSyncConnection()" class="set-btn w-full"><i data-lucide="plug" class="w-4 h-4"></i> Verbindung testen</button>
+                </div>
+                <div class="set-row space-y-2">
+                    <button type="button" id="sync-now-btn" onclick="syncNow({ manual: true })" class="w-full px-3 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span id="sync-now-label">Jetzt synchronisieren</span>
+                    </button>
+                    <p id="sync-status" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+                    <label class="checkbox-card items-start">
+                        <input type="checkbox" id="sync-auto-toggle" onchange="setSyncAuto(this.checked)" class="mt-0.5">
+                        <span><span class="font-medium">Automatisch, sobald Netz da ist</span><br>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Offline Erfasstes wird später nachgeholt. Mehr als 5 Stornos auf einmal nur nach Rückfrage.</span></span>
+                    </label>
+                    <div id="sync-links" class="hidden flex gap-2">
+                        <a id="sync-open-sheet" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="external-link" class="w-4 h-4"></i> Tabelle öffnen</a>
+                        <a id="sync-xlsx" href="#" target="_blank" rel="noopener noreferrer" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel laden</a>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-row-head"><h3>Einmalig: vorhandene Fälle hochladen</h3></div>
+                    <p class="set-row-hint">Übernimmt deine bisherigen Fälle als neue Zeilen. Was schon in der Tabelle steht, bleibt unverändert.</p>
+                    <button type="button" id="sync-seed-btn" onclick="seedSheetFromApp()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-upload" class="w-4 h-4"></i> Vorhandene Fälle hochladen</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-row-head"><h3>Nach Datenverlust</h3></div>
+                    <p class="set-row-hint">Holt die Fälle aus der Tabelle zurück (ohne Initialen/Geburtsdatum). Die Tabelle wird dabei nicht verändert.</p>
+                    <button type="button" id="sync-restore-btn" onclick="restoreFromSheets()" class="set-btn w-full disabled:opacity-50"><i data-lucide="cloud-download" class="w-4 h-4"></i> Aus Google Sheets wiederherstellen</button>
+                </div>
+            </div>
+        </details>
+
         <!-- ERFASSUNGSFORMULAR ANPASSEN -->
         <details class="set-sec" id="set-sec-form">
             <summary>
@@ -1157,7 +1214,9 @@
 
     function isChildCase(c) {
         const a = caseAge(c);
-        return a !== null && a <= 5;
+        // Aus Google Sheets wiederhergestellte Fälle haben kein Alter, nur
+        // die Angabe "Kind <= 5 J." (kindLe5).
+        return a !== null ? a <= 5 : !!c.kindLe5;
     }
 
     // Anzeige-Text für Geburtsdatum/Alter in Listen, BTM-Übersicht etc. -
@@ -1477,6 +1536,12 @@
             if (c && RENAMED[c.procedure]) { c.procedure = RENAMED[c.procedure]; changed = true; }
             if (c && RENAMED[c.procedure2]) { c.procedure2 = RENAMED[c.procedure2]; changed = true; }
         });
+        if (changed) storeSet('cases', JSON.stringify(cases));
+    })();
+    // Jeder Fall bekommt eine eindeutige ID (uid) und eine Version (ts).
+    (function migrateCaseMeta() {
+        let changed = false;
+        cases.forEach((c) => { if (c && typeof c === 'object' && ensureCaseMeta(c)) changed = true; });
         if (changed) storeSet('cases', JSON.stringify(cases));
     })();
     let vorwerte = loadList('vorwerte');
@@ -2616,7 +2681,7 @@
         const q = $('search-btm').value.trim().toLowerCase();
         const sortMode = $('sort-btm').value;
         const grouped = sortMode !== 'initials-asc' && !q;
-        const all = cases.filter((c) => c.btm && c.btm.length > 0);
+        const all = activeCases().filter((c) => c.btm && c.btm.length > 0);
         const list = all.filter((c) => {
             if (!q) return true;
             return [c.initials, c.procedure, c.procedure2, c.dob, formatDate(c.date), c.isDemo ? 'demo' : '', ...(c.btm || []).map((e) => e.label)]
@@ -2703,7 +2768,9 @@
             const b = e.target.closest('[data-action]');
             if (!b) return;
             if (b.dataset.action === 'edit') editCase(b.dataset.id);
-            if (b.dataset.action === 'delete') deleteCase(b.dataset.id);
+            if (b.dataset.action === 'cancel') cancelCase(b.dataset.id);
+            if (b.dataset.action === 'uncancel') uncancelCase(b.dataset.id);
+            if (b.dataset.action === 'purge') purgeCase(b.dataset.id);
         });
         initReorderDrag($('case-list-container'), () => reorderMode);
         initReorderDrag($('btm-overview-list'), () => btmReorderMode);
@@ -2733,11 +2800,13 @@
 
         buildVorwertModalInputs();
         refreshAll();
+        initSyncUI();
         refreshIcons();
     });
 
     function refreshAll() {
         updateGlobalCounts();
+        if (typeof updateSyncUI === 'function') updateSyncUI();
         renderCaseList();
         renderEvaluation();
         renderVorwerteList();
@@ -2766,7 +2835,7 @@
     }
 
     function updateGlobalCounts() {
-        $('badge-case-count').textContent = cases.length;
+        $('badge-case-count').textContent = activeCases().length;
         updateHeaderProgress();
     }
 
@@ -3174,6 +3243,7 @@
         toggleAirway(false);
         clearBtmRows();
         $('input-dob').required = fieldOn('dob');
+        $('input-initials').required = fieldOn('initials');
         refreshDobFeedback();
         setEditMode(false);
         resetAutoBaseline();
@@ -3195,6 +3265,7 @@
     // Fälle: speichern / bearbeiten / löschen
     // ---------------------------------------------------------------
     function saveCases() {
+        cases.forEach(ensureCaseMeta);
         storeSet('cases', JSON.stringify(cases));
     }
 
@@ -3253,7 +3324,7 @@
                 $('input-dob').focus();
                 return;
             }
-        } else if (!prevCase || (!prevCase.dob && typeof prevCase.ageAtCase !== 'number')) {
+        } else if (!prevCase || (!prevCase.dob && typeof prevCase.ageAtCase !== 'number' && !prevCase.restored)) {
             showToast('Bitte ein gültiges Geburtsdatum eingeben (TT.MM.JJ).', 'error');
             $('input-dob').focus();
             return;
@@ -3299,6 +3370,16 @@
         FLAG_FIELDS.forEach(([key, id]) => { data[key] = $(id).checked; });
         data.airway = data.isVollnarkose ? $('input-airway').value : '';
         if (prevCase && prevCase.isDemo) data.isDemo = true;
+        // Identität, Version und Storno-Status des bearbeiteten Falls behalten
+        if (prevCase) {
+            data.uid = prevCase.uid; data.ts = prevCase.ts; data.rev = prevCase.rev;
+            if (prevCase.cancelled) data.cancelled = true;
+            if (prevCase.restored) data.restored = true;
+            if (!data.dob && typeof data.ageAtCase !== 'number' && prevCase.kindLe5) data.kindLe5 = true;
+        } else {
+            data.uid = newUid();
+        }
+        touchCase(data);
         if (data.isSpaPdk) data.spaPdkType = $('select-spa-pdk').value;
         if (data.isPeripher) data.peripherType = $('select-periphere-verfahren').value;
 
@@ -3318,6 +3399,7 @@
         }
 
         saveCases();
+        enqueueSync('upsert', data);
         resetCaseForm();
         refreshAll();
         refreshIcons();
@@ -3341,11 +3423,12 @@
 
         setDateField(c.date || todayStr());
         $('input-initials').value = c.initials || '';
+        $('input-initials').required = fieldOn('initials') && !c.restored;
         $('input-dob').value = c.dob || '';
         // Nur bei Fällen mit gespeichertem Geburtsdatum weiterhin Pflichtfeld -
         // bei reinen Alters-Fällen (Datenschutz-Modus) darf es leer bleiben,
         // damit man den Fall bearbeiten kann, ohne das Alter neu eingeben zu müssen.
-        $('input-dob').required = fieldOn('dob') && !(!c.dob && typeof c.ageAtCase === 'number');
+        $('input-dob').required = fieldOn('dob') && !(!c.dob && typeof c.ageAtCase === 'number') && !c.restored;
         resetPillGroup('asa-pills');
         resetPillGroup('opsaal-pills');
         $('input-asa').value = c.asa || '';
@@ -3381,19 +3464,6 @@
     function cancelEditCase() {
         resetCaseForm();
         switchTab('case-list');
-    }
-
-    async function deleteCase(id) {
-        const c = cases.find((x) => x.id === id);
-        if (!c) return;
-        const ok = await askConfirm(`Fall "${c.initials}" vom ${formatDate(c.date)} (${caseProcedureLabel(c)}) wirklich löschen?`, {
-            title: 'Fall löschen', confirmLabel: 'Löschen', danger: true
-        });
-        if (!ok) return;
-        cases = cases.filter((x) => x.id !== id);
-        saveCases();
-        refreshAll();
-        showToast('Fall gelöscht');
     }
 
     // ---------------------------------------------------------------
@@ -3455,27 +3525,33 @@
             ? `<div class="shrink-0 w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-[10px] font-bold flex items-center justify-center" title="Reihenfolge an diesem Tag">${number}</div>`
             : '';
         return `
-            <div class="case-card px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2" data-id="${esc(c.id)}" data-date="${esc(c.date)}">
+            <div class="case-card ${c.cancelled ? 'is-cancelled ' : ''}px-3 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2" data-id="${esc(c.id)}" data-date="${esc(c.date)}">
                 ${handle}${numberBadge}
                 <div class="flex-1 min-w-0">
                     <div class="flex items-baseline gap-1.5 min-w-0">
-                        <span class="font-semibold text-sm text-slate-800 dark:text-white shrink-0">${esc(c.initials)}</span>
+                        <span class="font-semibold text-sm text-slate-800 dark:text-white shrink-0">${esc(c.initials || '–')}</span>
+                        ${c.cancelled ? '<span class="shrink-0 text-[9px] font-semibold px-1 rounded bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-200">Storniert</span>' : ''}
                         ${c.isDemo ? '<span class="shrink-0 text-[9px] font-semibold px-1 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Demo</span>' : ''}
                         <span class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${esc(meta)}</span>
                     </div>
-                    <p class="text-[13px] leading-snug text-slate-700 dark:text-slate-300 line-clamp-2">${esc(caseProcedureLabel(c))}</p>
+                    <p class="case-proc text-[13px] leading-snug text-slate-700 dark:text-slate-300 line-clamp-2">${esc(caseProcedureLabel(c))}</p>
                     ${chips ? `<div class="mt-1 flex gap-1 flex-wrap">${chips}</div>` : ''}
                     ${c.notes && !isBtm ? `<p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 italic truncate">${esc(c.notes)}</p>` : ''}
                 </div>
-                <div class="card-actions shrink-0">
-                    <button type="button" data-action="edit" data-id="${esc(c.id)}" class="card-action text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 rounded-md transition" title="Bearbeiten" aria-label="Bearbeiten">
-                        <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
-                    </button>
-                    ${isBtm ? '' : `<button type="button" data-action="delete" data-id="${esc(c.id)}" class="card-action text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-md transition" title="Löschen" aria-label="Löschen">
-                        <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
-                    </button>`}
-                </div>
+                <div class="card-actions shrink-0">${cardActionsHtml(c, isBtm)}</div>
             </div>`;
+    }
+
+    // Aktiver Fall: Bearbeiten + Stornieren. Stornierter Fall: Storno
+    // aufheben + endgültig löschen. Im BTM-Tab nur Bearbeiten.
+    function cardActionsHtml(c, isBtm) {
+        const btn = (action, icon, title, hover) =>
+            `<button type="button" data-action="${action}" data-id="${esc(c.id)}" class="card-action text-slate-400 ${hover} dark:hover:bg-slate-700 rounded-md transition" title="${title}" aria-label="${title}"><i data-lucide="${icon}" class="w-4 h-4 pointer-events-none"></i></button>`;
+        if (isBtm) return btn('edit', 'pencil', 'Bearbeiten', 'hover:text-brand-600 hover:bg-brand-50');
+        if (c.cancelled) return btn('uncancel', 'undo-2', 'Storno aufheben', 'hover:text-brand-600 hover:bg-brand-50')
+            + btn('purge', 'trash-2', 'Endgültig löschen', 'hover:text-red-600 hover:bg-red-50');
+        return btn('edit', 'pencil', 'Bearbeiten', 'hover:text-brand-600 hover:bg-brand-50')
+            + btn('cancel', 'ban', 'Stornieren', 'hover:text-red-600 hover:bg-red-50');
     }
 
     // Fälle nach Tag gruppiert (in der gespeicherten cases-Reihenfolge, die
@@ -3522,7 +3598,7 @@
 
         const list = cases.filter((c) => {
             if (!q) return true;
-            return [c.initials, c.procedure, c.procedure2, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '']
+            return [c.initials, c.procedure, c.procedure2, c.opSaal, c.notes, c.dob, formatDate(c.date), c.spaPdkType, c.peripherType, c.isDemo ? 'demo' : '', c.cancelled ? 'storniert' : '']
                 .some((v) => String(v || '').toLowerCase().includes(q));
         });
 
@@ -3661,7 +3737,7 @@
     // Auswertung
     // ---------------------------------------------------------------
     function computeProgress() {
-        return computeProgressFor(cases, true);
+        return computeProgressFor(activeCases(), true);
     }
 
     function computeProgressFor(caseList, withVorwerte) {
@@ -3711,13 +3787,13 @@
     }
 
     function fullScope() {
-        return { cases, withVorwerte: true, from: '', to: '', ranged: false, label: 'Gesamter Zeitraum' };
+        return { cases: activeCases(), withVorwerte: true, from: '', to: '', ranged: false, label: 'Gesamter Zeitraum' };
     }
 
     function evalScope() {
         const r = evalRange;
         if (r.preset === 'all' || (!r.from && !r.to)) return fullScope();
-        const list = cases.filter((c) => {
+        const list = activeCases().filter((c) => {
             const d = c.date || '';
             return (!r.from || d >= r.from) && (!r.to || d <= r.to);
         });
@@ -3810,7 +3886,7 @@
         if (!excludeId) return computeProgress();
         const res = {};
         baekCategories.forEach((c) => { res[c.id] = { logbook: 0, vorwerte: 0 }; });
-        cases.forEach((c) => {
+        activeCases().forEach((c) => {
             if (c.id === excludeId) return;
             caseCategoryIds(c).forEach((id) => { res[id].logbook++; });
         });
@@ -3893,7 +3969,7 @@
         refreshIcons();
     }
 
-    function renderAirwayStats(list = cases) {
+    function renderAirwayStats(list = activeCases()) {
         const el = $('airway-stats');
         if (!el) return;
         const ga = list.filter((c) => c.isVollnarkose);
@@ -3922,7 +3998,7 @@
     // ---------------------------------------------------------------
     // Unterteilung nach Eingriff (Auswertung + PDF-Bericht)
     // ---------------------------------------------------------------
-    function procedureBreakdown(list = cases) {
+    function procedureBreakdown(list = activeCases()) {
         const counts = {};
         list.forEach((c) => {
             const list = caseProcedureList(c);
@@ -3939,7 +4015,7 @@
         renderProcedureBreakdown(evalScope().cases);
     }
 
-    function renderProcedureBreakdown(list = cases) {
+    function renderProcedureBreakdown(list = activeCases()) {
         const container = $('procedure-breakdown-list');
         const empty = $('procedure-breakdown-empty');
         if (!container || !empty) return;
@@ -4100,6 +4176,386 @@
     }
 
     // ---------------------------------------------------------------
+    // Synchronisierung mit Google Sheets (Google Apps Script)
+    // ---------------------------------------------------------------
+    // Grundsatz: Die App schickt nur Aufträge für ausdrückliche Aktionen
+    // (anlegen, bearbeiten, stornieren, Storno aufheben, endgültig löschen)
+    // - nie den Gesamtbestand. Die Warteschlange liegt im Gerätespeicher;
+    // geht dieser verloren, geht höchstens ein noch nicht übertragener
+    // Auftrag verloren, die Tabelle bleibt unverändert.
+    // Jeder Fall trägt uid (eindeutig), ts (Zeitpunkt der letzten Aktion =
+    // Version) und rev (Zähler). Das Skript übernimmt einen Auftrag nur,
+    // wenn seine Version neuer ist als die der Zeile.
+    const SYNC_BULK_LIMIT = 5;
+    const SYNC_BATCH = 100;
+    let syncBusy = false;
+    let syncTimer = null;
+
+    function newUid() {
+        try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
+        return 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
+    }
+
+    // Fehlende uid/Version ergänzen (ältere Fälle, Import, Demo).
+    function ensureCaseMeta(c) {
+        let changed = false;
+        if (!c.uid) { c.uid = newUid(); changed = true; }
+        if (typeof c.ts !== 'number') { const n = Number(c.id); c.ts = Number.isFinite(n) && n > 1e12 ? n : Date.now(); changed = true; }
+        if (typeof c.rev !== 'number') { c.rev = 1; changed = true; }
+        return changed;
+    }
+
+    // Neue Version eines Falls nach einer ausdrücklichen Aktion. Immer echt
+    // größer als die bisherige, auch wenn die Geräteuhr zurückgestellt wurde.
+    function touchCase(c) {
+        c.ts = Math.max(Date.now(), (c.ts || 0) + 1);
+        c.rev = (c.rev || 0) + 1;
+    }
+
+    function activeCases() {
+        return cases.filter((c) => !c.cancelled);
+    }
+
+    function syncUrl() { return (storeGet('syncUrl') || '').trim(); }
+    function syncKey() { return (storeGet('syncKey') || '').trim(); }
+    function syncConfigured() { return !!(syncUrl() && syncKey()); }
+    function syncAuto() { return storeGet('syncAuto') !== '0'; }
+    function syncQueue() { return loadList('syncQueue'); }
+    function saveSyncQueue(q) { storeSet('syncQueue', JSON.stringify(q)); }
+
+    // Was in die Tabelle darf: keine Initialen, kein Geburtsdatum, kein
+    // Alter, keine Bemerkungen. Für die Richtzahl nur "Kind <= 5 J." ja/nein.
+    function sheetRecord(c) {
+        return {
+            id: c.id, date: c.date, asa: c.asa || '', opSaal: c.opSaal || '',
+            procedure: c.procedure || '', procedure2: c.procedure2 || '',
+            kindLe5: isChildCase(c),
+            isVollnarkose: !!c.isVollnarkose, airway: c.isVollnarkose ? (caseAirway(c) || '') : '',
+            isSpaPdk: !!c.isSpaPdk, spaPdkType: c.spaPdkType || '',
+            isPeripher: !!c.isPeripher, peripherType: c.peripherType || '',
+            isSedierung: !!c.isSedierung, isAbdominell: !!c.isAbdominell, isKopfHals: !!c.isKopfHals,
+            isIntrathorakal: !!c.isIntrathorakal, isIntrakraniell: !!c.isIntrakraniell, isSectio: !!c.isSectio,
+            isAmbulant: !!c.isAmbulant, isFiberoptik: !!c.isFiberoptik, isVideo: !!c.isVideo, isSonoGefaess: !!c.isSonoGefaess,
+            btm: (c.btm || []).map((e) => ({ substanceId: e.substanceId, label: e.label, unit: e.unit, amountPerUnit: e.amountPerUnit, count: e.count, total: e.total })),
+            cancelled: !!c.cancelled
+        };
+    }
+
+    // Auftrag in die Warteschlange (nur wenn eingerichtet, nie für Demo-Fälle).
+    function enqueueSync(type, c) {
+        if (!syncConfigured() || !c || c.isDemo) return;
+        const op = { opId: newUid(), type, uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString() };
+        if (type !== 'purge') { op.data = sheetRecord(c); op.crit = c.cancelled ? [] : caseCategoryIds(c); }
+        const q = syncQueue();
+        q.push(op);
+        saveSyncQueue(q);
+        updateSyncUI();
+        scheduleSync();
+    }
+
+    function scheduleSync(delay = 1500) {
+        if (!syncConfigured() || !syncAuto()) return;
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(() => syncNow({ manual: false }), delay);
+    }
+
+    async function syncRequest(payload) {
+        const res = await fetch(syncUrl(), {
+            method: 'POST',
+            // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung,
+            // die Apps Script nicht beantworten könnte.
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(Object.assign({ key: syncKey() }, payload)),
+            redirect: 'follow',
+            cache: 'no-store'
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        let data;
+        try { data = await res.json(); } catch (e) { throw new Error('Antwort ist kein JSON – stimmt die Skript-Adresse (endet auf /exec)?'); }
+        if (!data.ok && data.error === 'key') throw new Error('Geheimer Schlüssel falsch.');
+        if (!data.ok && data.error === 'setup') throw new Error(data.message || 'Skript nicht eingerichtet.');
+        return data;
+    }
+
+    function setSyncStatus(text, kind) {
+        const el = $('sync-status');
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'text-[11px] ' + (kind === 'error' ? 'text-red-600 dark:text-red-400' : kind === 'warn' ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400');
+    }
+
+    function syncTimeLabel(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        const today = new Date().toDateString() === d.toDateString();
+        return (today ? 'heute' : formatDate(isoOf(d))) + ` ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    async function syncNow(opts) {
+        const manual = !!(opts && opts.manual);
+        if (!syncConfigured()) { if (manual) showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
+        if (syncBusy) return;
+        if (!navigator.onLine) { setSyncStatus('Offline – Aufträge werden übertragen, sobald wieder Netz da ist.', 'warn'); if (manual) showToast('Offline – später erneut versuchen.', 'warn'); return; }
+        let q = syncQueue();
+        const destructive = q.filter((o) => o.type === 'cancel' || o.type === 'purge').length;
+        let confirmBulk = false;
+        if (destructive > SYNC_BULK_LIMIT) {
+            if (!manual) { setSyncStatus(`${destructive} Stornos/Löschungen warten auf Bestätigung – bitte „Jetzt synchronisieren“ tippen.`, 'warn'); updateSyncUI(); return; }
+            const ok = await askConfirm(`Es sollen ${destructive} Fälle in Google Sheets storniert bzw. endgültig gelöscht werden. Ist das gewollt?`, { title: 'Viele Stornos auf einmal', confirmLabel: 'Ja, übertragen', danger: true });
+            if (!ok) return;
+            confirmBulk = true;
+        }
+        syncBusy = true;
+        updateSyncUI();
+        setSyncStatus('Synchronisiere …');
+        const stats = {};
+        try {
+            if (q.length === 0) {
+                const info = await syncRequest({ action: 'ping' });
+                storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
+            }
+            while (q.length > 0) {
+                const batch = q.slice(0, SYNC_BATCH);
+                const r = await syncRequest({ action: 'push', ops: batch, confirmBulk });
+                if (!r.ok && r.error === 'bulk') throw new Error(`${r.count} Stornos/Löschungen – bitte bestätigen („Jetzt synchronisieren“).`);
+                if (!r.ok) throw new Error(r.message || 'Unbekannter Fehler');
+                const done = new Set();
+                (r.results || []).forEach((x) => {
+                    // Fehler beim Ausführen -> Auftrag bleibt für einen neuen Versuch
+                    if (String(x.status).startsWith('fehler')) { stats.fehler = (stats.fehler || 0) + 1; return; }
+                    done.add(x.opId);
+                    stats[x.status] = (stats[x.status] || 0) + 1;
+                });
+                // Frisch laden: während der Übertragung neu hinzugekommene
+                // Aufträge bleiben erhalten.
+                const current = syncQueue().filter((o) => !done.has(o.opId));
+                saveSyncQueue(current);
+                if (done.size === 0) break;
+                q = current;
+            }
+            storeSet('syncLastAt', new Date().toISOString());
+            const parts = [];
+            if (stats.ok) parts.push(`${stats.ok} übertragen`);
+            if (stats.veraltet) parts.push(`${stats.veraltet} veraltet (neuere Fassung in der Tabelle)`);
+            if (stats.vorhanden) parts.push(`${stats.vorhanden} schon vorhanden`);
+            if (stats.doppelt) parts.push(`${stats.doppelt} bereits erledigt`);
+            if (stats.gelöscht) parts.push(`${stats.gelöscht} in der Tabelle schon gelöscht`);
+            if (stats.fehler) parts.push(`${stats.fehler} Fehler (neuer Versuch später)`);
+            const msg = parts.length ? parts.join(' · ') : 'Alles synchron';
+            setSyncStatus(msg, stats.fehler ? 'warn' : '');
+            if (manual) showToast(parts.length ? `Synchronisiert: ${msg}` : 'Alles synchron');
+        } catch (err) {
+            const m = err && err.message ? err.message : String(err);
+            setSyncStatus(`Nicht synchronisiert: ${/Failed to fetch|NetworkError|Load failed/i.test(m) ? 'keine Verbindung zum Skript' : m}`, 'error');
+            if (manual) showToast('Synchronisieren fehlgeschlagen', 'error');
+        } finally {
+            syncBusy = false;
+            updateSyncUI();
+        }
+    }
+
+    async function testSyncConnection() {
+        saveSyncSettingsFromInputs();
+        if (!syncConfigured()) { showToast('Bitte Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
+        setSyncStatus('Teste Verbindung …');
+        try {
+            const info = await syncRequest({ action: 'ping' });
+            storeSet('syncInfo', JSON.stringify({ sheetUrl: info.sheetUrl, xlsxUrl: info.xlsxUrl, name: info.name }));
+            setSyncStatus(`Verbunden mit „${info.name}“ · ${info.rows} ${info.rows === 1 ? 'Zeile' : 'Zeilen'} in „Fälle“.`);
+            showToast('Verbindung klappt');
+        } catch (err) {
+            const m = err && err.message ? err.message : String(err);
+            setSyncStatus(`Keine Verbindung: ${/Failed to fetch|NetworkError|Load failed/i.test(m) ? 'Skript nicht erreichbar (Adresse? Zugriff „Jeder“?)' : m}`, 'error');
+        }
+        updateSyncUI();
+    }
+
+    function saveSyncSettingsFromInputs() {
+        const url = ($('sync-url').value || '').trim();
+        const key = ($('sync-key').value || '').trim();
+        const wasConfigured = syncConfigured();
+        if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) {
+            setSyncStatus('Die Adresse muss mit https://script.google.com/ beginnen.', 'error');
+            return;
+        }
+        storeSet('syncUrl', url);
+        storeSet('syncKey', key);
+        if (!wasConfigured && syncConfigured()) setSyncStatus('Gespeichert. Tipp: „Verbindung testen“, dann einmalig „Vorhandene Fälle hochladen“.');
+        updateSyncUI();
+    }
+
+    function setSyncAuto(on) {
+        storeSet('syncAuto', on ? '1' : '0');
+        if (on) scheduleSync(300);
+        updateSyncUI();
+    }
+
+    // Einmalig: bisherige Fälle in die Tabelle übernehmen. Das Skript fügt
+    // nur fehlende Fälle ein und ändert nie eine vorhandene Zeile.
+    async function seedSheetFromApp() {
+        if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
+        const list = cases.filter((c) => !c.isDemo);
+        if (list.length === 0) { showToast('Keine eigenen Fälle vorhanden.', 'warn'); return; }
+        const ok = await askConfirm(`${list.length} Fälle als neue Zeilen in Google Sheets übernehmen?\n\nFälle, die dort schon stehen oder im Papierkorb liegen, werden nicht verändert.`, { title: 'Vorhandene Fälle hochladen', confirmLabel: 'Hochladen' });
+        if (!ok) return;
+        const q = syncQueue();
+        list.forEach((c) => {
+            ensureCaseMeta(c);
+            q.push({ opId: newUid(), type: 'seed', uid: c.uid, ts: c.ts, rev: c.rev, at: new Date().toISOString(), data: sheetRecord(c), crit: c.cancelled ? [] : caseCategoryIds(c) });
+        });
+        saveCases();
+        saveSyncQueue(q);
+        updateSyncUI();
+        syncNow({ manual: true });
+    }
+
+    // Nach Cache-Verlust: Fälle aus der Tabelle zurückholen (nur lesen, es
+    // wird dabei nichts an die Tabelle geschickt). Initialen, Geburtsdatum
+    // und Bemerkungen stehen nicht in der Tabelle und fehlen danach.
+    async function restoreFromSheets() {
+        if (!syncConfigured()) { showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
+        const ok = await askConfirm('Fälle aus Google Sheets in die App übernehmen?\n\nFehlende Fälle werden ergänzt, ältere Fassungen in der App durch neuere aus der Tabelle ersetzt. Initialen, Geburtsdatum und Bemerkungen stehen nicht in der Tabelle – vorhandene bleiben erhalten, bei neu übernommenen Fällen fehlen sie. Vorwerte bitte aus dem JSON-Backup oder neu eintragen.', { title: 'Aus Google Sheets wiederherstellen', confirmLabel: 'Wiederherstellen' });
+        if (!ok) return;
+        setSyncStatus('Lade aus Google Sheets …');
+        try {
+            const r = await syncRequest({ action: 'restore' });
+            const res = mergeRestoredCases(r.cases || []);
+            saveCases();
+            refreshAll();
+            const msg = `${res.added} ergänzt · ${res.updated} aktualisiert · ${res.kept} unverändert`;
+            setSyncStatus(`Wiederhergestellt: ${msg}`);
+            showToast(`Wiederhergestellt: ${msg}`);
+        } catch (err) {
+            setSyncStatus(`Wiederherstellen fehlgeschlagen: ${err && err.message ? err.message : err}`, 'error');
+        }
+    }
+
+    const RESTORE_FIELDS = ['date', 'asa', 'opSaal', 'procedure', 'procedure2', 'isVollnarkose', 'airway', 'isSpaPdk', 'spaPdkType',
+        'isPeripher', 'peripherType', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal', 'isIntrakraniell', 'isSectio',
+        'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess'];
+
+    function mergeRestoredCases(remote) {
+        const res = { added: 0, updated: 0, kept: 0 };
+        const byUid = new Map(cases.map((c) => [c.uid, c]));
+        const ids = new Set(cases.map((c) => c.id));
+        remote.forEach((rc) => {
+            if (!rc || !rc.uid || !rc.data) return;
+            const d = rc.data;
+            const local = byUid.get(rc.uid);
+            if (local && (local.ts || 0) >= rc.ts) { res.kept++; return; }
+            const target = local || {};
+            RESTORE_FIELDS.forEach((k) => { if (d[k] !== undefined) target[k] = d[k]; });
+            target.btm = Array.isArray(d.btm) ? d.btm.filter((e) => e && e.label && e.count > 0) : [];
+            target.cancelled = rc.status === 'storniert';
+            target.uid = rc.uid; target.ts = rc.ts; target.rev = rc.rev || 1;
+            // Ohne Geburtsdatum/Alter zählt das gespeicherte "Kind <= 5 J."
+            target.kindLe5 = !!d.kindLe5;
+            if (local) { res.updated++; return; }
+            let id = d.id ? String(d.id) : String(rc.ts);
+            while (ids.has(id)) id = id + 'r';
+            ids.add(id);
+            target.id = id;
+            target.initials = '';
+            target.notes = '';
+            target.restored = true;
+            cases.push(target);
+            byUid.set(rc.uid, target);
+            res.added++;
+        });
+        // Nach Datum ordnen (stabil: die Reihenfolge innerhalb eines Tages
+        // bleibt, übernommene Fälle kommen ans Ende ihres Tages).
+        if (res.added > 0) cases.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        return res;
+    }
+
+    // Storno: Fall bleibt erhalten, zählt aber nirgends mehr mit.
+    async function cancelCase(id) {
+        const c = cases.find((x) => x.id === id);
+        if (!c || c.cancelled) return;
+        const ok = await askConfirm(`Fall ${c.initials ? `„${c.initials}“ ` : ''}vom ${formatDate(c.date)} (${caseProcedureLabel(c)}) stornieren?\n\nEr bleibt sichtbar (grau), zählt aber nicht mehr in Auswertung, BTM und Exporten. Das lässt sich rückgängig machen.`, { title: 'Fall stornieren', confirmLabel: 'Stornieren', danger: true });
+        if (!ok) return;
+        c.cancelled = true;
+        touchCase(c);
+        saveCases();
+        enqueueSync('cancel', c);
+        refreshAll();
+        showToast('Fall storniert');
+    }
+
+    function uncancelCase(id) {
+        const c = cases.find((x) => x.id === id);
+        if (!c || !c.cancelled) return;
+        delete c.cancelled;
+        touchCase(c);
+        saveCases();
+        enqueueSync('uncancel', c);
+        refreshAll();
+        showToast('Storno aufgehoben');
+    }
+
+    // Endgültig löschen: nur stornierte Fälle, mit doppelter Bestätigung.
+    async function purgeCase(id) {
+        const c = cases.find((x) => x.id === id);
+        if (!c || !c.cancelled) return;
+        const ok1 = await askConfirm(`Stornierten Fall vom ${formatDate(c.date)} (${caseProcedureLabel(c)}) endgültig löschen?`, { title: 'Endgültig löschen', confirmLabel: 'Weiter', danger: true });
+        if (!ok1) return;
+        const ok2 = await askConfirm('Wirklich endgültig löschen? Das kann in der App nicht rückgängig gemacht werden.' + (syncConfigured() && !c.isDemo ? '\n\nIn Google Sheets wandert die Zeile in den „Papierkorb“.' : ''), { title: 'Letzte Bestätigung', confirmLabel: 'Endgültig löschen', danger: true });
+        if (!ok2) return;
+        touchCase(c);
+        enqueueSync('purge', c);
+        cases = cases.filter((x) => x.id !== id);
+        saveCases();
+        refreshAll();
+        showToast('Fall endgültig gelöscht');
+    }
+
+    function updateSyncUI() {
+        const configured = syncConfigured();
+        const q = syncQueue();
+        const n = q.length;
+        const info = (() => { try { return JSON.parse(storeGet('syncInfo') || 'null'); } catch (e) { return null; } })();
+        const last = storeGet('syncLastAt');
+        const sum = $('set-sum-sync');
+        if (sum) {
+            sum.textContent = !configured ? 'Nicht eingerichtet'
+                : n > 0 ? `${n} ${n === 1 ? 'Auftrag' : 'Aufträge'} offen`
+                : last ? `Synchron · ${syncTimeLabel(last)}` : 'Eingerichtet';
+        }
+        const btn = $('header-sync');
+        if (btn) {
+            btn.classList.toggle('hidden', !configured);
+            btn.classList.toggle('is-busy', syncBusy);
+            btn.title = n > 0 ? `${n} Aufträge offen – jetzt synchronisieren` : 'Mit Google Sheets synchronisieren';
+            const b = $('header-sync-badge');
+            b.textContent = n > 99 ? '99+' : String(n);
+            b.classList.toggle('hidden', n === 0);
+        }
+        const now = $('sync-now-btn');
+        if (now) {
+            now.disabled = !configured || syncBusy;
+            $('sync-now-label').textContent = syncBusy ? 'Synchronisiere …' : n > 0 ? `Jetzt synchronisieren (${n})` : 'Jetzt synchronisieren';
+        }
+        ['sync-seed-btn', 'sync-restore-btn'].forEach((idb) => { const el = $(idb); if (el) el.disabled = !configured || syncBusy; });
+        const links = $('sync-links');
+        if (links) {
+            links.classList.toggle('hidden', !(configured && info && info.sheetUrl));
+            if (info && info.sheetUrl) { $('sync-open-sheet').href = info.sheetUrl; $('sync-xlsx').href = info.xlsxUrl; }
+        }
+        const auto = $('sync-auto-toggle');
+        if (auto) auto.checked = syncAuto();
+    }
+
+    function initSyncUI() {
+        $('sync-url').value = syncUrl();
+        $('sync-key').value = syncKey();
+        updateSyncUI();
+        window.addEventListener('online', () => scheduleSync(500));
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && syncQueue().length) scheduleSync(800); });
+        if (syncQueue().length) scheduleSync(2500);
+    }
+
+    // ---------------------------------------------------------------
     // Export / Import
     // ---------------------------------------------------------------
     // Speichert eine Datei: bevorzugt über die Download-Funktion der
@@ -4186,7 +4642,7 @@
         return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     }
 
-    function sortedCasesAsc(list = cases) {
+    function sortedCasesAsc(list = activeCases()) {
         return [...list].sort((a, b) => (a.date || '').localeCompare(b.date || '') || String(a.id).localeCompare(String(b.id)));
     }
 
@@ -4288,7 +4744,7 @@
         const totals = {};
         const order = [];
         BTM_OPTIONS.forEach((o) => { totals[o.id] = { label: o.label, unit: o.unit, amount: 0, count: 0 }; order.push(o.id); });
-        cases.forEach((c) => {
+        activeCases().forEach((c) => {
             (c.btm || []).forEach((e) => {
                 let key = e.substanceId;
                 if (!totals[key]) {
@@ -4303,7 +4759,7 @@
     }
 
     function exportBtmTxt() {
-        const withBtm = cases.filter((c) => c.btm && c.btm.length > 0);
+        const withBtm = activeCases().filter((c) => c.btm && c.btm.length > 0);
         if (withBtm.length === 0) { showToast('Keine BTM-Einträge vorhanden.', 'warn'); return; }
 
         const totals = computeBtmTotals();
@@ -4874,7 +5330,7 @@
     }
 
     function exportBtmPdf() {
-        const withBtm = cases.filter((c) => c.btm && c.btm.length > 0);
+        const withBtm = activeCases().filter((c) => c.btm && c.btm.length > 0);
         if (withBtm.length === 0) { showToast('Keine BTM-Einträge vorhanden.', 'warn'); return; }
 
         const JsPDF = window.jspdf && window.jspdf.jsPDF;
@@ -5093,7 +5549,7 @@
     }
 
     async function resetAllData() {
-        const txt = await askText('Alle Fälle und Vorwerte werden unwiderruflich gelöscht.\nZur Bestätigung LÖSCHEN eingeben:', {
+        const txt = await askText('Alle Fälle und Vorwerte werden auf diesem Gerät unwiderruflich gelöscht (Google Sheets bleibt unverändert).\nZur Bestätigung LÖSCHEN eingeben:', {
             title: 'Alle Daten löschen', placeholder: 'LÖSCHEN', confirmLabel: 'Endgültig löschen', danger: true
         });
         if (txt === null) return;
