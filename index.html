@@ -4566,7 +4566,7 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 7;
+    const SYNC_SCRIPT_VERSION = 8;
     const SYNC_POLL_MS = 2 * 60 * 1000;
     const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
@@ -5605,7 +5605,7 @@
                 const t = [mc ? `${mc} ${mc === 1 ? 'Fall' : 'Fälle'}` : '', mv ? `${mv} Vorwerte-${mv === 1 ? 'Block' : 'Blöcke'}` : ''].filter(Boolean).join(' und ');
                 lines.push(line('circle-alert', 'is-warn', `${t} aus der App ${mc + mv === 1 ? 'fehlt' : 'fehlen'} in der Tabelle. <button type="button" onclick="offerUploadMissing()" class="underline font-semibold">Hochladen …</button>`));
             }
-            if (rep.duplicates) lines.push(line('copy', 'is-warn', `${rep.duplicates} doppelte Zeile(n) in der Tabelle (gleiche UID) – werden nur einmal gezählt. Bitte eine davon löschen.`));
+            if (rep.duplicates) lines.push(line('copy', 'is-warn', `${rep.duplicates} doppelte Zeile(n) in der Tabelle – gezählt wird nur die neueste Fassung. Im Skript „einrichten“ ausführen, dann werden sie entfernt.`));
             if (n === 0 && !mc && !mv) {
                 if (rep.diffs && rep.diffs.length) {
                     lines.push(line('alert-triangle', 'is-warn', `<b>Abweichung App ↔ Tabelle:</b><br>${rep.diffs.slice(0, 5).map(esc).join('<br>')}${rep.diffs.length > 5 ? '<br>…' : ''}`));
@@ -6919,7 +6919,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 7)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 8)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -6959,7 +6959,7 @@
  * Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten.
  */
 
-var SCRIPT_VERSION = 7;
+var SCRIPT_VERSION = 8;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -7206,6 +7206,7 @@ function rowToCase_(row, km) {
     else if (c[2] === 'dob') o[k] = dobText_(v);
     else if (k === 'ts') o[k] = Number(v) || 0;
     else if (k === 'changedAt') o[k] = v instanceof Date ? v : null;
+    else if (k === 'uid' || k === 'id') o[k] = idText_(v);
     else o[k] = unsafe_(v).trim();
   });
   return o;
@@ -7259,6 +7260,9 @@ function einrichten() {
   setupTrash_(ss);
   setupSimple_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis'], '#f1f5f9');
   setupEval_(ss);
+  var removed = removeDuplicateRows_(ss.getSheetByName(SHEET_CASES), CASE_COLS, 'uid', rowToCase_)
+    + removeDuplicateRows_(ss.getSheetByName(SHEET_VW), VW_COLS, 'id', rowToVw_);
+  if (removed) Logger.log(removed + ' doppelte Zeile(n) entfernt (neueste Fassung behalten).');
 
   var empty = ss.getSheetByName('Tabellenblatt1') || ss.getSheetByName('Sheet1');
   if (empty && empty.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(empty);
@@ -7437,7 +7441,7 @@ function fillVwRow_(row, km, o) {
 }
 
 function rowToVw_(row, km) {
-  var o = { name: unsafe_(row[km.name]).trim(), status: normStatus_(row[km.status]), ts: Number(row[km.ts]) || 0, id: String(row[km.id] || '').trim(), counts: {} };
+  var o = { name: unsafe_(row[km.name]).trim(), status: normStatus_(row[km.status]), ts: Number(row[km.ts]) || 0, id: idText_(row[km.id]), counts: {} };
   RZ.forEach(function (x) { var n = parseInt(row[km['n:' + x[0]]], 10) || 0; if (n > 0) o.counts[x[0]] = n; });
   return o;
 }
@@ -7508,33 +7512,60 @@ function setupEval_(ss) {
 function computeEval_(ss) {
   var logbook = {}, vorwerte = {};
   RZ.forEach(function (r) { logbook[r[0]] = 0; vorwerte[r[0]] = 0; });
-  var seen = {}, dup = 0, active = 0;
+  var dup = 0, active = 0;
   var cs = ss.getSheetByName(SHEET_CASES);
   if (cs && cs.getLastRow() >= 2) {
     var km = keyMap_(CASE_COLS, hmap_(cs));
-    cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues().forEach(function (row) {
-      var o = rowToCase_(row, km);
-      if (!hasCaseContent_(o)) return;
-      if (o.uid) { if (seen[o.uid]) { dup++; return; } seen[o.uid] = true; }
+    var cr = newestById_(cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues()
+      .map(function (row) { return rowToCase_(row, km); }).filter(hasCaseContent_), 'uid');
+    dup += cr.dup;
+    cr.list.forEach(function (o) {
       if (o.status !== STATUS_ACTIVE) return;
       active++;
       var rz = computeRz_(o);
       RZ.forEach(function (r) { if (rz[r[0]]) logbook[r[0]]++; });
     });
   }
-  var vs = ss.getSheetByName(SHEET_VW), vseen = {}, vblocks = 0;
+  var vs = ss.getSheetByName(SHEET_VW), vblocks = 0;
   if (vs && vs.getLastRow() >= 2) {
     var vkm = keyMap_(VW_COLS, hmap_(vs));
-    vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues().forEach(function (row) {
-      var o = rowToVw_(row, vkm);
-      if (!o.name && !Object.keys(o.counts).length) return;
-      if (o.id) { if (vseen[o.id]) { dup++; return; } vseen[o.id] = true; }
+    var vr = newestById_(vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues()
+      .map(function (row) { return rowToVw_(row, vkm); })
+      .filter(function (o) { return o.name || Object.keys(o.counts).length; }), 'id');
+    dup += vr.dup;
+    vr.list.forEach(function (o) {
       if (o.status !== STATUS_ACTIVE) return;
       vblocks++;
       RZ.forEach(function (r) { vorwerte[r[0]] += o.counts[r[0]] || 0; });
     });
   }
   return { logbook: logbook, vorwerte: vorwerte, activeCases: active, vorwerteBlocks: vblocks, duplicates: dup };
+}
+
+// Je Kennung nur die neueste Fassung (höchste Version) behalten
+function newestById_(list, key) {
+  var best = {}, order = [], dup = 0, out = [];
+  list.forEach(function (o) {
+    var k = o[key];
+    if (!k) { out.push(o); return; }
+    if (best[k]) { dup++; if ((o.ts || 0) > (best[k].ts || 0)) best[k] = o; return; }
+    best[k] = o; order.push(k);
+  });
+  order.forEach(function (k) { out.push(best[k]); });
+  return { list: out, dup: dup };
+}
+
+// Doppelte Zeilen (gleiche Kennung) entfernen, die neueste Fassung bleibt
+function removeDuplicateRows_(sheet, cols, key, toObj) {
+  var last = sheet.getLastRow();
+  if (last < 3) return 0;
+  var km = keyMap_(cols, hmap_(sheet));
+  var rows = sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).getValues().map(function (r, i) { var o = toObj(r, km); o._row = i + 2; return o; });
+  var keep = {};
+  rows.forEach(function (o) { var k = o[key]; if (!k) return; if (!keep[k] || (o.ts || 0) > (keep[k].ts || 0)) keep[k] = o; });
+  var del = rows.filter(function (o) { return o[key] && keep[o[key]] !== o; }).map(function (o) { return o._row; }).sort(function (a, b) { return b - a; });
+  del.forEach(function (r) { sheet.deleteRow(r); });
+  return del.length;
 }
 
 function writeEval_(ss, ev) {
@@ -7660,7 +7691,7 @@ function handleVwEdit_(sheet, r1, r2) {
   var km = keyMap_(VW_COLS, hmap_(sheet));
   if (km.id == null) return;
   var last = sheet.getLastRow(), lastCol = sheet.getLastColumn();
-  var all = sheet.getRange(2, km.id + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return String(r[0] || ''); });
+  var all = sheet.getRange(2, km.id + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return idText_(r[0]); });
   var now = Date.now(), k = 0;
   for (var r = Math.min(r2, last); r >= r1; r--) {
     var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
@@ -7828,7 +7859,7 @@ function readTrash_(ss) {
     var data = {};
     try { data = JSON.parse(r[6] || '{}'); } catch (e) { data = {}; }
     out.push({
-      kind: r[1] === 'Vorwerte' ? 'vorwert' : 'case', uid: String(r[4]), ts: Number(r[5]) || 0,
+      kind: r[1] === 'Vorwerte' ? 'vorwert' : 'case', uid: idText_(r[4]), ts: Number(r[5]) || 0,
       deletedAt: r[0] instanceof Date ? r[0].toISOString() : String(r[0] || ''),
       date: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : '',
       description: String(r[3] || ''), data: data
@@ -7843,12 +7874,11 @@ function state_() {
   var tz = ss.getSpreadsheetTimeZone();
   var cs = ss.getSheetByName(SHEET_CASES);
   var km = keyMap_(CASE_COLS, hmap_(cs));
-  var cases = [], seen = {};
+  var cases = [];
   if (cs.getLastRow() >= 2) {
-    cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues().forEach(function (row) {
-      var o = rowToCase_(row, km);
-      if (!hasCaseContent_(o) || !o.uid || seen[o.uid]) return;
-      seen[o.uid] = true;
+    newestById_(cs.getRange(2, 1, cs.getLastRow() - 1, cs.getLastColumn()).getValues()
+      .map(function (row) { return rowToCase_(row, km); })
+      .filter(function (o) { return hasCaseContent_(o) && o.uid; }), 'uid').list.forEach(function (o) {
       o.date = o.date ? Utilities.formatDate(o.date, tz, 'yyyy-MM-dd') : '';
       o.kindLe5 = computeRz_(o).kinder;
       delete o.changedAt;
@@ -7857,14 +7887,11 @@ function state_() {
   }
   var vs = ss.getSheetByName(SHEET_VW);
   var vkm = keyMap_(VW_COLS, hmap_(vs));
-  var vorwerte = [], vseen = {};
+  var vorwerte = [];
   if (vs.getLastRow() >= 2) {
-    vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues().forEach(function (row) {
-      var o = rowToVw_(row, vkm);
-      if (!o.id || vseen[o.id] || (!o.name && !Object.keys(o.counts).length)) return;
-      vseen[o.id] = true;
-      vorwerte.push(o);
-    });
+    vorwerte = newestById_(vs.getRange(2, 1, vs.getLastRow() - 1, vs.getLastColumn()).getValues()
+      .map(function (row) { return rowToVw_(row, vkm); })
+      .filter(function (o) { return o.id && (o.name || Object.keys(o.counts).length); }), 'id').list;
   }
   var trash = readTrash_(ss);
   return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss), crypto: cryptoMeta_() };
@@ -7919,11 +7946,21 @@ function appendCase_(ctx, values) {
   sh.getRange(r, km.changedAt + 1).setNumberFormat('dd.MM.yyyy HH:mm');
 }
 
+// Zellwert als Kennung vergleichen. Google wandelt lange Ziffernfolgen
+// (z. B. Vorwerte-IDs) in Zahlen um und zeigt sie als „1,78E+12“ an – eine
+// Textsuche findet sie dann nicht. Deshalb über die Werte vergleichen.
+function idText_(v) {
+  if (typeof v === 'number') return isFinite(v) ? String(Math.round(v) === v ? v.toFixed(0) : v) : '';
+  return String(v == null ? '' : v).trim();
+}
+
 function findRow_(sheet, col, value) { // col 1-basiert
   var last = sheet.getLastRow();
   if (last < 2 || col < 1) return 0;
-  var cell = sheet.getRange(2, col, last - 1, 1).createTextFinder(String(value)).matchEntireCell(true).findNext();
-  return cell ? cell.getRow() : 0;
+  var want = idText_(value);
+  var vals = sheet.getRange(2, col, last - 1, 1).getValues();
+  for (var i = 0; i < vals.length; i++) if (idText_(vals[i][0]) === want) return i + 2;
+  return 0;
 }
 
 function trashRow_(ctx, uid) { return findRow_(ctx.trash, 5, uid); }
