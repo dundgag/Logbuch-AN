@@ -351,19 +351,6 @@
             @page { size: A4; margin: 8mm; }
         }
 
-        /* Statistik: Fälle pro Monat */
-        .trend-chart { position: relative; touch-action: pan-y; }
-        .trend-grid { stroke: #e2e8f0; stroke-width: 1; }
-        .dark .trend-grid { stroke: #334155; }
-        .trend-axis { font-size: 9px; fill: #64748b; }
-        .dark .trend-axis { fill: #94a3b8; }
-        .trend-bar { fill: #0369a1; }
-        .trend-bar.is-current { fill: #0369a1; opacity: .55; }
-        .dark .trend-bar { fill: #0284c7; }
-        .trend-hit.is-active { fill: rgba(3, 105, 161, 0.08); }
-        .dark .trend-hit.is-active { fill: rgba(56, 189, 248, 0.10); }
-        .trend-tip { font-size: 12px; color: #334155; background: #f1f5f9; border-radius: .5rem; padding: .35rem .6rem; display: inline-block; }
-        .dark .trend-tip { background: #334155; color: #e2e8f0; }
         /* „Mehr“: Gruppen im iOS-Stil */
         .set-group-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin: 0 .5rem .4rem; }
         .dark .set-group-title { color: #94a3b8; }
@@ -877,16 +864,6 @@
                     <i data-lucide="user-x" class="w-4 h-4"></i> Anonym
                 </button>
             </div>
-        </div>
-
-        <!-- FÄLLE PRO MONAT -->
-        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 space-y-3">
-            <div class="flex items-baseline justify-between gap-2">
-                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100">Fälle pro Monat</h2>
-                <span id="trend-avg" class="text-xs text-slate-500 dark:text-slate-400"></span>
-            </div>
-            <div id="trend-chart" class="trend-chart" role="img"></div>
-            <div id="trend-tip" class="trend-tip hidden"></div>
         </div>
 
         <div id="demo-banner" class="hidden p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
@@ -4268,66 +4245,7 @@
         });
     }
 
-    // ---- Fälle pro Monat ---------------------------------------------------
-    const MONTHS_DE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
-
-    function renderTrend() {
-        const box = $('trend-chart');
-        if (!box) return;
-        const list = activeCases();
-        const now = new Date();
-        const months = [];
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push({ key: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`, label: MONTHS_DE[d.getMonth()], year: d.getFullYear(), n: 0 });
-        }
-        const byKey = new Map(months.map((m) => [m.key, m]));
-        list.forEach((c) => { const m = byKey.get(String(c.date || '').slice(0, 7)); if (m) m.n++; });
-        const max = Math.max(1, ...months.map((m) => m.n));
-        const step = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : max <= 50 ? 10 : max <= 100 ? 20 : 50;
-        const top = Math.ceil(max / step) * step;
-        const W = 340, H = 150, L = 26, B = 22, T = 8;
-        const bw = (W - L) / months.length;
-        const y = (v) => T + (H - T - B) * (1 - v / top);
-        let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true">`;
-        for (let v = 0; v <= top; v += step) {
-            svg += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="trend-grid"/><text x="${L - 5}" y="${y(v) + 3}" text-anchor="end" class="trend-axis">${v}</text>`;
-        }
-        months.forEach((m, i) => {
-            const x = L + i * bw + 1;
-            const w = Math.max(2, bw - 4);
-            const h = (H - T - B) * (m.n / top);
-            if (m.n > 0) {
-                const r = Math.min(4, w / 2, h);
-                const yb = H - B;
-                svg += `<path class="trend-bar${i === months.length - 1 ? ' is-current' : ''}" d="M${x},${yb} V${yb - h + r} Q${x},${yb - h} ${x + r},${yb - h} H${x + w - r} Q${x + w},${yb - h} ${x + w},${yb - h + r} V${yb} Z"/>`;
-            }
-            svg += `<text x="${x + w / 2}" y="${H - 7}" text-anchor="middle" class="trend-axis">${m.label}</text>`;
-            svg += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T}" fill="transparent" data-i="${i}" class="trend-hit"/>`;
-        });
-        svg += '</svg>';
-        box.innerHTML = svg;
-        box.setAttribute('aria-label', 'Fälle pro Monat, letzte 12 Monate: ' + months.map((m) => `${m.label} ${m.year}: ${m.n}`).join(', '));
-        const tip = $('trend-tip');
-        const show = (e) => {
-            const t = e.target.closest('.trend-hit');
-            if (!t) { tip.classList.add('hidden'); return; }
-            const m = months[Number(t.dataset.i)];
-            tip.textContent = `${m.label} ${m.year}: ${m.n} ${m.n === 1 ? 'Fall' : 'Fälle'}${Number(t.dataset.i) === months.length - 1 ? ' (laufender Monat)' : ''}`;
-            tip.classList.remove('hidden');
-            box.querySelectorAll('.trend-hit').forEach((h) => h.classList.toggle('is-active', h === t));
-        };
-        box.onpointermove = show; box.onclick = show;
-        box.onpointerleave = () => { tip.classList.add('hidden'); box.querySelectorAll('.trend-hit').forEach((h) => h.classList.remove('is-active')); };
-
-        // Tempo: Durchschnitt der letzten 6 Monate (≈ 182 Tage)
-        const since = new Date(now.getTime() - 182 * 86400000);
-        const recent = list.filter((c) => { const d = parseIso(c.date); return d && d >= since && d <= now; });
-        $('trend-avg').textContent = `Ø ${(recent.length / 6).toLocaleString('de-DE', { maximumFractionDigits: 1 })} Fälle/Monat`;
-    }
-
     function renderEvaluation() {
-        renderTrend();
         const grid = $('baek-grid');
         const scope = evalScope();
         const prog = computeProgressFor(scope.cases, scope.withVorwerte);
