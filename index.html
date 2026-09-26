@@ -12,6 +12,10 @@
     <meta name="apple-mobile-web-app-title" content="Anästhesie Logbuch">
     <meta name="format-detection" content="telephone=no">
     <meta id="meta-theme-color" name="theme-color" content="#f8fafc">
+    <!-- Installierbar als App (Home-Bildschirm) und offline nutzbar:
+         manifest.webmanifest, sw.js und die Icons liegen neben dieser Datei -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFKElEQVR4nO3dy1LjMBBAUQX4TvbDB7GH76TKsxDlGMctS7Yc9eOe7TAQqm/adsjjNk1TutLbx/el3z+4n8/367757Yo4CGKI7qH0jIMmlOhVSZ84yEKh84mcjYMslDuTyPE4yMKQY4kciYMsjGpN5KX1B1CGXa2za4uDMqxrmmDtYYUsnKk5xFRtDsrwp2am+3FQhle7k92JgzJ8K8+3FAdlRFCYcvOlLOIQ42BtxCHNejsOyohmc+IbcVBGTI9z55wDonUcrI3IVtNnc0D0Jw7WBpYNsDkgusfB2kA2l8DmgOg3DtYGlnIPbA6IiAOi2zRNHFOwic0BEXFARBwQ3V7/fY2+DVCKzQERcUBEHBARB0TEARFxQEQcEBEHRMQBEXFARBwQEQdExAERcUBEHBARB0TEARFxQEQcEBEHRMQB0dvoG3BXeKt2f6/JM/HLKopjFGlOeoY0Stw4dj9TYv6CsJVEjKP106zy1wdMJFYcZz4qMWAiga5WunwU76UfD65NlDg6DjVOHyHi6D7OIH34j+OiQUbow3kcl47QfR+er1bqh/d4DVL5f38+3x1fv3iOY1dhrvM/uV8PBW4PK7tDrbzH736Zw43rcxlHWdCxwfOAo8xlH+d58YNjl/+J1efiMA12Ei+PwMSLgwcVhHEOWvMsji8M4Ck7e+6Mtj1hxoAlxQEQcEBEHRMQBEXFAFCuOk49GuHwwo8BhHEMejXD5EIjDOMoO3/ujrY0UMA7U8xlH97+wd38OgAk+49jV1EfAA0rmNo5eT+/r9XRDi0I/wbjwOvqw22LJcxxvH9+91kPhRxz7jya4Paxklw7PdxnJfRzpshG6LyNFiCNdMMgIZaQgcaSu4wxSRooTR+o01DhlJN9XK4/yaI9dm4TKIru9/vsafRvGOPMa/CCUxvHM93B92vuQmnhj2qVYh5VNOgejQaATUrQiDoiIAyLigEhpHIWTRKN/TDd3qZLUxgENiAMi4oDIZBzmTjvM3eBMbxxqT9P60vxr6o0Dw1mNw9CiNnRTV1THoXnldqH8F1QdR5mJe6SJGykxHAeupj0O0286bv3l19rj2KW2D7U3rJ6BOPTfww4w8UsZiGOXwvuowpt0gI04bH1ckpt3bbARR7LTh5sykqE4agzvY/gN6MtSHDX3uYHjqfnRhtZGshVHUtyHvzKSuTiSyj5clpHUvhxyV+X4rx6JkptxEecvh8zDu2I2zs49N1ndHKl9PL0SGfVzn89wHKn3O22svtvqywK+q4ftOLIzG/7M27nUfGfTPMSR9J0BOCgjWbyU3aRqGKpuzBlONsds7Apxk0XmZHPMBo7HWRnJ3+aYPXOF+MsicxtHdnUiXrPInMeRcaV6TIg4ZucridDEzPnfVlbm0Wp7XEQnb1cr6Ig4IAoax7FTh1AnHClsHKgRN47WNRBtbaTIcWBX6Djql0HAtZGiPQgmsfj2wk9AHHflpwkGRBwQhT7nQBlxQEQcEL3w90lI2BwQEQdExAHRS+JpUdjy8/nO5oCIOCD6jYMjC5ZyD2wOiO5xsDyQzSWwOSD6EwfLA8sG2BwQreNgeUS2mj6bA6KNOFgeMT3OfXtz0Ec0mxMXDyv0EYc0a845ICrFwfKIoDDlnc1BH76V57t/WKEPr3YnW3XOQR/+1Mz0Nk1T/Xfk5aMO1N/V265WWCHWNU2w+VKWPuxqnV3bYWWJQ4whx+7Sx+PISES5M5v+bBwZiSh0/gSgTxwZiSjR67ywZxwzKhmi+7XCf2E32QYwOe1OAAAAAElFTkSuQmCC">
     <title>Anästhesie Logbuch</title>
 
@@ -61,14 +65,11 @@
 
     <!-- PDF- und Excel-Export (cdnjs, feste Versionen) -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Font Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -111,7 +112,9 @@
            (wird von dort auf das Seitenfenster übertragen). */
         html { overscroll-behavior-y: none; }
         body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            /* Systemschrift (auf dem iPhone „SF Pro“) – keine Schriftart von
+               Google laden, damit keine IP-Adresse an Google geht */
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             -webkit-text-size-adjust: 100%;
             width: 100%;
         }
@@ -348,6 +351,19 @@
             @page { size: A4; margin: 8mm; }
         }
 
+        /* Statistik: Fälle pro Monat */
+        .trend-chart { position: relative; touch-action: pan-y; }
+        .trend-grid { stroke: #e2e8f0; stroke-width: 1; }
+        .dark .trend-grid { stroke: #334155; }
+        .trend-axis { font-size: 9px; fill: #64748b; }
+        .dark .trend-axis { fill: #94a3b8; }
+        .trend-bar { fill: #0369a1; }
+        .trend-bar.is-current { fill: #0369a1; opacity: .55; }
+        .dark .trend-bar { fill: #0284c7; }
+        .trend-hit.is-active { fill: rgba(3, 105, 161, 0.08); }
+        .dark .trend-hit.is-active { fill: rgba(56, 189, 248, 0.10); }
+        .trend-tip { font-size: 12px; color: #334155; background: #f1f5f9; border-radius: .5rem; padding: .35rem .6rem; display: inline-block; }
+        .dark .trend-tip { background: #334155; color: #e2e8f0; }
         /* „Mehr“: Gruppen im iOS-Stil */
         .set-group-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin: 0 .5rem .4rem; }
         .dark .set-group-title { color: #94a3b8; }
@@ -568,6 +584,7 @@
                         <button type="button" data-pill data-value="OP 3" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 3')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 3</button>
                         <button type="button" data-pill data-value="OP 4" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'OP 4')" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">OP 4</button>
                         <button type="button" data-pill data-value="KRS" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'KRS')" title="Kreißsaal" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">KRS</button>
+                        <button type="button" data-pill data-value="ITS" onclick="togglePillOption(this.parentElement, 'input-opsaal', 'ITS')" title="Intensivstation" class="pill-option px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">ITS</button>
                     </div>
                     <input type="hidden" id="input-opsaal" value="">
                 </div>
@@ -606,23 +623,23 @@
                     Eingriffsart & Besonderheiten
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <label class="checkbox-card" data-field="abd"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span class="cb-text">Abdomineller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
-                    <label class="checkbox-card" data-field="amb"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span class="cb-text">Ambulante Anästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
-                    <label class="checkbox-card" data-field="sectio"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span class="cb-text">Geburtshilfe Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
-                    <label class="checkbox-card" data-field="kra"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrakranieller Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
-                    <label class="checkbox-card" data-field="thx"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrathorakaler Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
-                    <label class="checkbox-card" data-field="kh"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span class="cb-text">Kopf / Hals Eingriff <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
+                    <label class="checkbox-card" data-field="abd"><input type="checkbox" id="check-abdominell" onchange="updateLiveEvalBadges()"><span class="cb-text">Abdomineller Eingriff <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="abdominell"></span></span></label>
+                    <label class="checkbox-card" data-field="amb"><input type="checkbox" id="check-ambulant" onchange="updateLiveEvalBadges()"><span class="cb-text">Ambulante Anästhesie <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="ambulant"></span></span></label>
+                    <label class="checkbox-card" data-field="sectio"><input type="checkbox" id="check-sectio" onchange="syncSectio(this); updateLiveEvalBadges()"><span class="cb-text">Geburtshilfe Eingriff <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="geburtshilfe"></span></span></label>
+                    <label class="checkbox-card" data-field="kra"><input type="checkbox" id="check-intrakraniell" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrakranieller Eingriff <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="intrakraniell"></span></span></label>
+                    <label class="checkbox-card" data-field="thx"><input type="checkbox" id="check-intrathorakal" onchange="updateLiveEvalBadges()"><span class="cb-text">Intrathorakaler Eingriff <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="intrathorakal"></span></span></label>
+                    <label class="checkbox-card" data-field="kh"><input type="checkbox" id="check-kopf-hals" onchange="updateLiveEvalBadges()"><span class="cb-text">Kopf / Hals Eingriff <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="kopf_hals"></span></span></label>
                 </div>
             </div>
 
-            <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700/50" data-section>
+            <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700/50" data-section>
                 <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     Anästhesieverfahren
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- Allgemeinanästhesie mit Atemweg-Auswahl direkt in der Kachel -->
                     <div class="checkbox-card font-medium" data-field="ga" style="flex-direction: column; align-items: stretch; cursor: default;">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="proc-vollnarkose" onchange="toggleAirway(this.checked); updateLiveEvalBadges()"><span class="cb-text">Allgemeinanästhesie <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="proc-vollnarkose" onchange="toggleAirway(this.checked); updateLiveEvalBadges()"><span class="cb-text">Allgemeinanästhesie <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="total"></span></span></label>
                         <div id="airway-container" class="hidden" data-field="airway">
                             <div id="airway-pills" class="grid grid-cols-3 gap-1">
                                 <button type="button" data-pill data-value="ITN" onclick="selectAirway('ITN')" class="pill-option px-1 py-1 rounded-md border text-xs font-medium leading-tight transition-colors bg-white dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">ITN</button>
@@ -632,8 +649,8 @@
                             <input type="hidden" id="input-airway" value="">
                         </div>
                     </div>
-                    <label class="checkbox-card font-medium" data-field="spa"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span class="cb-text">Rückenmarksnahe RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
-                    <label class="checkbox-card font-medium" data-field="peripher"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span class="cb-text">Periphere RA <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
+                    <label class="checkbox-card font-medium" data-field="spa"><input type="checkbox" id="proc-spa-pdk" onchange="toggleSpaPdk(this.checked); updateLiveEvalBadges()"><span class="cb-text">Rückenmarksnahe RA <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_zentral"></span></span></label>
+                    <label class="checkbox-card font-medium" data-field="peripher"><input type="checkbox" id="proc-periphere-ra" onchange="togglePeriphere(this.checked); updateLiveEvalBadges()"><span class="cb-text">Periphere RA <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="regional_peripher"></span></span></label>
                 </div>
 
                 <div id="spa-pdk-container" data-field="spa" class="hidden p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -679,16 +696,28 @@
                 </div>
             </div>
 
-            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50" data-section>
+            <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-700/50" data-section>
                 <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                     Atemwegs- & Gefäßinterventionen
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="checkbox-card" data-field="fiberoptik"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span class="cb-text">Fiberoptische Intubation <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
+                    <label class="checkbox-card" data-field="fiberoptik"><input type="checkbox" id="check-fiberoptik" onchange="updateLiveEvalBadges()"><span class="cb-text">Fiberoptische Intubation <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="fiberoptik"></span></span></label>
                     <!-- Videolaryngoskopie wird jetzt über "Atemweg: Video-ITN" gesetzt;
                          die Checkbox bleibt versteckt als interner Speicher (isVideo). -->
                     <input type="checkbox" id="check-videolaryngo" class="hidden" tabindex="-1" aria-hidden="true">
-                    <label class="checkbox-card" data-field="sono"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span class="cb-text">Sonografische Gefäßpunktion <span class="eval-badge text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
+                    <label class="checkbox-card" data-field="sono"><input type="checkbox" id="check-sono-gefaess" onchange="updateLiveEvalBadges()"><span class="cb-text">Sonografische Gefäßpunktion <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="ultraschall"></span></span></label>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-700/50" data-section>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Intensivmedizin &amp; Zugänge</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="checkbox-card" data-field="zvk"><input type="checkbox" id="check-zvk" onchange="updateLiveEvalBadges()"><span class="cb-text">Zentralvenöser Zugang (ZVK) <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="zvk"></span></span></label>
+                    <label class="checkbox-card" data-field="arterie"><input type="checkbox" id="check-arterie" onchange="updateLiveEvalBadges()"><span class="cb-text">Arterieller Zugang <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="arterie"></span></span></label>
+                    <label class="checkbox-card" data-field="bronchoskopie"><input type="checkbox" id="check-bronchoskopie" onchange="updateLiveEvalBadges()"><span class="cb-text">Tracheo-/Bronchoskopie <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="bronchoskopie"></span></span></label>
+                    <label class="checkbox-card" data-field="pleura"><input type="checkbox" id="check-pleura" onchange="updateLiveEvalBadges()"><span class="cb-text">Pleurapunktion/-drainage <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="pleura"></span></span></label>
+                    <label class="checkbox-card" data-field="itsorgan"><input type="checkbox" id="check-its-organ" onchange="updateLiveEvalBadges()"><span class="cb-text">Intensivbehandlung (≥ 2 Organsysteme) <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="its_organ"></span></span></label>
+                    <label class="checkbox-card" data-field="itsniv"><input type="checkbox" id="check-its-niv" onchange="updateLiveEvalBadges()"><span class="cb-text">Atemunterstützung, nicht intubiert (NIV/HFNC) <span class="eval-badge text-xs text-slate-400 dark:text-slate-500 font-normal" data-cat="its_niv"></span></span></label>
                 </div>
             </div>
 
@@ -850,6 +879,21 @@
             </div>
         </div>
 
+        <!-- VERLAUF & PROGNOSE -->
+        <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 space-y-3">
+            <div class="flex items-baseline justify-between gap-2">
+                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100">Fälle pro Monat</h2>
+                <span id="trend-avg" class="text-xs text-slate-500 dark:text-slate-400"></span>
+            </div>
+            <div id="trend-chart" class="trend-chart" role="img"></div>
+            <div id="trend-tip" class="trend-tip hidden"></div>
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Prognose</h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Bei deinem Tempo der letzten 6 Monate (inkl. Vorwerte, unabhängig vom gewählten Zeitraum)</p>
+                <div id="trend-forecast" class="space-y-1"></div>
+            </div>
+        </div>
+
         <div id="demo-banner" class="hidden p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
             <span><strong>Demo-Daten enthalten:</strong> Die Auswertung zählt aktuell Beispielfälle mit. Deine eigenen Einträge bleiben beim Löschen der Demo-Daten erhalten.</span>
             <button onclick="deleteDemoData()" class="px-3 py-1.5 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-medium rounded-lg whitespace-nowrap">Demo-Daten löschen</button>
@@ -974,7 +1018,31 @@
                         <button type="button" onclick="testSyncConnection()" class="set-btn w-full"><i data-lucide="plug" class="w-4 h-4"></i> Verbindung testen</button>
                     </div>
                 </details>
-                    <details class="guide" id="sync-guide">
+                    <details class="guide" id="sync-crypto">
+                    <summary><i data-lucide="lock" class="w-4 h-4 shrink-0"></i><span class="flex-1">Verschlüsselung <span class="font-normal text-[11px] opacity-80">· <span id="crypto-state"></span></span></span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
+                    <div class="guide-body" id="crypto-body">
+                        <p>Initialen, Geburtsdatum und Bemerkungen gehen nur verschlüsselt in die Tabelle. Auf deinen Geräten siehst du alles normal; Google und jeder mit Zugriff auf die Tabelle sehen nur Zeichensalat („enc:v1:…“). Alter, Eingriffe und Richtzahlen bleiben lesbar.</p>
+                        <div id="crypto-setup" class="hidden space-y-2 mt-2">
+                            <input type="password" id="crypto-pass1" autocomplete="new-password" placeholder="Passwort (mind. 8 Zeichen)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-xs outline-none focus:ring-2 focus:ring-brand-500">
+                            <input type="password" id="crypto-pass2" autocomplete="new-password" placeholder="Passwort wiederholen" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-xs outline-none focus:ring-2 focus:ring-brand-500">
+                            <p class="guide-note"><b>Nicht vergessen:</b> Das Passwort lässt sich nicht wiederherstellen – am besten im Passwort-Manager speichern. Jedes Gerät braucht dasselbe Passwort.</p>
+                            <div class="flex gap-2">
+                                <button type="button" id="crypto-setup-btn" onclick="setupEncryption(!!$('crypto-body').dataset.reset)" class="set-btn">Verschlüsselung einrichten</button>
+                                <button type="button" id="crypto-cancel-btn" onclick="cancelCryptoReset()" class="set-btn">Abbrechen</button>
+                            </div>
+                        </div>
+                        <div id="crypto-unlock-wrap" class="hidden space-y-2 mt-2">
+                            <p><b>Diese Tabelle ist verschlüsselt.</b> Gib das Passwort ein, das du beim Einrichten festgelegt hast. Bis dahin wird auf diesem Gerät nichts übertragen.</p>
+                            <input type="password" id="crypto-unlock" autocomplete="current-password" placeholder="Passwort" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 text-xs outline-none focus:ring-2 focus:ring-brand-500">
+                            <button type="button" onclick="unlockEncryption()" class="set-btn w-full"><i data-lucide="lock-open" class="w-4 h-4"></i> Entsperren</button>
+                        </div>
+                        <div id="crypto-active" class="hidden mt-2 space-y-2">
+                            <p class="text-green-700 dark:text-green-400 font-medium">Aktiv auf diesem Gerät.</p>
+                            <button type="button" onclick="startCryptoReset()" class="set-btn w-full">Passwort vergessen / neu festlegen</button>
+                        </div>
+                    </div>
+                </details>
+                <details class="guide" id="sync-guide">
                         <summary><i data-lucide="book-open" class="w-4 h-4 shrink-0"></i><span class="flex-1">Anleitung: Google-Tabelle einrichten</span><i data-lucide="chevron-down" class="guide-chev w-4 h-4 shrink-0"></i></summary>
                         <div class="guide-body">
                             <p><strong>Dauer:</strong> ca. 10 Minuten, einmalig. Am einfachsten <strong>am Computer</strong> (Chrome, Safari, Edge): Öffne diese App dort unter derselben Adresse wie am iPhone. Du brauchst ein Google-Konto (z. B. Gmail).</p>
@@ -1031,6 +1099,16 @@
                                 <li>Auf jedem weiteren Gerät (z. B. PC) nur Adresse und Schlüssel eintragen – die App holt sich alles aus der Tabelle, inkl. Initialen und Geburtsdatum. Dort <b>nicht</b> „Hochladen“ wählen, falls sie fragt und du auf dem Gerät nur Demo-/Testdaten hast. Tipp: Adresse und Schlüssel per Nachricht an dich selbst schicken, einfügen, Nachricht löschen.</li>
                             </ol>
 
+                            <h4>5b · Verschlüsselung einschalten (empfohlen)</h4>
+                            <ol>
+                                <li>Unter „Verschlüsselung“ ein Passwort festlegen (mind. 8 Zeichen) und im Passwort-Manager speichern.</li>
+                                <li>Auf jedem weiteren Gerät dasselbe Passwort unter „Verschlüsselung“ eingeben.</li>
+                            </ol>
+                            <p class="guide-note">Danach stehen Initialen, Geburtsdatum und Bemerkungen nur noch verschlüsselt („enc:v1:…“) in der Tabelle. Alte Klartext-Stände in „Verlauf“ und „Papierkorb“ werden dabei gelöscht.</p>
+
+                            <h4>5c · Als App auf den Home-Bildschirm</h4>
+                            <p>In Safari: Teilen-Symbol → „Zum Home-Bildschirm“. Dann startet das Logbuch wie eine App, funktioniert offline und Safari löscht die Daten nicht nach 7 Tagen. Dafür müssen die Dateien <code>sw.js</code>, <code>manifest.webmanifest</code> und die Icons neben der <code>index.html</code> im GitHub-Repository liegen.</p>
+
                             <h4>6 · Was steht in der Tabelle?</h4>
                             <ul>
                                 <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jedem Abgleich und beim Öffnen neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
@@ -1065,7 +1143,7 @@
                             <p class="guide-note"><b>Nicht</b> „Neue Bereitstellung“ wählen – das erzeugt eine zweite Adresse, und die App spricht weiter mit dem alten Skript. Solange das Skript veraltet ist, schickt die App nichts und hebt alle Aufträge auf.</p>
                         </div>
                     </details>
-                <p class="guide-note"><b>Datenschutz:</b> Die Tabelle enthält patientenbezogene Daten. Nicht freigeben, Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten, Klinik-Vorgaben beachten. „Nur Alter speichern“ (Datenschutz) lässt das Geburtsdatum weg.</p>
+                <p class="guide-note"><b>Datenschutz:</b> Mit aktiver Verschlüsselung stehen keine lesbaren Initialen, Geburtsdaten oder Bemerkungen in der Tabelle. Trotzdem: Tabelle nicht freigeben, Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel und Passwort geheim halten, Klinik-Vorgaben beachten.</p>
             </div>
         </details>
         <details class="set-sec" id="set-sec-download">
@@ -1077,7 +1155,7 @@
             <div class="set-sec-body">
                 <div class="set-row">
                     <div class="set-row-head"><h3>Logbuch</h3></div>
-                    <p class="set-row-hint">Alle Fälle, gesamter Zeitraum. Für einen bestimmten Zeitraum: Tab „Statistik“.</p>
+                    <p class="set-row-hint">Alle Fälle, gesamter Zeitraum. Für einen bestimmten Zeitraum: Tab „Statistik“. Excel, CSV und PDF-Bericht enthalten Patientendaten – zum Weitergeben „PDF anonym“ nutzen.</p>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="exportToXLSX()" class="set-btn"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Excel</button>
                         <button onclick="exportToCSV()" class="set-btn"><i data-lucide="file-text" class="w-4 h-4"></i> CSV</button>
@@ -1140,6 +1218,31 @@
                     <button type="button" onclick="showAllFormFields()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium rounded-lg whitespace-nowrap">Alle an</button>
                 </div>
                 <div id="form-field-settings" class="space-y-4"></div>
+            </div>
+        </details>
+        <details class="set-sec" id="set-sec-storage" ontoggle="if (this.open) renderStorageInfo()">
+            <summary>
+                <i data-lucide="hard-drive" class="set-sec-icon"></i>
+                <span class="set-sec-text"><span class="set-sec-title">Gerätespeicher</span><span class="set-sec-sub" id="set-sum-storage"></span></span>
+                <i data-lucide="chevron-down" class="set-sec-chev"></i>
+            </summary>
+            <div class="set-sec-body space-y-3">
+                <div>
+                    <div class="flex items-baseline justify-between text-xs mb-1"><span id="storage-used" class="font-semibold text-slate-700 dark:text-slate-200"></span><span id="storage-cap" class="text-slate-500 dark:text-slate-400"></span></div>
+                    <div class="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div id="storage-bar" class="h-full rounded-full" style="width:0%"></div></div>
+                    <p id="storage-detail" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"></p>
+                </div>
+                <div class="text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-2">
+                    <p><b>Was ist das?</b> Die App speichert alle Fälle im Speicher des Browsers auf diesem Gerät. Safari erlaubt dafür rund 5 MB je Website. Ein Fall braucht etwa 1 KB – Platz ist also für einige tausend Fälle. Wird der Speicher voll, kann die App nichts Neues mehr speichern.</p>
+                    <p><b>Was hilft, wenn es eng wird?</b></p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><b>Papierkorb leeren</b> und <b>Demo-Daten löschen</b> (Mehr → Sonstiges).</li>
+                        <li><b>Backup-Datei sichern</b> (Datensicherung) – damit ist nichts verloren.</li>
+                        <li>Mit <b>Google Sheets</b> liegen alle Daten zusätzlich in deiner Tabelle.</li>
+                    </ul>
+                    <p><b>Wichtig für Safari:</b> Safari löscht die Daten von Websites, die 7 Tage lang nicht geöffnet wurden. Das verhinderst du, indem du die App <b>zum Home-Bildschirm hinzufügst</b> (Teilen-Symbol → „Zum Home-Bildschirm“) und sie von dort öffnest. Sie läuft dann wie eine eigene App, auch offline.</p>
+                    <p id="storage-persist" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+                </div>
             </div>
         </details>
         <details class="set-sec" id="set-sec-privacy">
@@ -1445,6 +1548,12 @@
         { key: 'peripher', label: 'Periphere RA', group: 'Anästhesieverfahren', props: ['isPeripher', 'peripherType'] },
         { key: 'fiberoptik', label: 'Fiberoptische Intubation', group: 'Atemwegs- & Gefäßinterventionen', props: ['isFiberoptik'] },
         { key: 'sono', label: 'Sonografische Gefäßpunktion', group: 'Atemwegs- & Gefäßinterventionen', props: ['isSonoGefaess'] },
+        { key: 'itsorgan', label: 'Intensivbehandlung ≥ 2 Organsysteme', group: 'Intensivmedizin & Zugänge', props: ['isItsOrgan'] },
+        { key: 'itsniv', label: 'Atemunterstützung (nicht intubiert)', group: 'Intensivmedizin & Zugänge', props: ['isItsNiv'] },
+        { key: 'zvk', label: 'ZVK', group: 'Intensivmedizin & Zugänge', props: ['isZvk'] },
+        { key: 'arterie', label: 'Arterieller Zugang', group: 'Intensivmedizin & Zugänge', props: ['isArterie'] },
+        { key: 'pleura', label: 'Pleurapunktion/-drainage', group: 'Intensivmedizin & Zugänge', props: ['isPleura'] },
+        { key: 'bronchoskopie', label: 'Tracheo-/Bronchoskopie', group: 'Intensivmedizin & Zugänge', props: ['isBronchoskopie'] },
         { key: 'btm', label: 'BTM (Opioide)', group: 'Weitere', props: ['btm'] },
         { key: 'notes', label: 'Bemerkungen', group: 'Weitere', props: ['notes'] }
     ];
@@ -2571,7 +2680,7 @@
     const baekCategories = [
         { id: 'total', label: 'Anästhesieverfahren gesamt', short: 'Gesamt', target: 1800, icon: 'activity' },
         { id: 'abdominell', label: 'davon: Abdominelle Eingriffe', short: 'Abdominell', target: 300, icon: 'stethoscope' },
-        { id: 'asa3', label: 'davon: Patienten ab ASA III', short: 'ASA ≥ III', target: 100, icon: 'alert-triangle' },
+        { id: 'asa3', label: 'davon: Patienten mit ASA 3–5', short: 'ASA ≥ III', target: 100, icon: 'alert-triangle' },
         { id: 'fiberoptik', label: 'Fiberoptische Techniken (inkl. fiberoptischer Intubation)', short: 'Fiberoptik', target: 25, icon: 'camera' },
         { id: 'video', label: 'Videoassistierte Intubationsverfahren', short: 'Video-Intubation', target: 20, icon: 'monitor-play' },
         { id: 'ultraschall', label: 'Anästhesierelevante Ultraschallverfahren', short: 'Ultraschall', target: 50, icon: 'waves' },
@@ -2583,7 +2692,14 @@
         { id: 'kopf_hals', label: 'Eingriffe Kopf-Hals-Bereich', short: 'Kopf/Hals', target: 100, icon: 'user' },
         { id: 'regional_zentral', label: 'Rückenmarksnahe Regionalanästhesien', short: 'RM-RA', target: 50, icon: 'syringe' },
         { id: 'regional_peripher', label: 'Periphere Regionalanästhesieverfahren', short: 'Periphere RA', target: 50, icon: 'syringe' },
-        { id: 'ambulant', label: 'Anästhesien bei ambulanten Eingriffen', short: 'Ambulant', target: 50, icon: 'door-open' }
+        { id: 'ambulant', label: 'Anästhesien bei ambulanten Eingriffen', short: 'Ambulant', target: 50, icon: 'door-open' },
+        // Intensivmedizin (WBO 2020, Facharzt Anästhesiologie)
+        { id: 'its_organ', label: 'Intensivbehandlung bei Funktionsstörung ≥ 2 vitaler Organsysteme', short: 'ITS ≥ 2 Organe', target: 100, icon: 'heart-pulse' },
+        { id: 'its_niv', label: 'Atemunterstützung bei nicht-intubierten Patienten', short: 'NIV/Atemunterst.', target: 50, icon: 'wind' },
+        { id: 'zvk', label: 'Zentralvenöse Zugänge', short: 'ZVK', target: 30, icon: 'syringe' },
+        { id: 'arterie', label: 'Arterielle Zugänge', short: 'Arterie', target: 30, icon: 'syringe' },
+        { id: 'pleura', label: 'Pleurapunktionen, Pleuradrainagen', short: 'Pleura', target: 5, icon: 'droplet' },
+        { id: 'bronchoskopie', label: 'Tracheo- und Bronchoskopien', short: 'Bronchoskopie', target: 25, icon: 'scan-eye' }
     ];
     const catById = {};
     baekCategories.forEach((c) => { catById[c.id] = c; });
@@ -2645,6 +2761,12 @@
         if (c.isSpaPdk) ids.push('regional_zentral');
         if (c.isPeripher) ids.push('regional_peripher');
         if (c.isAmbulant) ids.push('ambulant');
+        if (c.isItsOrgan) ids.push('its_organ');
+        if (c.isItsNiv) ids.push('its_niv');
+        if (c.isZvk) ids.push('zvk');
+        if (c.isArterie) ids.push('arterie');
+        if (c.isPleura) ids.push('pleura');
+        if (c.isBronchoskopie) ids.push('bronchoskopie');
         return ids;
     }
 
@@ -2665,7 +2787,13 @@
         ['isPeripher', 'proc-periphere-ra'],
         ['isFiberoptik', 'check-fiberoptik'],
         ['isVideo', 'check-videolaryngo'],
-        ['isSonoGefaess', 'check-sono-gefaess']
+        ['isSonoGefaess', 'check-sono-gefaess'],
+        ['isItsOrgan', 'check-its-organ'],
+        ['isItsNiv', 'check-its-niv'],
+        ['isZvk', 'check-zvk'],
+        ['isArterie', 'check-arterie'],
+        ['isPleura', 'check-pleura'],
+        ['isBronchoskopie', 'check-bronchoskopie']
     ];
 
     // ---------------------------------------------------------------
@@ -2983,6 +3111,7 @@
         buildVorwertModalInputs();
         refreshAll();
         initSyncUI();
+        registerOfflineApp();
         refreshIcons();
     });
 
@@ -3450,10 +3579,13 @@
     function saveCases() {
         cases.forEach(ensureCaseMeta);
         storeSet('cases', JSON.stringify(cases));
+        clearTimeout(saveCases._t);
+        saveCases._t = setTimeout(() => { if (typeof checkStorageWarning === 'function') checkStorageWarning(); }, 1500);
     }
 
-    function handleCaseSubmit(e) {
-        e.preventDefault();
+    function handleCaseSubmit(e, opts) {
+        if (e && e.preventDefault) e.preventDefault();
+        opts = opts || {};
 
         formatInitials($('input-initials'));
         syncDateFromDisplay(true);
@@ -3570,9 +3702,22 @@
 
         applyHiddenFieldsToCase(data, prevCase);
 
-        if ((fieldOn('ga') || fieldOn('spa') || fieldOn('peripher')) && !(data.isVollnarkose || data.isSpaPdk || data.isPeripher)) {
-            showToast('Bitte mindestens ein Anästhesieverfahren auswählen.', 'error');
+        const icuOnly = data.isItsOrgan || data.isItsNiv || data.isZvk || data.isArterie || data.isPleura || data.isBronchoskopie || data.isSedierung;
+        if ((fieldOn('ga') || fieldOn('spa') || fieldOn('peripher')) && !(data.isVollnarkose || data.isSpaPdk || data.isPeripher) && !icuOnly) {
+            showToast('Bitte mindestens ein Anästhesieverfahren oder eine Intensiv-Maßnahme auswählen.', 'error');
             return;
+        }
+
+        // Mögliche Doppelerfassung: gleicher Tag, gleiche Initialen, gleicher Eingriff
+        if (!opts.skipDupCheck) {
+            const norm = (x) => String(x || '').trim().toLowerCase();
+            const dupe = cases.find((c) => c.id !== editingCaseId && !c.cancelled && !c.isDemo && c.date === data.date
+                && norm(c.initials) && norm(c.initials) === norm(data.initials) && norm(c.procedure) === norm(data.procedure));
+            if (dupe) {
+                askConfirm(`Am ${formatDate(data.date)} gibt es schon einen Fall „${dupe.initials}“ mit „${caseProcedureLabel(dupe)}“. Ist das ein weiterer Fall?`, { title: 'Möglicherweise doppelt', confirmLabel: 'Trotzdem speichern' })
+                    .then((ok) => { if (ok) handleCaseSubmit(null, { skipDupCheck: true }); });
+                return;
+            }
         }
 
         const wasEditing = !!editingCaseId;
@@ -3678,6 +3823,12 @@
         if (c.isVideo && caseAirway(c) !== 'Video-ITN') f.push('Videolaryngoskopie');
         if (c.isSonoGefaess) f.push('Sono-Gefäßpunktion');
         if (isChildCase(c)) f.push('Kind ≤ 5 J.');
+        if (c.isItsOrgan) f.push('ITS ≥ 2 Organe');
+        if (c.isItsNiv) f.push('NIV/Atemunterst.');
+        if (c.isZvk) f.push('ZVK');
+        if (c.isArterie) f.push('Arterie');
+        if (c.isPleura) f.push('Pleura');
+        if (c.isBronchoskopie) f.push('Bronchoskopie');
         return f;
     }
 
@@ -4118,7 +4269,87 @@
         });
     }
 
+    // ---- Verlauf & Prognose -----------------------------------------------
+    const MONTHS_DE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+    function renderTrend() {
+        const box = $('trend-chart');
+        if (!box) return;
+        const list = activeCases();
+        const now = new Date();
+        const months = [];
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({ key: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`, label: MONTHS_DE[d.getMonth()], year: d.getFullYear(), n: 0 });
+        }
+        const byKey = new Map(months.map((m) => [m.key, m]));
+        list.forEach((c) => { const m = byKey.get(String(c.date || '').slice(0, 7)); if (m) m.n++; });
+        const max = Math.max(1, ...months.map((m) => m.n));
+        const step = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : max <= 50 ? 10 : max <= 100 ? 20 : 50;
+        const top = Math.ceil(max / step) * step;
+        const W = 340, H = 150, L = 26, B = 22, T = 8;
+        const bw = (W - L) / months.length;
+        const y = (v) => T + (H - T - B) * (1 - v / top);
+        let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true">`;
+        for (let v = 0; v <= top; v += step) {
+            svg += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="trend-grid"/><text x="${L - 5}" y="${y(v) + 3}" text-anchor="end" class="trend-axis">${v}</text>`;
+        }
+        months.forEach((m, i) => {
+            const x = L + i * bw + 1;
+            const w = Math.max(2, bw - 4);
+            const h = (H - T - B) * (m.n / top);
+            if (m.n > 0) {
+                const r = Math.min(4, w / 2, h);
+                const yb = H - B;
+                svg += `<path class="trend-bar${i === months.length - 1 ? ' is-current' : ''}" d="M${x},${yb} V${yb - h + r} Q${x},${yb - h} ${x + r},${yb - h} H${x + w - r} Q${x + w},${yb - h} ${x + w},${yb - h + r} V${yb} Z"/>`;
+            }
+            svg += `<text x="${x + w / 2}" y="${H - 7}" text-anchor="middle" class="trend-axis">${m.label}</text>`;
+            svg += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T}" fill="transparent" data-i="${i}" class="trend-hit"/>`;
+        });
+        svg += '</svg>';
+        box.innerHTML = svg;
+        box.setAttribute('aria-label', 'Fälle pro Monat, letzte 12 Monate: ' + months.map((m) => `${m.label} ${m.year}: ${m.n}`).join(', '));
+        const tip = $('trend-tip');
+        const show = (e) => {
+            const t = e.target.closest('.trend-hit');
+            if (!t) { tip.classList.add('hidden'); return; }
+            const m = months[Number(t.dataset.i)];
+            tip.textContent = `${m.label} ${m.year}: ${m.n} ${m.n === 1 ? 'Fall' : 'Fälle'}${Number(t.dataset.i) === months.length - 1 ? ' (laufender Monat)' : ''}`;
+            tip.classList.remove('hidden');
+            box.querySelectorAll('.trend-hit').forEach((h) => h.classList.toggle('is-active', h === t));
+        };
+        box.onpointermove = show; box.onclick = show;
+        box.onpointerleave = () => { tip.classList.add('hidden'); box.querySelectorAll('.trend-hit').forEach((h) => h.classList.remove('is-active')); };
+
+        // Tempo: letzte 6 volle Monate + laufender Monat anteilig (≈ 182 Tage)
+        const since = new Date(now.getTime() - 182 * 86400000);
+        const recent = list.filter((c) => { const d = parseIso(c.date); return d && d >= since && d <= now; });
+        const perMonth = recent.length / 6;
+        $('trend-avg').textContent = `Ø ${perMonth.toLocaleString('de-DE', { maximumFractionDigits: 1 })} Fälle/Monat`;
+        const pace = {};
+        baekCategories.forEach((c) => { pace[c.id] = 0; });
+        recent.forEach((c) => caseCategoryIds(c).forEach((id) => { pace[id] += 1 / 6; }));
+        const prog = computeProgressFor(list, true);
+        const rows = baekCategories.map((c) => {
+            const have = prog[c.id].logbook + prog[c.id].vorwerte;
+            const rest = c.target - have;
+            if (rest <= 0) return { c, done: true, sort: -1 };
+            if (pace[c.id] <= 0) return { c, rest, never: true, sort: 1e9 };
+            const monthsLeft = rest / pace[c.id];
+            const eta = new Date(now.getFullYear(), now.getMonth() + Math.ceil(monthsLeft), 1);
+            return { c, rest, eta, sort: monthsLeft };
+        }).sort((a, b) => a.sort - b.sort);
+        const open = rows.filter((r) => !r.done);
+        const doneN = rows.length - open.length;
+        $('trend-forecast').innerHTML = open.map((r) => `
+            <div class="flex items-baseline justify-between gap-2 text-[12.5px]">
+                <span class="text-slate-700 dark:text-slate-200 truncate">${esc(r.c.short)} <span class="text-slate-400 dark:text-slate-500">· noch ${r.rest}</span></span>
+                <span class="shrink-0 ${r.never ? 'text-slate-400 dark:text-slate-500' : 'font-medium text-slate-700 dark:text-slate-200'}">${r.never ? 'bei diesem Tempo offen' : 'ca. ' + MONTHS_DE[r.eta.getMonth()] + ' ' + r.eta.getFullYear()}</span>
+            </div>`).join('') + (doneN ? `<p class="text-[11px] text-green-700 dark:text-green-400 pt-1">${doneN} ${doneN === 1 ? 'Richtzahl' : 'Richtzahlen'} bereits erreicht ✓</p>` : '');
+    }
+
     function renderEvaluation() {
+        renderTrend();
         const grid = $('baek-grid');
         const scope = evalScope();
         const prog = computeProgressFor(scope.cases, scope.withVorwerte);
@@ -4330,6 +4561,60 @@
         refreshIcons();
     }
 
+    // ---- Offline-App (Service Worker) und dauerhafter Speicher ----
+    function registerOfflineApp() {
+        try {
+            const ok = 'serviceWorker' in navigator && location.protocol === 'https:' && !/claude/.test(location.hostname);
+            if (ok) navigator.serviceWorker.register('sw.js').catch(() => {});
+            // Browser bitten, die Daten nicht automatisch zu löschen
+            if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+        } catch (e) {}
+    }
+
+    // ---- Gerätespeicher (Browser-Speicher, Safari ca. 5 MB) ----
+    const STORAGE_QUOTA = 5 * 1024 * 1024;
+    function storageUsage() {
+        let bytes = 0;
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                bytes += (k.length + (localStorage.getItem(k) || '').length) * 2;
+            }
+        } catch (e) { return null; }
+        return { bytes, pct: Math.min(100, Math.round(bytes / STORAGE_QUOTA * 100)) };
+    }
+    function fmtBytes(b) { return b > 1024 * 1024 ? (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB' : Math.round(b / 1024) + ' KB'; }
+    function renderStorageInfo() {
+        const u = storageUsage();
+        if (!u || !$('storage-used')) return;
+        $('storage-used').textContent = `${fmtBytes(u.bytes)} belegt (${u.pct} %)`;
+        $('storage-cap').textContent = `von ca. ${fmtBytes(STORAGE_QUOTA)}`;
+        const bar = $('storage-bar');
+        bar.style.width = Math.max(2, u.pct) + '%';
+        bar.style.background = u.pct >= 90 ? '#dc2626' : u.pct >= 80 ? '#d97706' : '#16a34a';
+        const perCase = cases.length ? u.bytes / cases.length : 1024;
+        const free = Math.max(0, Math.floor((STORAGE_QUOTA - u.bytes) / Math.max(400, perCase)));
+        $('storage-detail').textContent = `${cases.length} Fälle gespeichert · Platz für ungefähr ${free.toLocaleString('de-DE')} weitere`;
+        const pe = $('storage-persist');
+        if (navigator.storage && navigator.storage.persisted) {
+            navigator.storage.persisted().then((p) => {
+                const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+                pe.textContent = p || standalone ? 'Status: Daten dauerhaft gespeichert ✓' : 'Status: noch nicht dauerhaft gespeichert – App zum Home-Bildschirm hinzufügen.';
+            }).catch(() => {});
+        }
+    }
+    // Einmaliger Hinweis ab 80 % Belegung, danach nur noch in „Mehr“
+    function checkStorageWarning() {
+        const u = storageUsage();
+        if (!u || u.pct < 80 || storeGet('storageWarned') === '1') return;
+        storeSet('storageWarned', '1');
+        openDialog({
+            title: 'Gerätespeicher fast voll',
+            message: `Der Speicher dieser App auf diesem Gerät ist zu ${u.pct} % belegt. Wenn er voll ist, können keine neuen Fälle mehr gespeichert werden.\n\nDas hilft: Papierkorb leeren, Demo-Daten löschen und eine Backup-Datei sichern. Mit Google Sheets sind deine Daten zusätzlich in der Tabelle.\n\nDetails findest du jederzeit unter Mehr → Gerätespeicher.`,
+            buttons: [{ label: 'Später', value: false, kind: 'secondary' }, { label: 'Ansehen', value: true, kind: 'primary', action: () => { closeDialog(true); openSettingsSection('storage'); } }]
+        });
+    }
+
     // Kurzinfos in den eingeklappten Einstellungs-Überschriften.
     function updateSettingsSummaries() {
         const set = (id, t) => { const el = $(id); if (el) el.textContent = t; };
@@ -4344,9 +4629,12 @@
         set('set-sum-trash', nt === 0 ? 'Leer' : `${nt} ${nt === 1 ? 'Eintrag' : 'Einträge'} – wiederherstellbar`);
         const last = storeGet('lastBackupAt');
         const days = daysSince(last);
-        set('set-sum-export', !last ? 'Noch kein Backup'
-            : days === 0 ? 'Letztes Backup heute'
-            : `Letztes Backup vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`);
+        const fileTxt = !last ? 'keine Backup-Datei' : days === 0 ? 'Backup-Datei heute' : `Backup-Datei vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
+        set('set-sum-export', (typeof syncConfigured === 'function' && syncConfigured() && storeGet('syncLastAt'))
+            ? `Laufend über Google Sheets · ${fileTxt}`
+            : (!last ? 'Noch kein Backup' : days === 0 ? 'Letztes Backup heute' : `Letztes Backup vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`));
+        const su = typeof storageUsage === 'function' ? storageUsage() : null;
+        if (su) set('set-sum-storage', `${su.pct} % belegt${su.pct >= 80 ? ' – bitte ansehen' : ''}`);
         const nh = hiddenFormFields().size;
         set('set-sum-form', nh === 0 ? 'Alle Felder sichtbar' : `${nh} ${nh === 1 ? 'Feld' : 'Felder'} ausgeblendet`);
         set('set-sum-privacy', privacyAgeOnly() ? 'Nur Alter wird gespeichert' : 'Geburtsdatum wird gespeichert');
@@ -4382,7 +4670,7 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 5;
+    const SYNC_SCRIPT_VERSION = 6;
     const SYNC_POLL_MS = 2 * 60 * 1000;
     const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
@@ -4469,7 +4757,7 @@
     function sheetRecord(c) {
         return {
             id: c.id, date: c.date, pos: typeof c.pos === 'number' ? c.pos : null,
-            initials: c.initials || '', dob: c.dob || '', ageAtCase: typeof c.ageAtCase === 'number' ? c.ageAtCase : null,
+            initials: c.initials || '', dob: c.dob || '', ageAtCase: caseAge(c),
             notes: c.notes || '',
             asa: c.asa || '', opSaal: c.opSaal || '',
             procedure: c.procedure || '', procedure2: c.procedure2 || '',
@@ -4480,6 +4768,7 @@
             isSedierung: !!c.isSedierung, isAbdominell: !!c.isAbdominell, isKopfHals: !!c.isKopfHals,
             isIntrathorakal: !!c.isIntrathorakal, isIntrakraniell: !!c.isIntrakraniell, isSectio: !!c.isSectio,
             isAmbulant: !!c.isAmbulant, isFiberoptik: !!c.isFiberoptik, isVideo: !!c.isVideo, isSonoGefaess: !!c.isSonoGefaess,
+            isItsOrgan: !!c.isItsOrgan, isItsNiv: !!c.isItsNiv, isZvk: !!c.isZvk, isArterie: !!c.isArterie, isPleura: !!c.isPleura, isBronchoskopie: !!c.isBronchoskopie,
             btm: (c.btm || []).map((e) => ({ substanceId: e.substanceId, label: e.label, count: e.count })),
             cancelled: !!c.cancelled
         };
@@ -4573,6 +4862,7 @@
         }
         if (lastErr) throw lastErr;
         if (data && data.version != null) storeSet('syncScriptVersion', String(Number(data.version) || 0));
+        rememberCryptoMeta(data);
         if (data && !data.ok && data.error === 'action') { storeSet('syncScriptVersion', '0'); throw new Error('Das Skript in Google ist veraltet.'); }
         if (!data.ok && data.error === 'key') throw new Error('Geheimer Schlüssel falsch.');
         if (!data.ok && data.error === 'setup') throw new Error(data.message || 'Skript nicht eingerichtet – „einrichten“ ausführen.');
@@ -4623,7 +4913,8 @@
 
     const SHEET_FIELDS = ['date', 'asa', 'opSaal', 'procedure', 'procedure2', 'airway', 'spaPdkType', 'peripherType',
         'isVollnarkose', 'isSpaPdk', 'isPeripher', 'isSedierung', 'isAbdominell', 'isKopfHals', 'isIntrathorakal',
-        'isIntrakraniell', 'isSectio', 'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess'];
+        'isIntrakraniell', 'isSectio', 'isAmbulant', 'isFiberoptik', 'isVideo', 'isSonoGefaess',
+        'isItsOrgan', 'isItsNiv', 'isZvk', 'isArterie', 'isPleura', 'isBronchoskopie'];
 
     function applySheetCase(target, row) {
         SHEET_FIELDS.forEach((k) => { if (row[k] !== undefined) target[k] = row[k]; });
@@ -4758,17 +5049,189 @@
         return diffs;
     }
 
+    // ---- Verschlüsselung (Initialen, Geburtsdatum, Bemerkungen) ----------
+    // AES-GCM 256 Bit, Schlüssel per PBKDF2 (SHA-256, 310.000 Runden) aus
+    // deinem Passwort und einem zufälligen Salz. Das Salz und ein
+    // Prüfwert liegen im Skript, das Passwort nirgends. Auf jedem Gerät wird
+    // der abgeleitete Schlüssel lokal gespeichert (dort liegen die Daten
+    // ohnehin im Klartext); in die Tabelle geht nur Zeichensalat „enc:v1:…“.
+    const CRYPTO_FIELDS = ['initials', 'dob', 'notes'];
+    const CRYPTO_CHECK_TEXT = 'anaesthesie-logbuch-ok';
+    let cryptoKeyCache = null;
+
+    const b64 = {
+        enc: (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))),
+        dec: (str) => Uint8Array.from(atob(str), (ch) => ch.charCodeAt(0))
+    };
+    function isEncValue(v) { return /^enc:v1:/.test(String(v || '')); }
+    function cryptoMeta() { try { return JSON.parse(storeGet('syncCryptoMeta') || 'null'); } catch (e) { return null; } }
+    function hasCryptoSupport() { return !!(window.crypto && crypto.subtle && window.isSecureContext !== false); }
+
+    async function deriveCryptoKey(password, saltB64) {
+        const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64.dec(saltB64), iterations: 310000, hash: 'SHA-256' },
+            base, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    }
+    async function encryptText(key, text) {
+        if (text == null || text === '') return '';
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(String(text)));
+        return `enc:v1:${b64.enc(iv)}:${b64.enc(ct)}`;
+    }
+    async function decryptText(key, value) {
+        if (!isEncValue(value)) return value;
+        const [, , iv, ct] = String(value).split(':');
+        const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(iv) }, key, b64.dec(ct));
+        return new TextDecoder().decode(pt);
+    }
+    async function localCryptoKey() {
+        if (cryptoKeyCache) return cryptoKeyCache;
+        const jwk = storeGet('cryptoKey');
+        if (!jwk) return null;
+        try { cryptoKeyCache = await crypto.subtle.importKey('jwk', JSON.parse(jwk), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']); } catch (e) { cryptoKeyCache = null; }
+        return cryptoKeyCache;
+    }
+    async function storeCryptoKey(key, salt) {
+        const jwk = await crypto.subtle.exportKey('jwk', key);
+        storeSet('cryptoKey', JSON.stringify(jwk));
+        storeSet('cryptoSalt', salt);
+        cryptoKeyCache = key;
+    }
+    // 'off' = Tabelle unverschlüsselt · 'ready' = Schlüssel passt · 'locked' = Passwort nötig
+    function cryptoState() {
+        const m = cryptoMeta();
+        if (!m) return 'off';
+        return storeGet('cryptoKey') && storeGet('cryptoSalt') === m.salt ? 'ready' : 'locked';
+    }
+    function rememberCryptoMeta(data) {
+        if (data && Object.prototype.hasOwnProperty.call(data, 'crypto')) storeSet('syncCryptoMeta', JSON.stringify(data.crypto || null));
+    }
+
+    async function encryptOpsForSend(ops) {
+        if (cryptoState() !== 'ready') return ops;
+        const key = await localCryptoKey();
+        return Promise.all(ops.map(async (op) => {
+            if (!op.data || String(op.type).startsWith('vw-') || String(op.type).startsWith('trash-')) return op;
+            const data = Object.assign({}, op.data);
+            for (const f of CRYPTO_FIELDS) data[f] = await encryptText(key, data[f]);
+            return Object.assign({}, op, { data });
+        }));
+    }
+
+    async function decryptObj(key, o) {
+        for (const f of CRYPTO_FIELDS) {
+            if (!isEncValue(o[f])) continue;
+            try { o[f] = await decryptText(key, o[f]); } catch (e) { o[f] = f === 'initials' ? '🔒' : ''; o._decryptFailed = true; }
+        }
+        return o;
+    }
+    async function decryptState(state) {
+        if (!state || cryptoState() !== 'ready') return state;
+        const key = await localCryptoKey();
+        for (const c of state.cases || []) await decryptObj(key, c);
+        for (const t of state.trashItems || []) {
+            if (t.kind !== 'case' || !t.data) continue;
+            await decryptObj(key, t.data);
+            t.description = [t.data.initials, [t.data.procedure, t.data.procedure2].filter(Boolean).join(' + ')].filter(Boolean).join(' · ');
+        }
+        return state;
+    }
+
+    // Alle Fälle verschlüsselt neu senden (nach Einrichten/Neu-Festlegen)
+    function reencryptAllCases() {
+        const q = syncQueue();
+        const queued = new Set(q.map((o) => o.uid));
+        cases.filter((c) => !c.isDemo && !queued.has(c.uid)).forEach((c) => { touchCase(c); q.push(caseOp('upsert', c)); });
+        saveSyncQueue(q);
+        saveCases();
+    }
+
+    async function setupEncryption(reset) {
+        if (!hasCryptoSupport()) { showToast('Verschlüsselung wird von diesem Browser hier nicht unterstützt.', 'error'); return; }
+        const p1 = $('crypto-pass1').value, p2 = $('crypto-pass2').value;
+        if (p1.length < 8) { showToast('Bitte mindestens 8 Zeichen verwenden.', 'error'); return; }
+        if (p1 !== p2) { showToast('Die Passwörter stimmen nicht überein.', 'error'); return; }
+        const ok = await askConfirm(reset
+            ? 'Neues Passwort festlegen? Alle anderen Geräte brauchen danach das neue Passwort. Fälle, die nur auf anderen Geräten lesbar waren, müssen dort neu entsperrt und synchronisiert werden.'
+            : 'Verschlüsselung einrichten?\n\nWichtig: Das Passwort lässt sich nicht wiederherstellen. Schreib es dir sicher auf (z. B. Passwort-Manager). Alle Geräte brauchen dasselbe Passwort.', { title: reset ? 'Passwort neu festlegen' : 'Verschlüsselung einrichten', confirmLabel: reset ? 'Neu festlegen' : 'Einrichten' });
+        if (!ok) return;
+        try {
+            const salt = b64.enc(crypto.getRandomValues(new Uint8Array(16)));
+            const key = await deriveCryptoKey(p1, salt);
+            const check = await encryptText(key, CRYPTO_CHECK_TEXT);
+            const r = await syncRequest({ action: 'setCrypto', salt, check, force: !!reset });
+            if (!r.ok && r.error === 'exists') { rememberCryptoMeta(r); renderCryptoUI(); showToast('Die Tabelle ist schon verschlüsselt – bitte das bestehende Passwort eingeben.', 'warn'); return; }
+            if (!r.ok) throw new Error(r.message || 'Fehler');
+            rememberCryptoMeta(r);
+            await storeCryptoKey(key, salt);
+            $('crypto-pass1').value = ''; $('crypto-pass2').value = '';
+            reencryptAllCases();
+            renderCryptoUI();
+            showToast('Verschlüsselung aktiv – Daten werden verschlüsselt neu übertragen');
+            await syncNow({ manual: true });
+        } catch (err) {
+            showToast('Einrichten fehlgeschlagen: ' + (err && err.message ? err.message : err), 'error');
+        }
+    }
+
+    async function unlockEncryption() {
+        const m = cryptoMeta();
+        const pass = $('crypto-unlock').value;
+        if (!m || !pass) return;
+        try {
+            const key = await deriveCryptoKey(pass, m.salt);
+            let okCheck = false;
+            try { okCheck = (await decryptText(key, m.check)) === CRYPTO_CHECK_TEXT; } catch (e) { okCheck = false; }
+            if (!okCheck) { showToast('Passwort falsch.', 'error'); return; }
+            await storeCryptoKey(key, m.salt);
+            $('crypto-unlock').value = '';
+            renderCryptoUI();
+            showToast('Entsperrt');
+            await syncNow({ manual: true });
+        } catch (err) {
+            showToast('Entsperren fehlgeschlagen: ' + (err && err.message ? err.message : err), 'error');
+        }
+    }
+
+    function renderCryptoUI() {
+        const box = $('crypto-body');
+        if (!box) return;
+        const st = cryptoState();
+        const sub = $('crypto-state');
+        if (sub) sub.textContent = st === 'ready' ? 'aktiv' : st === 'locked' ? 'Passwort nötig' : 'aus';
+        $('crypto-setup').classList.toggle('hidden', st !== 'off' && !box.dataset.reset);
+        $('crypto-unlock-wrap').classList.toggle('hidden', st !== 'locked');
+        $('crypto-active').classList.toggle('hidden', st !== 'ready' || !!box.dataset.reset);
+        $('crypto-setup-btn').textContent = box.dataset.reset ? 'Neues Passwort festlegen' : 'Verschlüsselung einrichten';
+        $('crypto-cancel-btn').classList.toggle('hidden', !box.dataset.reset);
+        if (st === 'locked') $('sync-crypto').open = true;
+    }
+
+    function startCryptoReset() {
+        $('crypto-body').dataset.reset = '1';
+        renderCryptoUI();
+    }
+    function cancelCryptoReset() {
+        delete $('crypto-body').dataset.reset;
+        renderCryptoUI();
+    }
+
     // ---- Ablauf --------------------------------------------------------
     async function pushQueue(confirmBulk, stats) {
         let q = syncQueue();
         while (q.length > 0) {
             const batch = q.slice(0, SYNC_BATCH);
-            const r = await syncRequest({ action: 'push', ops: batch, confirmBulk });
+            const r = await syncRequest({ action: 'push', ops: await encryptOpsForSend(batch), confirmBulk });
             if (!r.ok && r.error === 'bulk') throw new Error(`${r.count} Stornos/Löschungen – bitte „Jetzt synchronisieren“ tippen und bestätigen.`);
             if (!r.ok) throw new Error(r.message || 'Unbekannter Fehler');
             const done = new Set();
             (r.results || []).forEach((x) => {
                 if (String(x.status).startsWith('fehler')) { stats.fehler = (stats.fehler || 0) + 1; return; }
+                if (x.status === 'veraltet') {
+                    // Die Tabelle hat eine neuere Fassung (anderes Gerät oder von Hand)
+                    const op = batch.find((o) => o.opId === x.opId);
+                    if (op && ['upsert', 'cancel', 'uncancel'].includes(op.type) && op.data) (stats.conflicts = stats.conflicts || []).push(op);
+                }
                 done.add(x.opId);
                 stats[x.status] = (stats[x.status] || 0) + 1;
             });
@@ -4797,6 +5260,19 @@
                 setSyncStatus('Nicht übertragen: Das Skript in Google ist veraltet. Aufträge bleiben gespeichert.', 'error');
                 return;
             }
+            // Verschlüsselte Tabelle ohne Passwort auf diesem Gerät: nichts
+            // senden (sonst gingen Daten unverschlüsselt hinaus) und nichts holen.
+            if (cryptoState() === 'locked') {
+                setSyncStatus('Die Tabelle ist verschlüsselt – bitte unten unter „Verschlüsselung“ das Passwort eingeben. Aufträge bleiben gespeichert.', 'warn');
+                renderCryptoUI();
+                return;
+            }
+            if (!cryptoMeta() && storeGet('cryptoKey')) {
+                setSyncStatus('Die Tabelle ist nicht mehr verschlüsselt. Bitte unter „Verschlüsselung“ neu einrichten – bis dahin wird nichts gesendet.', 'error');
+                removeStored('cryptoKey'); removeStored('cryptoSalt'); cryptoKeyCache = null;
+                renderCryptoUI();
+                return;
+            }
             // 2) Viele Stornos nur nach Rückfrage
             const destructive = syncQueue().filter((o) => DESTRUCTIVE_OPS.includes(o.type)).length;
             let confirmBulk = false;
@@ -4811,7 +5287,7 @@
             // 3) Aufträge senden
             await pushQueue(confirmBulk, stats);
             // 4) Stand der Tabelle holen und abgleichen
-            const state = await syncRequest({ action: 'state' });
+            const state = await decryptState(await syncRequest({ action: 'state' }));
             // Einmalig nach Umstellung auf Skript 5: eigene Fälle, die schon
             // in der Tabelle stehen, mit allen Angaben (Initialen,
             // Geburtsdatum, Bemerkung, Nr.) neu senden. Aus der Tabelle
@@ -4828,7 +5304,7 @@
             const rec = reconcileWithSheet(state);
             const hadMore = syncQueue().length > 0;
             if (hadMore) await pushQueue(confirmBulk, stats);
-            const finalState = hadMore || rec.pulledNew || rec.pulledChanged ? await syncRequest({ action: 'state' }) : state;
+            const finalState = hadMore || rec.pulledNew || rec.pulledChanged ? await decryptState(await syncRequest({ action: 'state' })) : state;
             report = {
                 at: new Date().toISOString(), rec,
                 diffs: compareTotals(appSyncTotals(), finalState.eval),
@@ -4845,6 +5321,11 @@
             if (stats.veraltet) parts.push(`${stats.veraltet} veraltet (Tabelle neuer)`);
             if (stats.fehler) parts.push(`${stats.fehler} Fehler`);
             setSyncStatus(parts.length ? parts.join(' · ') : 'Alles synchron', stats.fehler ? 'warn' : '');
+            if (stats.conflicts && stats.conflicts.length) {
+                syncBusy = false;
+                updateSyncUI();
+                await resolveConflicts(stats.conflicts);
+            }
             if (manual && (rec.missingCases.length || rec.missingVw.length)) {
                 syncBusy = false;
                 updateSyncUI();
@@ -4867,6 +5348,37 @@
             syncBusy = false;
             updateSyncUI();
         }
+    }
+
+    // Konflikt: Meine Änderung kam an, nachdem der Fall anderswo (anderes
+    // Gerät oder Tabelle) schon neuer geändert worden war. Nachfragen statt
+    // still verwerfen.
+    async function resolveConflicts(ops) {
+        const latest = new Map();
+        ops.forEach((op) => latest.set(op.uid, op));
+        let changed = false;
+        for (const op of latest.values()) {
+            const c = cases.find((x) => x.uid === op.uid);
+            if (!c) continue;
+            const d = op.data;
+            const when = op.at ? syncTimeLabel(op.at) : '';
+            const mine = [d.initials, [d.procedure, d.procedure2].filter(Boolean).join(' + '), d.cancelled ? '(storniert)' : ''].filter(Boolean).join(' · ');
+            const theirs = [c.initials, caseProcedureLabel(c), c.cancelled ? '(storniert)' : ''].filter(Boolean).join(' · ');
+            const r = await openDialog({
+                title: 'Fall wurde anderswo geändert',
+                message: `Der Fall vom ${formatDate(d.date || c.date)} wurde inzwischen auf einem anderen Gerät oder in der Tabelle geändert. Deine Änderung${when ? ' von ' + when : ''} wurde deshalb noch nicht übernommen.\n\nJetzt gültig: ${theirs}\nDeine Fassung: ${mine}`,
+                buttons: [
+                    { label: 'Andere Fassung behalten', value: 'theirs', kind: 'secondary' },
+                    { label: 'Meine übernehmen', value: 'mine', kind: 'primary' }
+                ]
+            });
+            if (r.value !== 'mine') continue;
+            applySheetCase(c, Object.assign({}, d, { uid: c.uid, ts: undefined, status: d.cancelled ? 'storniert' : 'aktiv' }));
+            touchCase(c);
+            const q = syncQueue(); q.push(caseOp('upsert', c)); saveSyncQueue(q);
+            changed = true;
+        }
+        if (changed) { saveCases(); refreshAll(); setTimeout(() => syncNow({ manual: false }), 300); }
     }
 
     // In der Tabelle fehlende Fälle/Vorwerte wieder hochladen – nur nach
@@ -4964,7 +5476,8 @@
     }
 
     function disconnectSync() {
-        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion', 'syncFullData'].forEach(removeStored);
+        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion', 'syncFullData', 'syncCryptoMeta', 'cryptoKey', 'cryptoSalt'].forEach(removeStored);
+        cryptoKeyCache = null;
         if ($('sync-url')) { $('sync-url').value = ''; $('sync-key').value = ''; }
         updateSyncUI();
     }
@@ -5184,6 +5697,10 @@
         } else if (v) {
             lines.push(line('circle-check', 'is-ok', `Verbunden · Skript-Version ${esc(v)}`));
         }
+        const cst = cryptoState();
+        if (cst === 'ready') lines.push(line('lock', 'is-ok', 'Initialen, Geburtsdatum und Bemerkungen werden verschlüsselt übertragen'));
+        else if (cst === 'locked') lines.push(line('lock', 'is-bad', '<b>Tabelle verschlüsselt – Passwort nötig.</b> Unten unter „Verschlüsselung“ eingeben.'));
+        else if (v) lines.push(line('lock-open', 'is-warn', 'Personendaten gehen unverschlüsselt in die Tabelle – Verschlüsselung empfohlen (unten).'));
         if (n > 0) lines.push(line('cloud-upload', 'is-warn', `${n} ${n === 1 ? 'Auftrag wartet' : 'Aufträge warten'} auf Übertragung`));
         if (rep && !scriptOutdated()) {
             const mc = (rep.missingCases || []).filter((u) => cases.some((c) => c.uid === u)).length;
@@ -5245,6 +5762,7 @@
         const auto = $('sync-auto-toggle');
         if (auto) auto.checked = syncAuto();
         renderSyncCard();
+        renderCryptoUI();
     }
 
     function fillGsView() {
@@ -5294,6 +5812,20 @@
 
     // Gibt true zurück, wenn gespeichert/geteilt wurde, false bei Abbruch/Fehler.
     async function saveFile(filename, content, mime) {
+        const ok = await saveFileRaw(filename, content, mime);
+        const personal = !/anonym|Logbuch-Sync/i.test(filename);
+        if (ok && personal && storeGet('exportHintShown') !== '1') {
+            storeSet('exportHintShown', '1');
+            openDialog({
+                title: 'Hinweis zur Datei',
+                message: 'Diese Datei enthält Patientendaten (Initialen, Geburtsdatum). Bitte:\n\n• nicht in geteilten Ordnern oder Chats ablegen,\n• löschen, wenn du sie nicht mehr brauchst,\n• zum Weitergeben „PDF anonym“ nutzen.\n\nDieser Hinweis erscheint nur einmal.',
+                buttons: [{ label: 'Verstanden', value: true, kind: 'primary' }]
+            });
+        }
+        return ok;
+    }
+
+    async function saveFileRaw(filename, content, mime) {
         const host = window.claude && typeof window.claude.use === 'function' ? window.claude : null;
         if (host) {
             let dl = null;
@@ -5385,7 +5917,8 @@
         const headers = ['Datum', 'Initialen', 'Demo', 'Geburtsdatum', 'Alter', 'ASA', 'Ort', 'Eingriff',
             'Allgemeinanästhesie', 'Atemweg', 'Rückenmarksnahe RA', 'Art RM-RA', 'Periphere RA', 'Art periphere RA', 'Analgosedierung',
             'Abdominell', 'Kopf/Hals', 'Intrathorakal', 'Intrakraniell', 'Geburtshilfe Eingriff', 'Ambulant',
-            'Fiberoptik', 'Videolaryngoskopie', 'Sono-Gefäßpunktion', 'Erfüllte Kriterien',
+            'Fiberoptik', 'Videolaryngoskopie', 'Sono-Gefäßpunktion',
+            'Intensivbehandlung ≥2 Organe', 'Atemunterstützung n. intubiert', 'ZVK', 'Arterie', 'Pleurapunktion/-drainage', 'Tracheo-/Bronchoskopie', 'Erfüllte Kriterien',
             'BTM/Opioide (Zusammenfassung)', 'Bemerkungen'];
         const rows = sortedCasesAsc().map((c) => {
             const age = caseAge(c);
@@ -5394,6 +5927,7 @@
                 yn(c.isVollnarkose), caseAirway(c), yn(c.isSpaPdk), c.spaPdkType || '', yn(c.isPeripher), c.peripherType || '', yn(c.isSedierung),
                 yn(c.isAbdominell), yn(c.isKopfHals), yn(c.isIntrathorakal), yn(c.isIntrakraniell), yn(c.isSectio), yn(c.isAmbulant),
                 yn(c.isFiberoptik), yn(c.isVideo), yn(c.isSonoGefaess),
+                yn(c.isItsOrgan), yn(c.isItsNiv), yn(c.isZvk), yn(c.isArterie), yn(c.isPleura), yn(c.isBronchoskopie),
                 caseCriteriaLabels(c).join(', '), btmCaseLine(c), c.notes || ''];
         });
         return { headers, rows };
@@ -6201,7 +6735,10 @@
         if (!reminder) return;
         const snoozeUntil = storeGet('backupSnoozeUntil');
         const snoozed = snoozeUntil && new Date(snoozeUntil) > new Date();
-        const due = hasData && days >= 7;
+        // Mit Google Sheets gilt die Tabelle als laufende Sicherung: nur
+        // erinnern, wenn länger als 7 Tage nichts abgeglichen wurde.
+        const syncOk = typeof syncConfigured === 'function' && syncConfigured() && daysSince(storeGet('syncLastAt')) < 7 && syncQueue().length === 0;
+        const due = hasData && days >= 7 && !syncOk;
         reminder.classList.toggle('hidden', !due || snoozed);
         const dot = $('tab-dot-settings');
         if (dot) dot.classList.toggle('hidden', !due);
@@ -6486,7 +7023,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 5)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 6)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -6519,12 +7056,14 @@
  *    lassen sich aus der App wiederherstellen.
  *  - Jede UID zählt in der Auswertung nur einmal.
  *
- * DATENSCHUTZ: Die Tabelle enthält patientenbezogene Daten (Initialen,
- * Geburtsdatum). Tabelle nicht freigeben, Google-Konto mit 2-Faktor-
- * Anmeldung schützen, geheimen Schlüssel nicht weitergeben.
+ * DATENSCHUTZ: Initialen, Geburtsdatum und Bemerkungen verschlüsselt die
+ * App mit einem Passwort, bevor sie hierher geschickt werden (Spalten
+ * beginnen dann mit „enc:“). Das Skript und Google sehen nur Zeichensalat;
+ * Alter und Richtzahlen bleiben lesbar. Tabelle trotzdem nicht freigeben,
+ * Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten.
  */
 
-var SCRIPT_VERSION = 5;
+var SCRIPT_VERSION = 6;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -6554,7 +7093,13 @@ var RZ = [
   ['kopf_hals', 'Kopf/Hals', 'Eingriffe Kopf-Hals-Bereich', 100],
   ['regional_zentral', 'RM-RA', 'Rückenmarksnahe Regionalanästhesien', 50],
   ['regional_peripher', 'Periphere RA', 'Periphere Regionalanästhesieverfahren', 50],
-  ['ambulant', 'Ambulant', 'Anästhesien bei ambulanten Eingriffen', 50]
+  ['ambulant', 'Ambulant', 'Anästhesien bei ambulanten Eingriffen', 50],
+  ['its_organ', 'ITS ≥ 2 Organe', 'Intensivbehandlung bei Funktionsstörung ≥ 2 vitaler Organsysteme', 100],
+  ['its_niv', 'NIV/Atemunterst.', 'Atemunterstützung bei nicht-intubierten Patienten', 50],
+  ['zvk', 'ZVK', 'Zentralvenöse Zugänge', 30],
+  ['arterie', 'Arterie', 'Arterielle Zugänge', 30],
+  ['pleura', 'Pleura', 'Pleurapunktionen, Pleuradrainagen', 5],
+  ['bronchoskopie', 'Bronchoskopie', 'Tracheo- und Bronchoskopien', 25]
 ];
 
 var GEBURTSHILFE = ['Sectio Caesarea', 'Manuelle Plazentalösung', 'Curettage p.p.', 'Cerclage',
@@ -6592,6 +7137,12 @@ var CASE_COLS = [
   ['Fiberoptik', 'isFiberoptik', 'bool'],
   ['Videolaryngoskopie', 'isVideo', 'bool'],
   ['Sono-Gefäßpunktion', 'isSonoGefaess', 'bool'],
+  ['ZVK', 'isZvk', 'bool'],
+  ['Arterie', 'isArterie', 'bool'],
+  ['Tracheo-/Bronchoskopie', 'isBronchoskopie', 'bool'],
+  ['Pleurapunktion/-drainage', 'isPleura', 'bool'],
+  ['ITS ≥ 2 Organsysteme', 'isItsOrgan', 'bool'],
+  ['Atemunterstützung n. intubiert', 'isItsNiv', 'bool'],
   ['BTM (Ampullen)', 'btm', 'text'],
   ['Bemerkungen', 'notes', 'text']
 ].concat(RZ.map(function (r) { return ['RZ ' + r[1], 'rz:' + r[0], 'rz']; }))
@@ -6733,7 +7284,13 @@ function computeRz_(o) {
     kopf_hals: !!o.isKopfHals,
     regional_zentral: !!o.isSpaPdk,
     regional_peripher: !!o.isPeripher,
-    ambulant: !!o.isAmbulant
+    ambulant: !!o.isAmbulant,
+    its_organ: !!o.isItsOrgan,
+    its_niv: !!o.isItsNiv,
+    zvk: !!o.isZvk,
+    arterie: !!o.isArterie,
+    pleura: !!o.isPleura,
+    bronchoskopie: !!o.isBronchoskopie
   };
 }
 
@@ -6781,8 +7338,16 @@ function fillCaseRow_(row, km, o) {
 
 function hasCaseContent_(o) { return !!(o.date || o.procedure); }
 
+function isEnc_(v) { return /^enc:/.test(String(v || '')); }
+
+// Bei aktiver Verschlüsselung nie Klartext-Personendaten in Verlauf/Papierkorb
+function scrubIfCrypto_(key, v) {
+  if ((key === 'initials' || key === 'dob' || key === 'notes') && v && !isEnc_(v) && cryptoMeta_()) return '';
+  return v;
+}
+
 function caseDescription_(o) {
-  return [o.initials, [o.procedure, o.procedure2].filter(String).join(' + ')].filter(String).join(' · ');
+  return [isEnc_(o.initials) ? '🔒' : o.initials, [o.procedure, o.procedure2].filter(String).join(' + ')].filter(String).join(' · ');
 }
 
 // ------------------------------------------------------------------
@@ -7238,6 +7803,8 @@ function doPost(e) {
       res = withLock_(function () { return push_(body.ops || [], !!body.confirmBulk); });
     } else if (body.action === 'state' || body.action === 'restore') {
       res = withLock_(state_);
+    } else if (body.action === 'setCrypto') {
+      res = withLock_(function () { return setCrypto_(body); });
     } else {
       res = { ok: false, error: 'action', message: 'Unbekannte Aktion' };
     }
@@ -7269,11 +7836,85 @@ function withLock_(fn) {
   try { return fn(); } finally { lock.releaseLock(); }
 }
 
+// ------------------------------------------------------------------
+// Verschlüsselung: Das Skript speichert nur Salz und Prüfwert – nie das
+// Passwort. Ver- und entschlüsselt wird ausschließlich in der App.
+// ------------------------------------------------------------------
+function cryptoMeta_() {
+  var p = PropertiesService.getScriptProperties();
+  var salt = p.getProperty('CRYPTO_SALT'), check = p.getProperty('CRYPTO_CHECK');
+  return salt && check ? { salt: salt, check: check, since: p.getProperty('CRYPTO_SINCE') || '' } : null;
+}
+
+function setCrypto_(body) {
+  var p = PropertiesService.getScriptProperties();
+  if (cryptoMeta_() && !body.force) return { ok: false, error: 'exists', crypto: cryptoMeta_() };
+  if (typeof body.salt !== 'string' || typeof body.check !== 'string' || body.salt.length < 16 || body.check.indexOf('enc:') !== 0) {
+    return { ok: false, error: 'input', message: 'Ungültige Verschlüsselungsdaten' };
+  }
+  p.setProperty('CRYPTO_SALT', body.salt);
+  p.setProperty('CRYPTO_CHECK', body.check);
+  p.setProperty('CRYPTO_SINCE', new Date().toISOString());
+  var cleaned = scrubPlainPersonalData_(ss_());
+  return { ok: true, crypto: cryptoMeta_(), cleaned: cleaned };
+}
+
+// Unverschlüsselte Personendaten aus Verlauf und Papierkorb entfernen
+// (die aktuellen Zeilen in „Fälle“ schickt die App verschlüsselt neu).
+function scrubPlainPersonalData_(ss) {
+  var n = 0;
+  ss.getSheets().forEach(function (sh) {
+    var name = sh.getName();
+    if (name.indexOf(SHEET_HISTORY) !== 0) return;
+    var hm = hmap_(sh), last = sh.getLastRow();
+    if (last < 2) return;
+    ['Initialen', 'Geburtsdatum', 'Bemerkungen'].forEach(function (h) {
+      if (!(h in hm)) return;
+      var rng = sh.getRange(2, hm[h] + 1, last - 1, 1);
+      var vals = rng.getValues().map(function (r) { if (r[0] && !isEnc_(r[0])) { n++; return ['']; } return [r[0]]; });
+      rng.setValues(vals);
+    });
+  });
+  var ts = ss.getSheetByName(SHEET_TRASH);
+  if (ts && ts.getLastRow() >= 2) {
+    var rng = ts.getRange(2, 1, ts.getLastRow() - 1, TRASH_HEADERS.length);
+    var vals = rng.getValues().map(function (r) {
+      if (r[1] !== 'Fall') return r;
+      var d = {};
+      try { d = JSON.parse(r[6] || '{}'); } catch (e) { d = {}; }
+      ['initials', 'dob', 'notes'].forEach(function (k) { if (d[k] && !isEnc_(d[k])) { d[k] = ''; n++; } });
+      r[3] = caseDescription_(d);
+      r[6] = JSON.stringify(d);
+      return r;
+    });
+    rng.setValues(vals);
+  }
+  return n;
+}
+
+// Protokoll (älter als 90 Tage) und Verlauf (älter als 1 Jahr) höchstens
+// einmal am Tag aufräumen, damit die Tabelle schnell bleibt.
+function pruneOld_(ss) {
+  var p = PropertiesService.getScriptProperties();
+  var today = isoDate_(new Date());
+  if (p.getProperty('LAST_PRUNE') === today) return;
+  p.setProperty('LAST_PRUNE', today);
+  [[SHEET_LOG, 2, 90], [SHEET_HISTORY, 1, 365]].forEach(function (cfg) {
+    var sh = ss.getSheetByName(cfg[0]);
+    if (!sh || sh.getLastRow() < 2) return;
+    var cutoff = Date.now() - cfg[2] * 86400000;
+    var col = sh.getRange(2, cfg[1], sh.getLastRow() - 1, 1).getValues();
+    var n = 0;
+    while (n < col.length && col[n][0] instanceof Date && col[n][0].getTime() < cutoff) n++;
+    if (n > 0) sh.deleteRows(2, n);
+  });
+}
+
 function ping_() {
   var ss = ss_();
   var ev = computeEval_(ss);
   return {
-    ok: true, version: SCRIPT_VERSION, name: ss.getName(), sheetUrl: ss.getUrl(),
+    ok: true, version: SCRIPT_VERSION, name: ss.getName(), sheetUrl: ss.getUrl(), crypto: cryptoMeta_(),
     xlsxUrl: 'https://docs.google.com/spreadsheets/d/' + ss.getId() + '/export?format=xlsx',
     rows: ev.activeCases, vorwerteBlocks: ev.vorwerteBlocks
   };
@@ -7328,7 +7969,7 @@ function state_() {
     });
   }
   var trash = readTrash_(ss);
-  return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss) };
+  return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss), crypto: cryptoMeta_() };
 }
 
 // ------------------------------------------------------------------
@@ -7366,6 +8007,7 @@ function push_(ops, confirmBulk) {
     results.push({ opId: op && op.opId, status: status });
   });
   if (results.some(function (r) { return r.status === 'ok'; })) refreshAll_(ss);
+  try { pruneOld_(ss); } catch (e) {}
   return { ok: true, version: SCRIPT_VERSION, results: results };
 }
 
@@ -7426,7 +8068,7 @@ function applyCaseOp_(op, ctx) {
       return 'ok';
     }
     if (op.ts <= currentTs) return 'veraltet';
-    ctx.hist.appendRow([new Date(), label, op.opId].concat(CASE_COLS.map(function (c) { return current[km[c[1]]]; })));
+    ctx.hist.appendRow([new Date(), label, op.opId].concat(CASE_COLS.map(function (c) { return scrubIfCrypto_(c[1], current[km[c[1]]]); })));
     sh.getRange(row, 1, 1, lastCol).setValues([build(status, label, current.slice())]);
     return 'ok';
   }
@@ -7436,6 +8078,7 @@ function applyCaseOp_(op, ctx) {
     if (op.ts <= currentTs) return 'veraltet';
     var o = rowToCase_(current, km);
     o.ts = op.ts;
+    ['initials', 'dob', 'notes'].forEach(function (k) { o[k] = scrubIfCrypto_(k, o[k]); });
     toTrash_(ctx, 'Fall', o, op.opId);
     sh.deleteRow(row);
     return 'ok';
