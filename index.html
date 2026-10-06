@@ -399,6 +399,13 @@
         .dark .set-row-head h3 { color: #e2e8f0; }
         .set-row-hint { font-size: 11px; color: #64748b; margin-bottom: .5rem; }
         .dark .set-row-hint { color: #94a3b8; }
+        .stock-kind { position: relative; display: block; cursor: pointer; }
+        .stock-kind input { position: absolute; opacity: 0; pointer-events: none; }
+        .stock-kind span { display: block; text-align: center; padding: .4rem .25rem; border-radius: .375rem; color: #475569; }
+        .stock-kind input:checked + span { background: #fff; color: #0369a1; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+        .stock-kind input:focus-visible + span { outline: 2px solid #0284c7; }
+        .dark .stock-kind span { color: #cbd5e1; }
+        .dark .stock-kind input:checked + span { background: #1e293b; color: #7dd3fc; }
         .set-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .5rem .75rem; font-size: .75rem; font-weight: 500; border-radius: .5rem; background: #f1f5f9; color: #334155; transition: background-color .15s; }
         .set-btn:hover { background: #e2e8f0; }
         .dark .set-btn { background: #334155; color: #e2e8f0; }
@@ -776,6 +783,45 @@
 
     <!-- TAB: BTM -->
     <main id="tab-content-btm" class="tab-content hidden flex-1 pb-12">
+        <section id="btm-stock-card" class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 mb-4">
+            <div class="flex items-center justify-between gap-2">
+                <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Mein Bestand</h2>
+                <button type="button" id="btm-stock-add-btn" onclick="openStockForm()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"><i data-lucide="plus" class="w-3.5 h-3.5 pointer-events-none"></i> Bestand eintragen</button>
+            </div>
+            <form id="btm-stock-form" class="hidden mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 space-y-3" onsubmit="saveStockEntry(event)">
+                <div class="grid grid-cols-3 gap-1 p-1 rounded-lg bg-slate-200/70 dark:bg-slate-700/60 text-xs font-medium" role="radiogroup" aria-label="Art">
+                    <label class="stock-kind"><input type="radio" name="stock-kind" value="in" checked onchange="updateStockFormHint()"><span>Zugang</span></label>
+                    <label class="stock-kind"><input type="radio" name="stock-kind" value="out" onchange="updateStockFormHint()"><span>Abgang</span></label>
+                    <label class="stock-kind"><input type="radio" name="stock-kind" value="inv" onchange="updateStockFormHint()"><span>Inventur</span></label>
+                </div>
+                <p id="stock-kind-hint" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="stock-date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Datum</label>
+                        <input type="date" id="stock-date" required class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label for="stock-count" id="stock-count-label" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ampullen</label>
+                        <input type="number" id="stock-count" min="0" step="1" inputmode="numeric" required placeholder="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label for="stock-substance" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Substanz</label>
+                    <select id="stock-substance" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm"></select>
+                </div>
+                <div>
+                    <label for="stock-note" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Bemerkung <span class="font-normal text-slate-400">(optional)</span></label>
+                    <input type="text" id="stock-note" maxlength="200" placeholder="z. B. Apotheke, Station 3, Bruch" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-sm">
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" onclick="closeStockForm()" class="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-lg bg-brand-600 hover:bg-brand-700 text-white">Speichern</button>
+                </div>
+            </form>
+            <div id="btm-stock-list" class="mt-2 divide-y divide-slate-100 dark:divide-slate-700/50"></div>
+            <p id="btm-stock-empty" class="hidden mt-3 text-xs text-slate-500 dark:text-slate-400">Noch nichts erfasst. Trage über <b>Bestand eintragen</b> ein, was du bekommst (<b>Zugang</b>) oder gerade zählst (<b>Inventur</b>). Der Verbrauch aus deinen Fällen wird automatisch abgezogen.</p>
+            <p id="btm-stock-foot" class="hidden mt-2 text-[11px] text-slate-400">Bestand = Inventur bzw. erster Eintrag + Zugänge − Abgänge − Verbrauch aus Fällen ab diesem Tag. Tippe auf eine Substanz für den Verbrauch.</p>
+        </section>
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
             <div class="flex flex-col sm:flex-row gap-3 justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700/50">
                 <div class="relative w-full sm:w-72">
@@ -801,13 +847,13 @@
                 <button type="button" onclick="toggleBtmReorderMode()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg whitespace-nowrap self-start sm:self-auto">Fertig</button>
             </div>
 
+            <div id="btm-overview-totals" class="hidden text-xs text-slate-600 dark:text-slate-300 px-1"></div>
             <div id="btm-overview-list" class="space-y-4"></div>
             <div id="btm-overview-empty" class="hidden py-12 text-center text-slate-400 space-y-2">
                 <i data-lucide="inbox" class="w-10 h-10 mx-auto opacity-40"></i>
                 <p class="text-sm">Keine BTM-Einträge gefunden.</p>
             </div>
 
-            <div id="btm-overview-totals" class="pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs text-slate-600 dark:text-slate-300"></div>
         </div>
     </main>
 
@@ -1086,6 +1132,7 @@
                                 <li><b>Auswertung</b>: Richtzahlen mit Logbuch + Vorwerte = Gesamt. Wird bei jedem Abgleich und beim Öffnen neu gezählt (auch über das Menü <b>Logbuch → Auswertung aktualisieren</b>).</li>
                                 <li><b>Fälle</b>: ein Fall je Zeile mit allen Angaben, sortiert nach OP-Datum und <b>Nr.</b> (Reihenfolge am Tag wie in der App), stornierte grau. Graue Spalten rechnet das Skript (Alter, Kind ≤ 5, RZ …) bzw. sind technisch (Version, UID).</li>
                                 <li><b>Vorwerte</b>: deine Vorwerte-Blöcke (stornierte grau).</li>
+                                <li><b>BTM-Bestand</b>: deine Zugänge, Abgänge und Inventuren (stornierte grau). Der Bestand je Substanz steht unten in der <b>Auswertung</b>.</li>
                                 <li><b>Papierkorb</b>: endgültig gelöschte Fälle und Vorwerte – in der App unter Mehr → Papierkorb wiederherstellbar.</li>
                                 <li><b>Verlauf</b> (alte Fassungen) und <b>Protokoll</b> (jeder Auftrag aus der App).</li>
                             </ul>
@@ -1805,6 +1852,8 @@
     let vorwerte = loadList('vorwerte');
     // Papierkorb (endgültig gelöschte Fälle/Vorwerte, wiederherstellbar)
     let trash = loadList('trash');
+    // BTM-Bestand: Zugänge (+), Abgänge (−), Inventuren (gezählter Bestand)
+    let btmStock = loadList('btmStock');
     let editingCaseId = null;
     let editingVorwertId = null;
     let reorderMode = false;
@@ -2980,8 +3029,9 @@
             return;
         }
         empty.classList.add('hidden');
-        totals.classList.remove('hidden');
-        totals.innerHTML = `<strong>Summe${q ? ' (Treffer)' : ''}:</strong> ` + esc(btmSumsLine(list));
+        // Gesamtverbrauch steht oben unter „Mein Bestand“; hier nur die Summe der Suchtreffer
+        totals.classList.toggle('hidden', !q);
+        if (q) totals.innerHTML = `<strong>Summe (Treffer):</strong> ` + esc(btmSumsLine(list));
 
         if (!grouped) {
             const flat = list.slice().sort((a, b) => {
@@ -3017,6 +3067,241 @@
         }).join('');
         refreshIcons();
     }
+
+    // ---------------------------------------------------------------
+    // BTM-Bestand
+    // ---------------------------------------------------------------
+    // Einträge: { id, date, substanceId, label, kind: 'in'|'out'|'inv',
+    // count (Zugang +, Abgang −, Inventur = gezählter Bestand), note, ts,
+    // cancelled }. Gezählt wird je Substanz ab der letzten Inventur, sonst
+    // ab dem ersten Eintrag; der Verbrauch aus Fällen ab diesem Tag wird
+    // abgezogen (ältere Fälle verfälschen den Bestand so nicht).
+    let btmStockOpen = null;
+
+    function saveBtmStock() { storeSet('btmStock', JSON.stringify(btmStock)); }
+    function btmName(label) { return String(label || '').split(' (')[0].trim(); }
+    function activeStock() { return btmStock.filter((e) => !e.cancelled); }
+    function stockKindLabel(k) { return k === 'inv' ? 'Inventur' : k === 'out' ? 'Abgang' : 'Zugang'; }
+    function stockKindFrom(kind, n) {
+        const k = String(kind || '').toLowerCase();
+        if (k.startsWith('inv')) return 'inv';
+        if (k === 'out' || k.startsWith('ab') || n < 0) return 'out';
+        return 'in';
+    }
+    const round2 = (n) => Math.round(n * 100) / 100;
+
+    // Gleiche Regeln wie im Skript (stockSummary_) – sonst Abweichung App ↔ Tabelle
+    function stockSummary(entries, uses) {
+        const by = new Map();
+        const get = (k) => { if (!by.has(k)) by.set(k, { es: [], uses: [] }); return by.get(k); };
+        entries.forEach((e) => get(e.name).es.push(e));
+        uses.forEach((u) => get(u.name).uses.push(u));
+        const rank = (k) => { const i = BTM_OPTIONS.findIndex((o) => btmName(o.label) === k); return i < 0 ? 999 : i; };
+        return Array.from(by.keys()).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b)).map((name) => {
+            const g = by.get(name);
+            const es = g.es.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.ts || 0) - (b.ts || 0));
+            let inv = null;
+            es.forEach((e) => { if (e.kind === 'inv') inv = e; });
+            const start = inv ? inv.date : es.length ? es[0].date : '';
+            const counts = (e) => inv ? (e !== inv && e.kind !== 'inv' && ((e.date || '') > inv.date || (e.date === inv.date && (e.ts || 0) > (inv.ts || 0)))) : e.kind !== 'inv';
+            let incoming = 0, out = 0;
+            es.forEach((e) => { if (!counts(e)) return; if (e.count > 0) incoming += e.count; else out -= e.count; });
+            const usesIn = g.uses.filter((u) => !start || (u.date || '') >= start);
+            const used = usesIn.reduce((s, u) => s + u.n, 0);
+            return {
+                name, start, inventory: inv ? inv.count : null, incoming: round2(incoming), out: round2(out), used: round2(used),
+                stock: es.length ? round2((inv ? inv.count : 0) + incoming - out - used) : null,
+                entries: es, counts, uses: usesIn, allUses: g.uses
+            };
+        });
+    }
+
+    function computeBtmStock(ownOnly) {
+        const uses = [];
+        cases.filter((c) => !c.cancelled && !(ownOnly && c.isDemo)).forEach((c) => (c.btm || []).forEach((e) => {
+            const n = Number(e.count) || 0;
+            if (n > 0) uses.push({ name: btmName(e.label), date: c.date || '', n, c });
+        }));
+        const entries = activeStock().map((e) => ({ name: btmName(e.label), date: e.date || '', kind: e.kind, count: Number(e.count) || 0, ts: e.ts || 0, e }));
+        return stockSummary(entries, uses);
+    }
+
+    function stockOp(type, e) {
+        return { opId: newUid(), type, uid: e.id, ts: e.ts, at: new Date().toISOString(),
+            data: { date: e.date, label: btmName(e.label), substanceId: e.substanceId || '', kind: stockKindLabel(e.kind), count: e.count, note: e.note || '', cancelled: !!e.cancelled } };
+    }
+
+    function applySheetStock(e, row) {
+        const n = Number(row.count) || 0;
+        e.date = row.date || e.date || todayStr();
+        e.label = row.label || e.label;
+        const opt = BTM_OPTIONS.find((o) => o.id === row.substanceId) || BTM_OPTIONS.find((o) => btmName(o.label) === row.label);
+        e.substanceId = opt ? opt.id : (row.substanceId || 'tabelle:' + row.label);
+        e.kind = stockKindFrom(row.kind, n);
+        e.count = e.kind === 'inv' ? Math.abs(n) : e.kind === 'out' ? -Math.abs(n) : Math.abs(n);
+        e.note = row.note || '';
+        e.ts = row.ts;
+        if (row.status === 'storniert') e.cancelled = true; else delete e.cancelled;
+        return e;
+    }
+
+    function fmtSigned(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + fmtAmount(Math.abs(n)); }
+
+    function renderBtmStock() {
+        const box = $('btm-stock-list');
+        if (!box) return;
+        const list = computeBtmStock(false);
+        const hasAny = list.length > 0;
+        $('btm-stock-empty').classList.toggle('hidden', hasAny);
+        $('btm-stock-foot').classList.toggle('hidden', !hasAny);
+        box.innerHTML = list.map((s) => {
+            const open = btmStockOpen === s.name;
+            const neg = s.stock !== null && s.stock < 0;
+            const cls = s.stock === null ? 'text-slate-400' : neg ? 'text-red-600 dark:text-red-400' : s.stock === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100';
+            const sub = s.stock === null
+                ? `Noch kein Bestand erfasst · verbraucht ${fmtAmount(s.used)} Amp.`
+                : `ab ${formatDate(s.start)}${s.inventory !== null ? ` · Inventur ${fmtAmount(s.inventory)}` : ''}${s.incoming ? ` · +${fmtAmount(s.incoming)}` : ''}${s.out ? ` · −${fmtAmount(s.out)}` : ''} · verbraucht ${fmtAmount(s.used)}`;
+            return `<div class="stock-item" data-name="${esc(s.name)}">
+                <button type="button" data-stock-toggle class="w-full flex items-center gap-3 py-2.5 text-left" aria-expanded="${open}">
+                    <span class="flex-1 min-w-0"><span class="block text-sm font-medium text-slate-800 dark:text-slate-100 truncate">${esc(s.name)}</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">${esc(sub)}</span></span>
+                    <span class="text-right shrink-0"><span class="block text-xl font-bold tabular-nums leading-none ${cls}">${s.stock === null ? '–' : (neg ? '−' : '') + fmtAmount(Math.abs(s.stock))}</span><span class="block text-[10px] text-slate-400 mt-0.5">Amp.</span></span>
+                    <i data-lucide="${open ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none"></i>
+                </button>
+                ${open ? stockDetailHtml(s) : ''}
+            </div>`;
+        }).join('');
+        refreshIcons();
+    }
+
+    function stockDetailHtml(s) {
+        const uses = (s.stock === null ? s.allUses : s.uses).slice()
+            .sort((a, b) => (b.date || '').localeCompare(a.date || '') || String(b.c.id).localeCompare(String(a.c.id)));
+        const MAX = 40;
+        const useRows = uses.slice(0, MAX).map((u) => `<li class="flex items-baseline gap-2 py-1">
+                <span class="tabular-nums text-slate-500 shrink-0">${esc(formatDate(u.date))}</span>
+                <span class="flex-1 min-w-0 truncate">${esc([u.c.initials, caseProcedureLabel(u.c)].filter(Boolean).join(' · ') || '–')}${u.c.isDemo ? ' <span class="text-slate-400">(Demo)</span>' : ''}</span>
+                <span class="tabular-nums font-medium shrink-0">−${esc(fmtAmount(u.n))}</span></li>`).join('');
+        const ents = s.entries.slice().reverse().map((x) => {
+            const on = s.counts(x) || x.kind === 'inv' && x === s.entries.filter((y) => y.kind === 'inv').slice(-1)[0];
+            const val = x.kind === 'inv' ? `= ${fmtAmount(x.count)}` : fmtSigned(x.count);
+            return `<li class="flex items-center gap-2 py-1 ${on ? '' : 'opacity-50'}">
+                <span class="tabular-nums text-slate-500 shrink-0">${esc(formatDate(x.date))}</span>
+                <span class="flex-1 min-w-0 truncate">${stockKindLabel(x.kind)}${x.e.note ? ' · ' + esc(x.e.note) : ''}${on ? '' : ' <span class="text-slate-400">(vor Inventur)</span>'}</span>
+                <span class="tabular-nums font-medium shrink-0">${esc(val)}</span>
+                <button type="button" data-stock-del="${esc(x.e.id)}" class="p-1 -my-1 text-slate-400 hover:text-red-600" title="Eintrag löschen" aria-label="Eintrag löschen"><i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i></button></li>`;
+        }).join('');
+        const sumUsed = uses.reduce((a, u) => a + u.n, 0);
+        return `<div class="pb-3 text-xs text-slate-700 dark:text-slate-300 space-y-3">
+            <div>
+                <p class="font-semibold mb-1">Verbrauch${s.stock === null ? ' (alle Fälle)' : ` seit ${esc(formatDate(s.start))}`}: ${esc(fmtAmount(sumUsed))} Amp. in ${uses.length} ${uses.length === 1 ? 'Fall' : 'Fällen'}</p>
+                ${uses.length ? `<ul class="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-72 overflow-y-auto">${useRows}</ul>${uses.length > MAX ? `<p class="text-slate-400 mt-1">… und ${uses.length - MAX} weitere (siehe Liste unten)</p>` : ''}` : '<p class="text-slate-400">Kein Verbrauch in diesem Zeitraum.</p>'}
+            </div>
+            <div>
+                <p class="font-semibold mb-1">Zugänge, Abgänge &amp; Inventuren</p>
+                ${ents ? `<ul class="divide-y divide-slate-100 dark:divide-slate-700/50">${ents}</ul>` : '<p class="text-slate-400">Noch keine Einträge.</p>'}
+            </div>
+            <div class="flex gap-2">
+                <button type="button" data-stock-add="in" class="set-btn"><i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i> Zugang</button>
+                <button type="button" data-stock-add="out" class="set-btn"><i data-lucide="minus" class="w-4 h-4 pointer-events-none"></i> Abgang</button>
+                <button type="button" data-stock-add="inv" class="set-btn"><i data-lucide="clipboard-check" class="w-4 h-4 pointer-events-none"></i> Inventur</button>
+            </div>
+        </div>`;
+    }
+
+    function stockKindValue() {
+        const r = document.querySelector('input[name="stock-kind"]:checked');
+        return r ? r.value : 'in';
+    }
+
+    function updateStockFormHint() {
+        const k = stockKindValue();
+        $('stock-kind-hint').textContent = k === 'inv'
+            ? 'Gezählter Bestand zu Beginn dieses Tages. Ab hier wird neu gerechnet – ältere Einträge und Verbrauch davor zählen nicht mehr.'
+            : k === 'out' ? 'Ampullen, die ohne Fall weggehen – z. B. Rückgabe, Bruch, verworfen.'
+            : 'Ampullen, die du bekommst – z. B. von der Apotheke oder Station.';
+        $('stock-count-label').textContent = k === 'inv' ? 'Gezählt (Ampullen)' : 'Ampullen';
+    }
+
+    function openStockForm(kind, name) {
+        const f = $('btm-stock-form');
+        const sel = $('stock-substance');
+        if (!sel.options.length) sel.innerHTML = btmSelectOptionsHtml();
+        const k = kind || 'in';
+        document.querySelectorAll('input[name="stock-kind"]').forEach((r) => { r.checked = r.value === k; });
+        if (name) {
+            const opt = BTM_OPTIONS.find((o) => btmName(o.label) === name);
+            if (opt) sel.value = opt.id;
+        }
+        $('stock-date').value = todayStr();
+        $('stock-count').value = '';
+        $('stock-note').value = '';
+        updateStockFormHint();
+        f.classList.remove('hidden');
+        $('btm-stock-add-btn').classList.add('hidden');
+        f.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        setTimeout(() => { try { $('stock-count').focus({ preventScroll: true }); } catch (e) {} }, 50);
+    }
+
+    function closeStockForm() {
+        $('btm-stock-form').classList.add('hidden');
+        $('btm-stock-add-btn').classList.remove('hidden');
+    }
+
+    function saveStockEntry(ev) {
+        if (ev) ev.preventDefault();
+        const kind = stockKindValue();
+        const date = $('stock-date').value;
+        const raw = String($('stock-count').value || '').replace(',', '.');
+        const n = Number(raw);
+        const opt = btmById[$('stock-substance').value];
+        if (!date) { showToast('Bitte ein Datum wählen.', 'error'); return; }
+        if (!opt) { showToast('Bitte eine Substanz wählen.', 'error'); return; }
+        if (raw === '' || !Number.isFinite(n) || n < 0 || (kind !== 'inv' && n === 0)) { showToast(kind === 'inv' ? 'Bitte den gezählten Bestand eingeben (auch 0).' : 'Bitte die Anzahl Ampullen eingeben.', 'error'); return; }
+        const e = {
+            id: newUid(), date, substanceId: opt.id, label: opt.label, kind,
+            count: kind === 'out' ? -round2(n) : round2(n),
+            note: $('stock-note').value.trim().slice(0, 200), ts: Date.now()
+        };
+        btmStock.push(e);
+        saveBtmStock();
+        enqueueRaw(stockOp('stock-upsert', e));
+        btmStockOpen = btmName(opt.label);
+        closeStockForm();
+        renderBtmStock();
+        showToast(`${stockKindLabel(kind)} gespeichert: ${btmName(opt.label)} ${kind === 'inv' ? '= ' + fmtAmount(n) : fmtSigned(e.count)} Amp.`);
+    }
+
+    async function deleteStockEntry(id) {
+        const e = btmStock.find((x) => x.id === id);
+        if (!e) return;
+        const ok = await askConfirm(`${stockKindLabel(e.kind)} vom ${formatDate(e.date)} (${btmName(e.label)} ${e.kind === 'inv' ? '= ' + fmtAmount(e.count) : fmtSigned(e.count)}) löschen? Der Bestand wird neu berechnet.`, { title: 'Eintrag löschen', confirmLabel: 'Löschen', danger: true });
+        if (!ok) return;
+        e.cancelled = true;
+        e.ts = Math.max(Date.now(), (e.ts || 0) + 1);
+        saveBtmStock();
+        enqueueRaw(stockOp('stock-upsert', e));
+        renderBtmStock();
+        showToast('Eintrag gelöscht');
+    }
+
+    function initBtmStockUI() {
+        const box = $('btm-stock-list');
+        if (!box) return;
+        box.addEventListener('click', (ev) => {
+            const del = ev.target.closest('[data-stock-del]');
+            if (del) { deleteStockEntry(del.dataset.stockDel); return; }
+            const item = ev.target.closest('.stock-item');
+            if (!item) return;
+            const add = ev.target.closest('[data-stock-add]');
+            if (add) { openStockForm(add.dataset.stockAdd, item.dataset.name); return; }
+            if (ev.target.closest('[data-stock-toggle]')) {
+                btmStockOpen = btmStockOpen === item.dataset.name ? null : item.dataset.name;
+                renderBtmStock();
+            }
+        });
+        renderBtmStock();
+    }
+
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -3087,6 +3372,7 @@
         buildVorwertModalInputs();
         refreshAll();
         initSyncUI();
+        initBtmStockUI();
         registerOfflineApp();
         refreshIcons();
     });
@@ -3100,6 +3386,7 @@
         renderVorwerteList();
         renderDemoStatus();
         renderBtmOverview();
+        if (typeof renderBtmStock === 'function') renderBtmStock();
         checkBackupReminder();
         updateLiveEvalBadges();
     }
@@ -4566,12 +4853,46 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 8;
+    const SYNC_SCRIPT_VERSION = 9;
     const SYNC_POLL_MS = 2 * 60 * 1000;
     const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
     let syncBusy = false;
     let syncTimer = null;
+    // Robustheit (iPhone): Eine Anfrage kann hängen bleiben, wenn die App in
+    // den Hintergrund geht oder das Netz kurz wechselt. Darum: Zeitlimit je
+    // Anfrage, Neustart eines hängenden Abgleichs und gestaffelte Wiederholung.
+    const SYNC_FETCH_TIMEOUT_MS = 30000;
+    const SYNC_STUCK_MS = 60000;
+    const SYNC_BACKOFF_S = [15, 30, 60, 120, 300];
+    let syncBusySince = 0;
+    let syncRunId = 0;
+    let syncAbort = null;
+    let syncFailCount = 0;
+    let syncNextRetryAt = 0;
+
+    // Laufenden (vermutlich hängenden) Abgleich abbrechen und freigeben.
+    function syncResetStuck(minAgeMs) {
+        if (!syncBusy || Date.now() - syncBusySince < minAgeMs) return false;
+        syncRunId++;
+        try { if (syncAbort) syncAbort.abort(); } catch (e) {}
+        syncAbort = null;
+        syncBusy = false;
+        updateSyncUI();
+        return true;
+    }
+
+    function syncRememberError(msg) {
+        storeSet('syncLastError', JSON.stringify({ at: new Date().toISOString(), msg: String(msg || '') }));
+    }
+    function syncLastError() {
+        try {
+            const e = JSON.parse(storeGet('syncLastError') || 'null');
+            if (!e) return null;
+            const last = new Date(storeGet('syncLastAt') || 0).getTime();
+            return new Date(e.at).getTime() > last ? e : null;
+        } catch (e) { return null; }
+    }
 
     function newUid() {
         try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
@@ -4723,9 +5044,13 @@
     class SyncTransientError extends Error {}
 
     async function syncFetchOnce(payload) {
-        let res;
+        let res, timedOut = false;
+        const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        syncAbort = ctrl;
+        const timer = ctrl ? setTimeout(() => { timedOut = true; try { ctrl.abort(); } catch (e) {} }, SYNC_FETCH_TIMEOUT_MS) : null;
         try {
             res = await fetch(syncUrl(), {
+                signal: ctrl ? ctrl.signal : undefined,
                 method: 'POST',
                 // text/plain = "einfache" Anfrage ohne CORS-Vorabprüfung
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -4737,10 +5062,14 @@
                 credentials: 'omit'
             });
         } catch (e) {
-            throw new SyncTransientError(navigator.onLine ? 'Google nicht erreichbar' : 'offline');
+            clearTimeout(timer);
+            throw new SyncTransientError(timedOut ? 'Google antwortet nicht (Zeitüberschreitung)' : navigator.onLine ? 'Google nicht erreichbar' : 'offline');
         }
-        if (!res.ok) throw new SyncTransientError(`Google antwortet mit HTTP ${res.status}`);
-        const text = await res.text();
+        if (!res.ok) { clearTimeout(timer); throw new SyncTransientError(`Google antwortet mit HTTP ${res.status}`); }
+        let text;
+        try { text = await res.text(); } catch (e) {
+            throw new SyncTransientError(timedOut ? 'Google antwortet nicht (Zeitüberschreitung)' : 'Verbindung unterbrochen');
+        } finally { clearTimeout(timer); }
         try { return JSON.parse(text); } catch (e) {
             throw new SyncTransientError('Google hat keine gültige Antwort geschickt');
         }
@@ -4748,14 +5077,19 @@
 
     async function syncRequest(payload) {
         let data, lastErr;
+        const run = syncRunId;
+        const stale = () => { if (run !== syncRunId) throw new SyncTransientError('abgebrochen'); };
         for (let attempt = 0; attempt <= SYNC_RETRY_DELAYS.length; attempt++) {
             try { data = await syncFetchOnce(payload); lastErr = null; break; } catch (e) {
                 lastErr = e;
+                stale();
                 if (!(e instanceof SyncTransientError) || attempt === SYNC_RETRY_DELAYS.length || !navigator.onLine) break;
                 setSyncStatus(`${e.message} – neuer Versuch …`, 'warn');
                 await new Promise((r) => setTimeout(r, SYNC_RETRY_DELAYS[attempt]));
+                stale();
             }
         }
+        stale();
         if (lastErr) throw lastErr;
         if (data && data.version != null) storeSet('syncScriptVersion', String(Number(data.version) || 0));
         rememberCryptoMeta(data);
@@ -4839,7 +5173,7 @@
     // Tabelle fehlt (wird nicht automatisch hochgeladen).
     function reconcileWithSheet(state) {
         const queued = new Set(syncQueue().map((o) => o.uid));
-        const res = { pulledNew: 0, pulledChanged: 0, pushedNewer: 0, missingCases: [], missingVw: [], possibleDupes: 0, inTrash: 0, vwRemoved: 0 };
+        const res = { pulledNew: 0, pulledChanged: 0, pushedNewer: 0, missingCases: [], missingVw: [], missingStock: [], possibleDupes: 0, inTrash: 0, vwRemoved: 0 };
         const trashSet = new Set(state.trash || []);
         const sheetCases = new Map((state.cases || []).map((r) => [r.uid, r]));
         const localByUid = new Map(cases.map((c) => [c.uid, c]));
@@ -4905,6 +5239,25 @@
             res.pulledNew++;
         });
 
+        // BTM-Bestand (ab Skript 9)
+        if (Array.isArray(state.stock)) {
+            const sheetStock = new Map(state.stock.map((r) => [String(r.id), r]));
+            btmStock.slice().forEach((e) => {
+                if (queued.has(e.id)) return;
+                const row = sheetStock.get(e.id);
+                if (!row) { if (!e.cancelled) res.missingStock.push(e.id); return; }
+                if (row.ts > (e.ts || 0)) { applySheetStock(e, row); res.pulledChanged++; }
+                else if (row.ts < (e.ts || 0)) { q.push(stockOp('stock-upsert', e)); res.pushedNewer++; }
+            });
+            state.stock.forEach((row) => {
+                const id = String(row.id);
+                if (!id || queued.has(id) || btmStock.some((e) => e.id === id)) return;
+                btmStock.push(applySheetStock({ id }, row));
+                res.pulledNew++;
+            });
+            saveBtmStock();
+        }
+
         // Papierkorb = Stand der Tabelle (+ eigene, noch nicht übertragene)
         if (Array.isArray(state.trashItems)) {
             const pending = trash.filter((t) => queued.has(t.uid));
@@ -4929,7 +5282,7 @@
         activeVorwerte().filter((v) => !v.isDemo).forEach((v) => Object.entries(v.counts || {}).forEach(([id, n]) => { if (id in vw) vw[id] += parseInt(n, 10) || 0; }));
         const logbook = {};
         baekCategories.forEach((k) => { logbook[k.id] = prog[k.id].logbook; });
-        return { activeCases: own.filter((c) => !c.cancelled).length, vorwerteBlocks: activeVorwerte().filter((v) => !v.isDemo).length, logbook, vorwerte: vw };
+        return { activeCases: own.filter((c) => !c.cancelled).length, vorwerteBlocks: activeVorwerte().filter((v) => !v.isDemo).length, logbook, vorwerte: vw, btm: computeBtmStock(true) };
     }
 
     function compareTotals(app, sheet) {
@@ -4942,6 +5295,15 @@
             const s = (sheet.logbook[k.id] || 0) + (sheet.vorwerte[k.id] || 0);
             if (a !== s) diffs.push(`${k.short}: App ${a} · Tabelle ${s}`);
         });
+        if (Array.isArray(sheet.btm)) {
+            const sm = new Map(sheet.btm.map((b) => [b.name, b.stock]));
+            const am = new Map((app.btm || []).map((b) => [b.name, b.stock]));
+            new Set([...sm.keys(), ...am.keys()]).forEach((name) => {
+                const a = am.has(name) ? am.get(name) : null, t = sm.has(name) ? sm.get(name) : null;
+                if (a === null && t === null) return;
+                if (a === null || t === null || Math.abs(a - t) > 0.001) diffs.push(`BTM-Bestand ${name}: App ${a === null ? '–' : fmtAmount(a)} · Tabelle ${t === null ? '–' : fmtAmount(t)}`);
+            });
+        }
         return diffs;
     }
 
@@ -5007,7 +5369,7 @@
         if (cryptoState() !== 'ready') return ops;
         const key = await localCryptoKey();
         return Promise.all(ops.map(async (op) => {
-            if (!op.data || String(op.type).startsWith('vw-') || String(op.type).startsWith('trash-')) return op;
+            if (!op.data || /^(vw|trash|stock)-/.test(String(op.type))) return op;
             const data = Object.assign({}, op.data);
             for (const f of CRYPTO_FIELDS) data[f] = await encryptText(key, data[f]);
             return Object.assign({}, op, { data });
@@ -5141,9 +5503,14 @@
     async function syncNow(opts) {
         const manual = !!(opts && opts.manual);
         if (!syncConfigured()) { if (manual) showToast('Bitte zuerst Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
-        if (syncBusy) return;
+        // Hängt ein früherer Abgleich (z. B. nach Hintergrund am iPhone),
+        // wird er abgebrochen: manuell sofort, automatisch nach 60 s.
+        if (syncBusy && !syncResetStuck(manual ? 8000 : SYNC_STUCK_MS)) { if (manual) showToast('Synchronisierung läuft bereits …'); return; }
         if (!navigator.onLine) { setSyncStatus('Offline – wird nachgeholt, sobald Netz da ist.', 'warn'); if (manual) showToast('Offline – später erneut versuchen.', 'warn'); return; }
+        clearTimeout(syncTimer);
+        const runId = ++syncRunId;
         syncBusy = true;
+        syncBusySince = Date.now();
         updateSyncUI();
         setSyncStatus('Synchronisiere …');
         const stats = {};
@@ -5176,7 +5543,8 @@
                 if (!manual) { setSyncStatus(`${destructive} Stornos/Löschungen warten auf Bestätigung – bitte „Jetzt synchronisieren“ tippen.`, 'warn'); return; }
                 syncBusy = false;
                 const ok = await askConfirm(`Es sollen ${destructive} Fälle in Google Sheets storniert bzw. endgültig gelöscht werden. Ist das gewollt?`, { title: 'Viele Stornos auf einmal', confirmLabel: 'Ja, übertragen', danger: true });
-                syncBusy = true;
+                if (runId !== syncRunId) return;
+                syncBusy = true; syncBusySince = Date.now();
                 if (!ok) { setSyncStatus('Abgebrochen – Aufträge bleiben gespeichert.', 'warn'); return; }
                 confirmBulk = true;
             }
@@ -5205,10 +5573,12 @@
                 at: new Date().toISOString(), rec,
                 diffs: compareTotals(appSyncTotals(), finalState.eval),
                 sheet: finalState.eval, duplicates: (finalState.eval && finalState.eval.duplicates) || 0,
-                missingCases: rec.missingCases, missingVw: rec.missingVw
+                missingCases: rec.missingCases, missingVw: rec.missingVw, missingStock: rec.missingStock
             };
             saveSyncReport(report);
             storeSet('syncLastAt', report.at);
+            syncFailCount = 0; syncNextRetryAt = 0;
+            removeStored('syncLastError');
             refreshAll();
             const parts = [];
             if (stats.ok) parts.push(`${stats.ok} übertragen`);
@@ -5222,7 +5592,7 @@
                 updateSyncUI();
                 await resolveConflicts(stats.conflicts);
             }
-            if (manual && (rec.missingCases.length || rec.missingVw.length)) {
+            if (manual && (rec.missingCases.length || rec.missingVw.length || rec.missingStock.length)) {
                 syncBusy = false;
                 updateSyncUI();
                 await offerUploadMissing();
@@ -5230,19 +5600,28 @@
             }
             if (manual) showToast(parts.length ? `Synchronisiert: ${parts.join(' · ')}` : 'Alles synchron');
         } catch (err) {
+            // Abgebrochen, weil ein neuer Abgleich gestartet wurde: still beenden
+            if (runId !== syncRunId) return;
             const m = err && err.message ? err.message : String(err);
+            syncRememberError(err instanceof SyncTransientError ? m : netErrorText(m));
             if (err instanceof SyncTransientError) {
-                // vorübergehend: später von selbst erneut versuchen
-                setSyncStatus(`${m}. Nichts geht verloren – neuer Versuch automatisch in 1 Minute.`, 'warn');
-                if (syncAuto()) { clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow({ manual: false }), 60000); }
-                if (manual) showToast('Google antwortet gerade nicht – neuer Versuch in 1 Minute', 'warn');
+                // vorübergehend: gestaffelt von selbst erneut versuchen
+                const wait = SYNC_BACKOFF_S[Math.min(syncFailCount, SYNC_BACKOFF_S.length - 1)];
+                syncFailCount++;
+                const waitTxt = wait < 60 ? `${wait} Sekunden` : wait === 60 ? '1 Minute' : `${wait / 60} Minuten`;
+                setSyncStatus(`${m}. Nichts geht verloren – neuer Versuch automatisch in ${waitTxt}.`, 'warn');
+                if (syncAuto()) { clearTimeout(syncTimer); syncNextRetryAt = Date.now() + wait * 1000; syncTimer = setTimeout(() => syncNow({ manual: false }), wait * 1000); }
+                if (manual) showToast(`Google antwortet gerade nicht – neuer Versuch in ${waitTxt}`, 'warn');
             } else {
                 setSyncStatus(`Nicht synchronisiert: ${netErrorText(m)}`, 'error');
                 if (manual) showToast('Synchronisieren fehlgeschlagen', 'error');
             }
         } finally {
-            syncBusy = false;
-            updateSyncUI();
+            if (runId === syncRunId) {
+                syncBusy = false;
+                syncAbort = null;
+                updateSyncUI();
+            }
         }
     }
 
@@ -5284,14 +5663,16 @@
         if (!rep) return;
         const mc = (rep.missingCases || []).filter((u) => cases.some((c) => c.uid === u));
         const mv = (rep.missingVw || []).filter((id) => vorwerte.some((v) => String(v.id) === id));
-        if (!mc.length && !mv.length) { renderSyncCard(); return; }
+        const ms = (rep.missingStock || []).filter((id) => btmStock.some((e) => e.id === id && !e.cancelled));
+        if (!mc.length && !mv.length && !ms.length) { renderSyncCard(); return; }
         const parts = [];
         if (mc.length) parts.push(`${mc.length} ${mc.length === 1 ? 'Fall' : 'Fälle'}`);
         if (mv.length) parts.push(`${mv.length} Vorwerte-${mv.length === 1 ? 'Block' : 'Blöcke'}`);
+        if (ms.length) parts.push(`${ms.length} BTM-Bestand-${ms.length === 1 ? 'Eintrag' : 'Einträge'}`);
         const dupe = rep.rec && rep.rec.possibleDupes ? `\n\nAchtung: Bei ${rep.rec.possibleDupes} davon steht in der Tabelle schon ein Fall mit gleichem Datum und Eingriff – eventuell doppelt.` : '';
         const r = await openDialog({
             title: 'In der Tabelle fehlt etwas',
-            message: `${parts.join(' und ')} aus der App ${mc.length + mv.length === 1 ? 'steht' : 'stehen'} nicht in der Google-Tabelle (noch nie hochgeladen oder dort gelöscht).${dupe}\n\nJetzt hochladen? Bereits Vorhandenes wird dabei nie überschrieben.`,
+            message: `${parts.join(' und ')} aus der App ${mc.length + mv.length + ms.length === 1 ? 'steht' : 'stehen'} nicht in der Google-Tabelle (noch nie hochgeladen oder dort gelöscht).${dupe}\n\nJetzt hochladen? Bereits Vorhandenes wird dabei nie überschrieben.`,
             buttons: [
                 { label: 'Später', value: 'later', kind: 'secondary' },
                 { label: 'In App stornieren', value: 'cancel', kind: 'danger' },
@@ -5306,10 +5687,12 @@
             const q2 = syncQueue();
             mc.forEach((u) => { const c = cases.find((x) => x.uid === u); if (c) { c.cancelled = true; touchCase(c); q2.push(caseOp('upsert', c)); } });
             mv.forEach((id) => { const v = vorwerte.find((x) => String(x.id) === id); if (v) { v.cancelled = true; touchCase(v); q2.push(vwOp('vw-upsert', v)); } });
+            ms.forEach((id) => { const e = btmStock.find((x) => x.id === id); if (e) { e.cancelled = true; e.ts = Math.max(Date.now(), (e.ts || 0) + 1); q2.push(stockOp('stock-upsert', e)); } });
             saveSyncQueue(q2);
             saveCases();
+            saveBtmStock();
             storeSet('vorwerte', JSON.stringify(vorwerte));
-            rep.missingCases = []; rep.missingVw = [];
+            rep.missingCases = []; rep.missingVw = []; rep.missingStock = [];
             saveSyncReport(rep);
             refreshAll();
             await syncNow({ manual: true });
@@ -5319,8 +5702,9 @@
         const q = syncQueue();
         mc.forEach((u) => { const c = cases.find((x) => x.uid === u); if (c) q.push(caseOp('seed', c)); });
         mv.forEach((id) => { const v = vorwerte.find((x) => String(x.id) === id); if (v) q.push(vwOp('vw-seed', v)); });
+        ms.forEach((id) => { const e = btmStock.find((x) => x.id === id); if (e) q.push(stockOp('stock-seed', e)); });
         saveSyncQueue(q);
-        rep.missingCases = []; rep.missingVw = [];
+        rep.missingCases = []; rep.missingVw = []; rep.missingStock = [];
         saveSyncReport(rep);
         await syncNow({ manual: true });
     }
@@ -5328,6 +5712,7 @@
     async function testSyncConnection() {
         saveSyncSettingsFromInputs();
         if (!syncConfigured()) { showToast('Bitte Skript-Adresse und Schlüssel eintragen.', 'warn'); return; }
+        syncResetStuck(0);
         setSyncStatus('Teste Verbindung …');
         try {
             const info = await syncRequest({ action: 'ping' });
@@ -5372,7 +5757,7 @@
     }
 
     function disconnectSync() {
-        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncScriptVersion', 'syncFullData', 'syncCryptoMeta', 'cryptoKey', 'cryptoSalt'].forEach(removeStored);
+        ['syncUrl', 'syncKey', 'syncQueue', 'syncInfo', 'syncReport', 'syncLastAt', 'syncLastError', 'syncScriptVersion', 'syncFullData', 'syncCryptoMeta', 'cryptoKey', 'cryptoSalt'].forEach(removeStored);
         cryptoKeyCache = null;
         if ($('sync-url')) { $('sync-url').value = ''; $('sync-key').value = ''; }
         updateSyncUI();
@@ -5598,15 +5983,21 @@
         else if (cst === 'locked') lines.push(line('lock', 'is-bad', '<b>Tabelle verschlüsselt – Passwort nötig.</b> Unten unter „Verschlüsselung“ eingeben.'));
         else if (v) lines.push(line('lock-open', 'is-warn', 'Personendaten gehen unverschlüsselt in die Tabelle – Verschlüsselung empfohlen (unten).'));
         if (n > 0) lines.push(line('cloud-upload', 'is-warn', `${n} ${n === 1 ? 'Auftrag wartet' : 'Aufträge warten'} auf Übertragung`));
+        const lastErr = syncLastError();
+        if (lastErr && !syncBusy) {
+            const nextTxt = syncNextRetryAt > Date.now() ? ` Neuer Versuch automatisch um ${pad(new Date(syncNextRetryAt).getHours())}:${pad(new Date(syncNextRetryAt).getMinutes())}.` : '';
+            lines.push(line('wifi-off', 'is-warn', `<b>Letzter Versuch ${esc(syncTimeLabel(lastErr.at))} fehlgeschlagen:</b> ${esc(lastErr.msg)}.${nextTxt} Nichts geht verloren – du kannst auch einfach „Jetzt synchronisieren“ tippen.`));
+        }
         if (rep && !scriptOutdated()) {
             const mc = (rep.missingCases || []).filter((u) => cases.some((c) => c.uid === u)).length;
             const mv = (rep.missingVw || []).filter((id) => vorwerte.some((x) => String(x.id) === id)).length;
-            if (mc || mv) {
-                const t = [mc ? `${mc} ${mc === 1 ? 'Fall' : 'Fälle'}` : '', mv ? `${mv} Vorwerte-${mv === 1 ? 'Block' : 'Blöcke'}` : ''].filter(Boolean).join(' und ');
-                lines.push(line('circle-alert', 'is-warn', `${t} aus der App ${mc + mv === 1 ? 'fehlt' : 'fehlen'} in der Tabelle. <button type="button" onclick="offerUploadMissing()" class="underline font-semibold">Hochladen …</button>`));
+            const ms = (rep.missingStock || []).filter((id) => btmStock.some((x) => x.id === id && !x.cancelled)).length;
+            if (mc || mv || ms) {
+                const t = [mc ? `${mc} ${mc === 1 ? 'Fall' : 'Fälle'}` : '', mv ? `${mv} Vorwerte-${mv === 1 ? 'Block' : 'Blöcke'}` : '', ms ? `${ms} BTM-Bestand-${ms === 1 ? 'Eintrag' : 'Einträge'}` : ''].filter(Boolean).join(' und ');
+                lines.push(line('circle-alert', 'is-warn', `${t} aus der App ${mc + mv + ms === 1 ? 'fehlt' : 'fehlen'} in der Tabelle. <button type="button" onclick="offerUploadMissing()" class="underline font-semibold">Hochladen …</button>`));
             }
             if (rep.duplicates) lines.push(line('copy', 'is-warn', `${rep.duplicates} doppelte Zeile(n) in der Tabelle – gezählt wird nur die neueste Fassung. Im Skript „einrichten“ ausführen, dann werden sie entfernt.`));
-            if (n === 0 && !mc && !mv) {
+            if (n === 0 && !mc && !mv && !ms) {
                 if (rep.diffs && rep.diffs.length) {
                     lines.push(line('alert-triangle', 'is-warn', `<b>Abweichung App ↔ Tabelle:</b><br>${rep.diffs.slice(0, 5).map(esc).join('<br>')}${rep.diffs.length > 5 ? '<br>…' : ''}`));
                 } else if (rep.sheet) {
@@ -5625,7 +6016,7 @@
         const n = syncQueue().length;
         const info = (() => { try { return JSON.parse(storeGet('syncInfo') || 'null'); } catch (e) { return null; } })();
         const rep = syncReport();
-        const missing = rep ? ((rep.missingCases || []).length + (rep.missingVw || []).length) : 0;
+        const missing = rep ? ((rep.missingCases || []).length + (rep.missingVw || []).length + (rep.missingStock || []).length) : 0;
         const sum = $('set-sum-sync');
         if (sum) {
             sum.textContent = !configured ? 'Nicht eingerichtet'
@@ -5647,7 +6038,7 @@
         }
         const now = $('sync-now-btn');
         if (now) {
-            now.disabled = !configured || syncBusy;
+            now.disabled = !configured;
             $('sync-now-label').textContent = syncBusy ? 'Synchronisiere …' : n > 0 ? `Jetzt synchronisieren (${n})` : 'Jetzt synchronisieren';
         }
         const links = $('sync-links');
@@ -5671,17 +6062,29 @@
         $('sync-key').value = syncKey();
         $('sync-conn').open = !syncConfigured();
         updateSyncUI();
-        window.addEventListener('online', () => scheduleSync(500));
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState !== 'visible') return;
+        window.addEventListener('online', () => { syncFailCount = 0; syncResetStuck(3000); scheduleSync(500); });
+        // App kommt wieder nach vorn (iPhone: Wechsel aus anderer App, Bildschirm
+        // entsperrt, aus dem Verlauf zurück): hängenden Abgleich lösen, nachholen.
+        let lastWake = 0;
+        const onWake = () => {
+            if (document.visibilityState !== 'visible' || !syncConfigured()) return;
+            if (Date.now() - lastWake < 3000) return;
+            lastWake = Date.now();
+            syncResetStuck(15000);
             const last = new Date(storeGet('syncLastAt') || 0).getTime();
-            if (syncQueue().length || Date.now() - last > 2 * 60 * 1000) scheduleSync(800);
-        });
+            if (syncQueue().length || syncLastError() || Date.now() - last > 2 * 60 * 1000) { syncFailCount = 0; scheduleSync(800); }
+        };
+        document.addEventListener('visibilitychange', onWake);
+        window.addEventListener('pageshow', onWake);
+        window.addEventListener('focus', onWake);
         // Beim Öffnen abgleichen (holt auch Änderungen aus der Tabelle)
         scheduleSync(2500);
         // Solange die App sichtbar ist, regelmäßig Änderungen anderer Geräte holen
         setInterval(() => {
-            if (document.visibilityState === 'visible' && syncConfigured() && syncAuto() && !syncBusy) syncNow({ manual: false });
+            if (document.visibilityState !== 'visible' || !syncConfigured() || !syncAuto()) return;
+            if (syncBusy) { syncResetStuck(SYNC_STUCK_MS); return; }
+            if (syncNextRetryAt > Date.now()) return;
+            syncNow({ manual: false });
         }, SYNC_POLL_MS);
         $('trash-list').addEventListener('click', (e) => {
             const b = e.target.closest('[data-action]');
@@ -5930,6 +6333,13 @@
             }
         });
         if (!anyTotal) lines.push('(keine Einträge)');
+        const stock = computeBtmStock(false).filter((x) => x.stock !== null);
+        if (stock.length) {
+            lines.push('');
+            lines.push('BESTAND (Inventur bzw. erster Eintrag + Zugänge − Abgänge − Verbrauch)');
+            lines.push('-'.repeat(60));
+            stock.forEach((x) => lines.push(x.name.padEnd(34) + (fmtAmount(x.stock) + ' Amp.').padEnd(12) + 'ab ' + formatDate(x.start)));
+        }
         lines.push('');
         lines.push('EINZELFÄLLE');
         lines.push('-'.repeat(60));
@@ -6590,7 +7000,7 @@
 
     async function exportToJSON() {
         if (cases.length === 0 && vorwerte.length === 0) { showToast('Es gibt noch keine Daten zum Sichern.', 'warn'); return; }
-        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), profile: { name: userName() }, cases, vorwerte, trash };
+        const payload = { app: 'anaesthesie-logbuch', version: 1, exportedAt: new Date().toISOString(), profile: { name: userName() }, cases, vorwerte, trash, btmStock };
         const saved = await saveFile(`anaesthesie-logbuch-backup_${todayStr()}.json`, JSON.stringify(payload, null, 2), 'application/json');
         if (saved === false) return;
         storeSet('lastBackupAt', new Date().toISOString());
@@ -6670,11 +7080,14 @@
                 .filter((v) => v && typeof v === 'object' && v.id != null && v.counts && typeof v.counts === 'object')
                 .map((v) => Object.assign({}, v, { id: String(v.id), name: String(v.name || 'Vorwerte') }));
 
-            if (inCases.length === 0 && inVorwerte.length === 0) { showToast('Die Datei enthält keine Fälle oder Vorwerte.', 'error'); return; }
+            const inStock = (Array.isArray(parsed.btmStock) ? parsed.btmStock : [])
+                .filter((e) => e && typeof e === 'object' && e.id && e.label && e.date)
+                .map((e) => Object.assign({}, e, { id: String(e.id) }));
+            if (inCases.length === 0 && inVorwerte.length === 0 && inStock.length === 0) { showToast('Die Datei enthält keine Fälle oder Vorwerte.', 'error'); return; }
 
             const r = await openDialog({
                 title: 'Backup importieren',
-                message: `Gefunden: ${inCases.length} Fälle und ${inVorwerte.length} Vorwerte-Blöcke.\n\n„Zusammenführen“ fügt nur neue Einträge hinzu. „Ersetzen“ überschreibt alle vorhandenen Daten.`,
+                message: `Gefunden: ${inCases.length} Fälle und ${inVorwerte.length} Vorwerte-Blöcke${inStock.length ? ` sowie ${inStock.length} BTM-Bestand-Einträge` : ''}.\n\n„Zusammenführen“ fügt nur neue Einträge hinzu. „Ersetzen“ überschreibt alle vorhandenen Daten.`,
                 buttons: [
                     { label: 'Abbrechen', value: 'cancel', kind: 'secondary' },
                     { label: 'Zusammenführen', value: 'merge', kind: 'primary' },
@@ -6686,13 +7099,17 @@
             if (r.value === 'replace') {
                 cases = inCases;
                 vorwerte = inVorwerte;
+                btmStock = inStock;
             } else {
+                const stIds = new Set(btmStock.map((e) => e.id));
+                btmStock = btmStock.concat(inStock.filter((e) => !stIds.has(e.id)));
                 const caseIds = new Set(cases.map((c) => c.id));
                 const vwIds = new Set(vorwerte.map((v) => v.id));
                 cases = cases.concat(inCases.filter((c) => !caseIds.has(c.id)));
                 vorwerte = vorwerte.concat(inVorwerte.filter((v) => !vwIds.has(v.id)));
             }
             saveCases();
+            saveBtmStock();
             storeSet('vorwerte', JSON.stringify(vorwerte));
             const importedName = parsed.profile && typeof parsed.profile.name === 'string' ? parsed.profile.name.trim() : '';
             if (importedName && (r.value === 'replace' || !userName())) {
@@ -6714,6 +7131,8 @@
         cases = [];
         vorwerte = [];
         trash = [];
+        btmStock = [];
+        saveBtmStock();
         saveTrash();
         disconnectSync();
         saveCases();
@@ -6919,7 +7338,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 8)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 9)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -6951,6 +7370,10 @@
  *  - Endgültig gelöschte Fälle und Vorwerte liegen im „Papierkorb“ und
  *    lassen sich aus der App wiederherstellen.
  *  - Jede UID zählt in der Auswertung nur einmal.
+ *  - Blatt „BTM-Bestand“: Zugänge, Abgänge und Inventuren (gezählter
+ *    Bestand) an Ampullen. Die Auswertung zeigt je Substanz: letzte
+ *    Inventur bzw. erster Eintrag + Zugänge − Abgänge − Verbrauch aus
+ *    „Fälle“ (ab diesem Datum) = Bestand – genau wie die App.
  *
  * DATENSCHUTZ: Initialen, Geburtsdatum und Bemerkungen verschlüsselt die
  * App mit einem Passwort, bevor sie hierher geschickt werden (Spalten
@@ -6959,7 +7382,7 @@
  * Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten.
  */
 
-var SCRIPT_VERSION = 8;
+var SCRIPT_VERSION = 9;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -6967,6 +7390,7 @@ var SHEET_EVAL = 'Auswertung';
 var SHEET_HISTORY = 'Verlauf';
 var SHEET_TRASH = 'Papierkorb';
 var SHEET_LOG = 'Protokoll';
+var SHEET_STOCK = 'BTM-Bestand';
 
 var BULK_LIMIT = 5;            // mehr Stornos/Löschungen je Übertragung nur mit Bestätigung
 var MAX_OPS_PER_REQUEST = 200;
@@ -7054,6 +7478,14 @@ var CASE_COLS = [
 var VW_COLS = [['Bezeichnung', 'name', 'text'], ['Status', 'status', 'status']]
   .concat(RZ.map(function (r) { return [r[1], 'n:' + r[0], 'num']; }))
   .concat([['Geändert am', 'changedAt', 'tech'], ['Version', 'ts', 'tech'], ['ID', 'id', 'tech']]);
+
+// Blatt „BTM-Bestand“: je Zeile ein Zugang (+), Abgang (−) oder eine
+// Inventur (gezählter Bestand an diesem Tag)
+var STOCK_COLS = [
+  ['Datum', 'date', 'date'], ['Substanz', 'label', 'text'], ['Art', 'kind', 'text'], ['Ampullen', 'count', 'num'],
+  ['Bemerkung', 'note', 'text'], ['Status', 'status', 'status'],
+  ['Geändert am', 'changedAt', 'tech'], ['Version', 'ts', 'tech'], ['ID', 'id', 'tech'], ['Substanz-ID', 'substanceId', 'tech']
+];
 
 // Blatt „Papierkorb“ (Fälle und Vorwerte)
 var TRASH_HEADERS = ['Gelöscht am', 'Art', 'Datum', 'Beschreibung', 'UID', 'Version', 'Daten'];
@@ -7259,9 +7691,11 @@ function einrichten() {
   setupSimple_(ss, SHEET_HISTORY, ['Gesichert am', 'Anlass', 'Auftrag-ID'].concat(CASE_COLS.map(function (c) { return c[0]; })), '#f1f5f9');
   setupTrash_(ss);
   setupSimple_(ss, SHEET_LOG, ['Auftrag-ID', 'Empfangen', 'Aktion', 'UID', 'Version (App)', 'Ergebnis'], '#f1f5f9');
+  setupStock_(ss);
   setupEval_(ss);
   var removed = removeDuplicateRows_(ss.getSheetByName(SHEET_CASES), CASE_COLS, 'uid', rowToCase_)
-    + removeDuplicateRows_(ss.getSheetByName(SHEET_VW), VW_COLS, 'id', rowToVw_);
+    + removeDuplicateRows_(ss.getSheetByName(SHEET_VW), VW_COLS, 'id', rowToVw_)
+    + removeDuplicateRows_(ss.getSheetByName(SHEET_STOCK), STOCK_COLS, 'id', rowToStock_);
   if (removed) Logger.log(removed + ' doppelte Zeile(n) entfernt (neueste Fassung behalten).');
 
   var empty = ss.getSheetByName('Tabellenblatt1') || ss.getSheetByName('Sheet1');
@@ -7446,6 +7880,144 @@ function rowToVw_(row, km) {
   return o;
 }
 
+// ---- BTM-Bestand ---------------------------------------------------
+function setupStock_(ss) {
+  var headers = STOCK_COLS.map(function (c) { return c[0]; });
+  var sh = ss.getSheetByName(SHEET_STOCK);
+  var rows = null;
+  if (!sh) sh = ss.insertSheet(SHEET_STOCK);
+  else if (!headersMatch_(sh, headers)) {
+    rows = readByHeader_(sh).map(function (r) {
+      var o = {};
+      STOCK_COLS.forEach(function (c) { if (c[0] in r) o[c[1]] = r[c[0]]; });
+      return o;
+    });
+    resetSheet_(sh);
+  }
+  if (sh.getMaxColumns() < headers.length) sh.insertColumnsAfter(sh.getMaxColumns(), headers.length - sh.getMaxColumns());
+  sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#fef3c7').setWrap(true);
+  var km = keyMap_(STOCK_COLS, hmap_(sh));
+  if (rows) {
+    var out = rows.filter(function (o) { return o.label && Number(o.count); }).map(function (o) {
+      o.id = idText_(o.id) || newUid_(); o.ts = Number(o.ts) || Date.now();
+      return fillStockRow_(new Array(headers.length).fill(''), km, o);
+    });
+    if (out.length) sh.getRange(2, 1, out.length, headers.length).setValues(out);
+  }
+  var maxRows = sh.getMaxRows();
+  sh.setFrozenRows(1);
+  sh.getRange(2, km.date + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy');
+  sh.getRange(2, km.ts + 1, maxRows - 1, 1).setNumberFormat('0');
+  sh.getRange(2, km.id + 1, maxRows - 1, 1).setNumberFormat('@');
+  sh.getRange(2, km.changedAt + 1, maxRows - 1, 1).setNumberFormat('dd.MM.yyyy HH:mm');
+  sh.getRange(2, km.status + 1, maxRows - 1, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList([STATUS_ACTIVE, STATUS_CANCELLED], true).setAllowInvalid(false).build());
+  ['changedAt', 'ts', 'id', 'substanceId'].forEach(function (k) { sh.getRange(1, km[k] + 1).setBackground('#e2e8f0').setFontColor('#475569'); });
+  var statusCol = colLetter_(km.status + 1);
+  sh.setConditionalFormatRules([SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + statusCol + '2="' + STATUS_CANCELLED + '"')
+    .setBackground('#eeeeee').setFontColor('#9e9e9e').setStrikethrough(true)
+    .setRanges([sh.getRange(2, 1, maxRows - 1, headers.length)]).build()]);
+  sh.setColumnWidth(km.label + 1, 180);
+  sh.setColumnWidth(km.note + 1, 220);
+  return sh;
+}
+
+// Blatt holen; fehlt es (Skript aktualisiert, „einrichten“ noch nicht
+// ausgeführt), wird es angelegt.
+function stockSheet_(ss) { return ss.getSheetByName(SHEET_STOCK) || setupStock_(ss); }
+
+function stockName_(v) { return String(v || '').split(' (')[0].trim(); }
+
+function stockKind_(kind, n) {
+  var k = String(kind || '').trim().toLowerCase();
+  if (k.indexOf('inv') === 0) return 'Inventur';
+  if (k.indexOf('ab') === 0 || n < 0) return 'Abgang';
+  return 'Zugang';
+}
+
+function fillStockRow_(row, km, o) {
+  var n = Math.round((Number(String(o.count).replace(',', '.')) || 0) * 100) / 100;
+  STOCK_COLS.forEach(function (c) {
+    var k = c[1];
+    if (!(k in km)) return;
+    var v;
+    if (k === 'date') v = o.date instanceof Date ? o.date : (toDate_(o.date) || new Date());
+    else if (k === 'count') v = stockKind_(o.kind, n) === 'Inventur' ? Math.abs(n) : n;
+    else if (k === 'kind') v = stockKind_(o.kind, n);
+    else if (k === 'label') v = safeText_(stockName_(o.label));
+    else if (k === 'status') v = normStatus_(o.status);
+    else if (k === 'ts') v = Number(o.ts) || 0;
+    else if (k === 'changedAt') v = o.changedAt instanceof Date ? o.changedAt : new Date();
+    else v = safeText_(o[k] == null ? '' : o[k]);
+    row[km[k]] = v;
+  });
+  return row;
+}
+
+function rowToStock_(row, km) {
+  var raw = row[km.count];
+  var n = Number(String(raw == null ? '' : raw).replace(',', '.')) || 0;
+  var kind = stockKind_(row[km.kind], n);
+  // „Abgang“ mit positiver Zahl von Hand eingetragen → als Abgang werten
+  if (kind === 'Abgang' && n > 0) n = -n;
+  if (kind === 'Inventur') n = Math.abs(n);
+  return {
+    date: toDate_(row[km.date]), label: stockName_(unsafe_(row[km.label])), count: n, kind: kind,
+    filled: raw !== '' && raw != null,
+    note: unsafe_(row[km.note]).trim(), status: normStatus_(row[km.status]),
+    ts: Number(row[km.ts]) || 0, id: idText_(row[km.id]), substanceId: idText_(row[km.substanceId])
+  };
+}
+
+function readStock_(ss) {
+  var sh = ss.getSheetByName(SHEET_STOCK);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var km = keyMap_(STOCK_COLS, hmap_(sh));
+  if (km.id == null) return [];
+  return newestById_(sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues()
+    .map(function (row) { return rowToStock_(row, km); })
+    .filter(function (o) { return o.label && (o.count || (o.kind === 'Inventur' && o.filled)); }), 'id').list;
+}
+
+// Bestand je Substanz (gleiche Regeln wie in der App): gezählt ab der
+// letzten Inventur, sonst ab dem ersten Eintrag; Verbrauch aus Fällen ab
+// diesem Tag. Substanzen ohne Eintrag: nur Verbrauch, kein Bestand.
+function stockSummary_(entries, uses) {
+  var by = {}, order = [];
+  var get = function (k) { if (!by[k]) { by[k] = { es: [], uses: [] }; order.push(k); } return by[k]; };
+  entries.forEach(function (e) { get(e.label).es.push(e); });
+  uses.forEach(function (u) { get(u.name).uses.push(u); });
+  var r2 = function (n) { return Math.round(n * 100) / 100; };
+  return order.map(function (k) {
+    var g = by[k];
+    var es = g.es.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0); });
+    var inv = null;
+    es.forEach(function (e) { if (e.kind === 'Inventur') inv = e; });
+    var start = inv ? inv.date : es.length ? es[0].date : '';
+    var after = inv ? es.filter(function (e) { return e !== inv && e.kind !== 'Inventur' && (e.date > inv.date || (e.date === inv.date && (e.ts || 0) > (inv.ts || 0))); })
+      : es.filter(function (e) { return e.kind !== 'Inventur'; });
+    var incoming = 0, out = 0;
+    after.forEach(function (e) { if (e.count > 0) incoming += e.count; else out -= e.count; });
+    var used = 0;
+    g.uses.forEach(function (u) { if (!start || u.date >= start) used += u.n; });
+    return { name: k, start: start, inventory: inv ? inv.count : null, incoming: r2(incoming), out: r2(out), used: r2(used),
+      stock: es.length ? r2((inv ? inv.count : 0) + incoming - out - used) : null };
+  });
+}
+
+// „Sufentanil 50 µg × 2; Morphin 10 mg × 1“ → [{ name, date, n }, …]
+function btmUsage_(text, date, into) {
+  String(text || '').split(/[;\n]/).forEach(function (part) {
+    var m = /^\s*(.+?)\s*[×xX*]\s*(\d+(?:[.,]\d+)?)\s*(?:Amp\.?)?\s*$/.exec(part);
+    if (!m) return;
+    var n = parseFloat(m[2].replace(',', '.'));
+    if (!(n > 0)) return;
+    into.push({ name: stockName_(m[1]), date: date, n: n });
+  });
+  return into;
+}
+
 function setupSimple_(ss, name, headers, color) {
   var sh = ss.getSheetByName(name);
   if (sh && sh.getLastRow() > 1 && !headersMatch_(sh, headers)) {
@@ -7512,7 +8084,7 @@ function setupEval_(ss) {
 function computeEval_(ss) {
   var logbook = {}, vorwerte = {};
   RZ.forEach(function (r) { logbook[r[0]] = 0; vorwerte[r[0]] = 0; });
-  var dup = 0, active = 0;
+  var dup = 0, active = 0, used = [];
   var cs = ss.getSheetByName(SHEET_CASES);
   if (cs && cs.getLastRow() >= 2) {
     var km = keyMap_(CASE_COLS, hmap_(cs));
@@ -7522,6 +8094,7 @@ function computeEval_(ss) {
     cr.list.forEach(function (o) {
       if (o.status !== STATUS_ACTIVE) return;
       active++;
+      btmUsage_(o.btm, o.date ? isoDate_(o.date) : '', used);
       var rz = computeRz_(o);
       RZ.forEach(function (r) { if (rz[r[0]]) logbook[r[0]]++; });
     });
@@ -7539,7 +8112,9 @@ function computeEval_(ss) {
       RZ.forEach(function (r) { vorwerte[r[0]] += o.counts[r[0]] || 0; });
     });
   }
-  return { logbook: logbook, vorwerte: vorwerte, activeCases: active, vorwerteBlocks: vblocks, duplicates: dup };
+  var stock = readStock_(ss).filter(function (o) { return o.status === STATUS_ACTIVE; });
+  var btm = stockSummary_(stock.map(function (o) { return { label: o.label, date: o.date ? isoDate_(o.date) : '', kind: o.kind, count: o.count, ts: o.ts }; }), used);
+  return { logbook: logbook, vorwerte: vorwerte, activeCases: active, vorwerteBlocks: vblocks, duplicates: dup, btm: btm, btmEntries: stock.length };
 }
 
 // Je Kennung nur die neueste Fassung (höchste Version) behalten
@@ -7575,6 +8150,18 @@ function writeEval_(ss, ev) {
   var tz = ss.getSpreadsheetTimeZone();
   sh.getRange(2, 1).setValue('Stand: ' + Utilities.formatDate(new Date(), tz, 'dd.MM.yyyy HH:mm') + ' · ' + ev.activeCases + ' aktive Fälle · ' + ev.vorwerteBlocks + ' Vorwerte-Blöcke'
     + (ev.duplicates ? ' · ACHTUNG: ' + ev.duplicates + ' doppelte Zeile(n) nicht gezählt' : ''));
+  // BTM-Bestand unter den Richtzahlen
+  var top = 4 + RZ.length + 1, maxN = 40;
+  sh.getRange(top, 1, maxN + 2, 6).setValues(Array.apply(null, Array(maxN + 2)).map(function () { return ['', '', '', '', '', '']; }));
+  sh.getRange(top, 1, 1, 6).setBackground(null).setFontWeight('normal');
+  var list = (ev.btm || []).slice(0, maxN);
+  sh.getRange(top, 1, 1, 6).setValues([['BTM-Bestand (Ampullen)', 'Gezählt ab', 'Inventur + Zugänge', 'Abgänge', 'Verbrauch (Fälle)', 'Bestand']]).setFontWeight('bold').setBackground('#fef3c7');
+  var de = function (iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '.' + m[2] + '.' + m[1] : ''; };
+  if (list.length) sh.getRange(top + 1, 1, list.length, 6).setValues(list.map(function (b) {
+    return b.stock === null ? [b.name, 'kein Eintrag', '', '', b.used, '']
+      : [b.name, de(b.start), (b.inventory || 0) + b.incoming, b.out, b.used, b.stock];
+  }));
+  else sh.getRange(top + 1, 1).setValue('Noch keine Zugänge erfasst (Blatt „BTM-Bestand“ bzw. in der App unter BTM).');
 }
 
 // RZ-Spalten, Alter und „Kind ≤ 5“ aller Zeilen neu berechnen
@@ -7634,10 +8221,11 @@ function onEdit(e) {
     if (!e || !e.range) return;
     var sheet = e.range.getSheet();
     var name = sheet.getName();
-    if (name !== SHEET_CASES && name !== SHEET_VW) return;
+    if (name !== SHEET_CASES && name !== SHEET_VW && name !== SHEET_STOCK) return;
     var r1 = Math.max(2, e.range.getRow()), r2 = e.range.getLastRow();
     if (r2 < r1) return;
     if (name === SHEET_CASES) handleCaseEdit_(sheet, r1, r2);
+    else if (name === SHEET_STOCK) handleStockEdit_(sheet, r1, r2);
     else handleVwEdit_(sheet, r1, r2);
     writeEval_(ss_(), computeEval_(ss_()));
   } catch (err) {
@@ -7707,6 +8295,29 @@ function handleVwEdit_(sheet, r1, r2) {
     RZ.forEach(function (x) { o['n:' + x[0]] = o.counts[x[0]] || 0; });
     o.changedAt = new Date();
     sheet.getRange(r, 1, 1, lastCol).setValues([fillVwRow_(row, km, o)]);
+  }
+}
+
+function handleStockEdit_(sheet, r1, r2) {
+  var km = keyMap_(STOCK_COLS, hmap_(sheet));
+  if (km.id == null) return;
+  var last = sheet.getLastRow(), lastCol = sheet.getLastColumn();
+  var all = sheet.getRange(2, km.id + 1, Math.max(1, last - 1), 1).getValues().map(function (r) { return idText_(r[0]); });
+  var now = Date.now(), k = 0;
+  for (var r = Math.min(r2, last); r >= r1; r--) {
+    var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
+    var o = rowToStock_(row, km);
+    if (!o.label && !o.count) {
+      if (o.id) { sheet.deleteRow(r); all.splice(r - 2, 1); }
+      continue;
+    }
+    if (!o.label) continue;
+    var dupe = o.id && all.filter(function (u, i) { return u === o.id && i !== r - 2; }).length > 0;
+    if (!o.id || dupe) { o.id = 'T' + (now + k); all[r - 2] = o.id; }
+    if (!o.date) o.date = new Date();
+    o.ts = now + (k++);
+    o.changedAt = new Date();
+    sheet.getRange(r, 1, 1, lastCol).setValues([fillStockRow_(row, km, o)]);
   }
 }
 
@@ -7893,8 +8504,12 @@ function state_() {
       .map(function (row) { return rowToVw_(row, vkm); })
       .filter(function (o) { return o.id && (o.name || Object.keys(o.counts).length); }), 'id').list;
   }
+  stockSheet_(ss);
+  var stock = readStock_(ss).map(function (o) {
+    return { id: o.id, date: o.date ? Utilities.formatDate(o.date, tz, 'yyyy-MM-dd') : '', label: o.label, substanceId: o.substanceId, kind: o.kind, count: o.count, note: o.note, status: o.status, ts: o.ts };
+  });
   var trash = readTrash_(ss);
-  return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss), crypto: cryptoMeta_() };
+  return { ok: true, version: SCRIPT_VERSION, cases: cases, vorwerte: vorwerte, stock: stock, trash: trash.map(function (t) { return t.uid; }), trashItems: trash, eval: computeEval_(ss), crypto: cryptoMeta_() };
 }
 
 // ------------------------------------------------------------------
@@ -7914,6 +8529,10 @@ function push_(ops, confirmBulk) {
   };
   ctx.km = keyMap_(CASE_COLS, hmap_(ctx.cases));
   ctx.vkm = keyMap_(VW_COLS, hmap_(ctx.vw));
+  if (ops.some(function (o) { return o && String(o.type).indexOf('stock-') === 0; })) {
+    ctx.stock = stockSheet_(ss);
+    ctx.skm = keyMap_(STOCK_COLS, hmap_(ctx.stock));
+  }
   var results = [];
   ops.forEach(function (op) {
     var status;
@@ -7923,7 +8542,8 @@ function push_(ops, confirmBulk) {
       else {
         var t = String(op.type);
         status = t.indexOf('trash-') === 0 ? applyTrashOp_(op, ctx)
-          : t.indexOf('vw-') === 0 ? applyVwOp_(op, ctx) : applyCaseOp_(op, ctx);
+          : t.indexOf('vw-') === 0 ? applyVwOp_(op, ctx)
+          : t.indexOf('stock-') === 0 ? applyStockOp_(op, ctx) : applyCaseOp_(op, ctx);
         ctx.log.appendRow([op.opId, new Date(), t, op.uid, String(op.ts), status]);
       }
     } catch (err) {
@@ -8065,6 +8685,32 @@ function applyVwOp_(op, ctx) {
     return 'ok';
   }
   return 'ungültig';
+}
+
+// BTM-Bestand: anlegen/ändern (auch „storniert“ = in der App gelöscht)
+function applyStockOp_(op, ctx) {
+  var sh = ctx.stock, km = ctx.skm, lastCol = sh.getLastColumn();
+  var row = findRow_(sh, km.id + 1, op.uid);
+  var current = row ? sh.getRange(row, 1, 1, lastCol).getValues()[0] : null;
+  var currentTs = current ? Number(current[km.ts]) || 0 : 0;
+  var d = op.data || {};
+  if (op.type !== 'stock-upsert' && op.type !== 'stock-seed') return 'ungültig';
+  var isInv = stockKind_(d.kind, 0) === 'Inventur';
+  if (!d.label || !(Number(d.count) || (isInv && Number(d.count) === 0))) return 'ungültig';
+  var o = { id: op.uid, date: d.date, label: d.label, substanceId: d.substanceId || '', count: d.count, kind: d.kind || '', note: d.note || '',
+    status: d.cancelled ? STATUS_CANCELLED : STATUS_ACTIVE, ts: op.ts, changedAt: new Date() };
+  if (op.type === 'stock-seed' && row) return 'vorhanden';
+  if (!row) {
+    sh.appendRow(fillStockRow_(new Array(lastCol).fill(''), km, o));
+    var r = sh.getLastRow();
+    sh.getRange(r, km.date + 1).setNumberFormat('dd.MM.yyyy');
+    sh.getRange(r, km.ts + 1).setNumberFormat('0');
+    sh.getRange(r, km.changedAt + 1).setNumberFormat('dd.MM.yyyy HH:mm');
+    return 'ok';
+  }
+  if (op.ts <= currentTs) return 'veraltet';
+  sh.getRange(row, 1, 1, lastCol).setValues([fillStockRow_(current.slice(), km, o)]);
+  return 'ok';
 }
 
 // Papierkorb: wiederherstellen (als „storniert“) oder endgültig entfernen
