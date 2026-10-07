@@ -786,7 +786,7 @@
         <section id="btm-stock-card" class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 mb-4">
             <div class="flex items-center justify-between gap-2">
                 <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Mein Bestand</h2>
-                <button type="button" id="btm-stock-add-btn" onclick="openStockForm()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"><i data-lucide="plus" class="w-3.5 h-3.5 pointer-events-none"></i> Bestand eintragen</button>
+                <button type="button" id="btm-stock-add-btn" onclick="$('btm-stock-form').classList.contains('hidden') ? openStockForm() : closeStockForm()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"><i data-lucide="plus" class="w-3.5 h-3.5 pointer-events-none"></i> Bestand eintragen</button>
             </div>
             <form id="btm-stock-form" class="hidden mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 space-y-3" onsubmit="saveStockEntry(event)">
                 <div class="grid grid-cols-3 gap-1 p-1 rounded-lg bg-slate-200/70 dark:bg-slate-700/60 text-xs font-medium" role="radiogroup" aria-label="Art">
@@ -819,8 +819,7 @@
                 </div>
             </form>
             <div id="btm-stock-list" class="mt-2 divide-y divide-slate-100 dark:divide-slate-700/50"></div>
-            <p id="btm-stock-empty" class="hidden mt-3 text-xs text-slate-500 dark:text-slate-400">Noch nichts erfasst. Trage über <b>Bestand eintragen</b> ein, was du bekommst (<b>Zugang</b>) oder gerade zählst (<b>Inventur</b>). Der Verbrauch aus deinen Fällen wird automatisch abgezogen.</p>
-            <p id="btm-stock-foot" class="hidden mt-2 text-[11px] text-slate-400">Bestand = Inventur bzw. erster Eintrag + Zugänge − Abgänge − Verbrauch aus Fällen ab diesem Tag. Tippe auf eine Substanz für den Verbrauch.</p>
+            <p class="mt-2 text-[11px] text-slate-400">Bestand / Plätze im Koffer. Der Verbrauch aus deinen Fällen wird automatisch abgezogen – tippe auf eine Zeile für Details.</p>
         </section>
         <div class="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-4 sm:p-6 space-y-4">
             <div class="flex flex-col sm:flex-row gap-3 justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700/50">
@@ -2832,7 +2831,6 @@
         { id: 'sufentanil-50', group: 'Sufentanil', amount: 50, unit: 'µg', label: 'Sufentanil 50 µg (Amp. 10 ml)' },
         { id: 'morphin-10', group: 'Morphin', amount: 10, unit: 'mg', label: 'Morphin 10 mg (Amp. 1 ml)' },
         { id: 'remifentanil-1', group: 'Remifentanil', amount: 1, unit: 'mg', label: 'Remifentanil 1 mg (Durchstechfl.)' },
-        { id: 'remifentanil-2', group: 'Remifentanil', amount: 2, unit: 'mg', label: 'Remifentanil 2 mg (Durchstechfl.)' },
         { id: 'alfentanil-1', group: 'Alfentanil', amount: 1, unit: 'mg', label: 'Alfentanil 1 mg (Amp. 2 ml)' }
     ];
     const btmById = {};
@@ -3006,7 +3004,8 @@
     // Nach Tag gruppiert mit derselben Tages-Nummer wie unter "Fälle"
     // (nur wenn der Tag mehr als einen Fall hat); Ampullen-Summe je Tag erst
     // ab zwei BTM-Fällen, sonst steht sie schon auf der einzigen Karte.
-    function renderBtmOverview() {
+    function renderBtmOverview() { keepScroll(renderBtmOverviewInner); }
+    function renderBtmOverviewInner() {
         const container = $('btm-overview-list');
         const empty = $('btm-overview-empty');
         if (!container) return;
@@ -3147,64 +3146,108 @@
 
     function fmtSigned(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + fmtAmount(Math.abs(n)); }
 
+    // Koffer: Plätze je Substanz
+    const BTM_KOFFER = [
+        { name: 'Sufentanil 10 µg', places: 40, members: ['Sufentanil 10 µg'] },
+        { name: 'Sufentanil 50 µg', places: 10, members: ['Sufentanil 50 µg'] },
+        { name: 'Remifentanil 1 mg', places: 10, members: ['Remifentanil 1 mg'] },
+        { name: 'Morphin 10 mg', places: 10, members: ['Morphin 10 mg'] },
+        { name: 'Alfentanil 1 mg', places: 10, members: ['Alfentanil 1 mg'] }
+    ];
+
+    // Neu zeichnen, ohne dass die Seite springt (iPhone)
+    function keepScroll(fn) {
+        const y = window.scrollY;
+        fn();
+        if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
+    }
+
+    function btmKofferGroups() {
+        const byName = new Map(computeBtmStock(false).map((s) => [s.name, s]));
+        const groups = BTM_KOFFER.map((k) => {
+            const ms = k.members.map((m) => byName.get(m)).filter(Boolean);
+            k.members.forEach((m) => byName.delete(m));
+            const known = ms.filter((s) => s.stock !== null);
+            return { name: k.name, places: k.places, parts: ms, stock: known.length ? round2(known.reduce((a, s) => a + s.stock, 0)) : null };
+        });
+        // Substanzen außerhalb des Koffers (z. B. alte Bezeichnungen)
+        byName.forEach((s) => groups.push({ name: s.name, places: null, parts: [s], stock: s.stock }));
+        return groups;
+    }
+
     function renderBtmStock() {
         const box = $('btm-stock-list');
         if (!box) return;
-        const list = computeBtmStock(false);
-        const hasAny = list.length > 0;
-        $('btm-stock-empty').classList.toggle('hidden', hasAny);
-        $('btm-stock-foot').classList.toggle('hidden', !hasAny);
-        box.innerHTML = list.map((s) => {
-            const open = btmStockOpen === s.name;
-            const neg = s.stock !== null && s.stock < 0;
-            const cls = s.stock === null ? 'text-slate-400' : neg ? 'text-red-600 dark:text-red-400' : s.stock === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100';
-            const sub = s.stock === null
-                ? `Noch kein Bestand erfasst · verbraucht ${fmtAmount(s.used)} Amp.`
-                : `ab ${formatDate(s.start)}${s.inventory !== null ? ` · Inventur ${fmtAmount(s.inventory)}` : ''}${s.incoming ? ` · +${fmtAmount(s.incoming)}` : ''}${s.out ? ` · −${fmtAmount(s.out)}` : ''} · verbraucht ${fmtAmount(s.used)}`;
-            return `<div class="stock-item" data-name="${esc(s.name)}">
-                <button type="button" data-stock-toggle class="w-full flex items-center gap-3 py-2.5 text-left" aria-expanded="${open}">
-                    <span class="flex-1 min-w-0"><span class="block text-sm font-medium text-slate-800 dark:text-slate-100 truncate">${esc(s.name)}</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">${esc(sub)}</span></span>
-                    <span class="text-right shrink-0"><span class="block text-xl font-bold tabular-nums leading-none ${cls}">${s.stock === null ? '–' : (neg ? '−' : '') + fmtAmount(Math.abs(s.stock))}</span><span class="block text-[10px] text-slate-400 mt-0.5">Amp.</span></span>
-                    <i data-lucide="${open ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none"></i>
-                </button>
-                ${open ? stockDetailHtml(s) : ''}
-            </div>`;
-        }).join('');
-        refreshIcons();
+        const groups = btmKofferGroups();
+        keepScroll(() => {
+            box.innerHTML = groups.map((g) => {
+                const open = btmStockOpen === g.name;
+                const st = g.stock;
+                const neg = st !== null && st < 0;
+                const low = st !== null && g.places && st < g.places;
+                const cls = st === null ? 'text-slate-400' : neg ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-100';
+                const pct = st === null || !g.places ? 0 : Math.max(0, Math.min(100, Math.round(st / g.places * 100)));
+                // rot ab halb leer, gelb dazwischen, grün wenn voll
+                const half = st !== null && g.places && st <= g.places / 2;
+                const bar = half ? '#ef4444' : pct >= 100 ? '#10b981' : '#f59e0b';
+                const hint = st === null ? 'kein Bestand erfasst' : neg ? 'mehr verbraucht als erfasst' : low ? `${fmtAmount(round2(g.places - st))} auffüllen` : g.places && st > g.places ? `voll (+${fmtAmount(round2(st - g.places))})` : g.places ? 'voll' : '';
+                const parts = g.parts.length > 1 ? g.parts.filter((s) => s.stock !== null).map((s) => `${s.name.replace('Remifentanil ', '')}: ${fmtAmount(s.stock)}`).join(' · ') : '';
+                return `<div class="stock-item" data-group="${esc(g.name)}">
+                    <button type="button" data-stock-toggle class="w-full py-2.5 text-left" aria-expanded="${open}">
+                        <span class="flex items-baseline gap-2">
+                            <span class="flex-1 min-w-0 text-sm font-medium text-slate-800 dark:text-slate-100 truncate">${esc(g.name)}</span>
+                            <span class="shrink-0 tabular-nums text-sm"><b class="${cls}">${st === null ? '–' : (neg ? '−' : '') + fmtAmount(Math.abs(st))}</b>${g.places ? `<span class="text-slate-400"> / ${g.places}</span>` : ''}</span>
+                        </span>
+                        ${g.places ? `<span class="block h-1.5 mt-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden"><span class="block h-full rounded-full" style="width:${pct}%;background:${bar}"></span></span>` : ''}
+                        <span class="flex justify-between gap-2 mt-1 text-[11px] text-slate-500 dark:text-slate-400"><span class="truncate">${esc(parts)}</span><span class="shrink-0 ${neg || half ? 'text-red-600 dark:text-red-400' : low ? 'text-amber-700 dark:text-amber-400' : ''}">${esc(hint)}</span></span>
+                    </button>
+                    ${open ? stockGroupDetailHtml(g) : ''}
+                </div>`;
+            }).join('');
+            refreshIcons();
+        });
+    }
+
+    function stockGroupDetailHtml(g) {
+        const names = g.parts.length ? g.parts : [];
+        const KOF = BTM_KOFFER.find((k) => k.name === g.name);
+        const members = KOF ? KOF.members : [g.name];
+        return `<div class="pb-3 space-y-4">${members.map((m) => {
+            const s = names.find((x) => x.name === m) || null;
+            return `<div data-name="${esc(m)}">${members.length > 1 ? `<p class="text-xs font-semibold text-slate-800 dark:text-slate-100 mb-1">${esc(m)}${s && s.stock !== null ? ` · Bestand ${fmtAmount(s.stock)}` : ''}</p>` : ''}${s ? stockDetailHtml(s) : '<p class="text-xs text-slate-400 mb-2">Noch nichts erfasst.</p>'}${stockButtonsHtml()}</div>`;
+        }).join('')}</div>`;
+    }
+
+    function stockButtonsHtml() {
+        return `<div class="flex gap-2 mt-2">
+            <button type="button" data-stock-add="in" class="set-btn">+ Zugang</button>
+            <button type="button" data-stock-add="out" class="set-btn">− Abgang</button>
+            <button type="button" data-stock-add="inv" class="set-btn">Inventur</button>
+        </div>`;
     }
 
     function stockDetailHtml(s) {
         const uses = (s.stock === null ? s.allUses : s.uses).slice()
             .sort((a, b) => (b.date || '').localeCompare(a.date || '') || String(b.c.id).localeCompare(String(a.c.id)));
-        const MAX = 40;
-        const useRows = uses.slice(0, MAX).map((u) => `<li class="flex items-baseline gap-2 py-1">
-                <span class="tabular-nums text-slate-500 shrink-0">${esc(formatDate(u.date))}</span>
-                <span class="flex-1 min-w-0 truncate">${esc([u.c.initials, caseProcedureLabel(u.c)].filter(Boolean).join(' · ') || '–')}${u.c.isDemo ? ' <span class="text-slate-400">(Demo)</span>' : ''}</span>
-                <span class="tabular-nums font-medium shrink-0">−${esc(fmtAmount(u.n))}</span></li>`).join('');
+        const MAX = 20;
+        const row = (l, r, extra) => `<li class="flex items-baseline gap-2 py-1 ${extra || ''}">${l}<span class="tabular-nums font-medium shrink-0">${r}</span></li>`;
+        const useRows = uses.slice(0, MAX).map((u) => row(`<span class="tabular-nums text-slate-500 shrink-0">${esc(formatDate(u.date))}</span><span class="flex-1 min-w-0 truncate">${esc(u.c.initials || '–')}${u.c.isDemo ? ' (Demo)' : ''}</span>`, '−' + esc(fmtAmount(u.n)))).join('');
+        const lastInv = s.entries.filter((y) => y.kind === 'inv').slice(-1)[0];
         const ents = s.entries.slice().reverse().map((x) => {
-            const on = s.counts(x) || x.kind === 'inv' && x === s.entries.filter((y) => y.kind === 'inv').slice(-1)[0];
-            const val = x.kind === 'inv' ? `= ${fmtAmount(x.count)}` : fmtSigned(x.count);
+            const on = s.counts(x) || x === lastInv;
             return `<li class="flex items-center gap-2 py-1 ${on ? '' : 'opacity-50'}">
                 <span class="tabular-nums text-slate-500 shrink-0">${esc(formatDate(x.date))}</span>
-                <span class="flex-1 min-w-0 truncate">${stockKindLabel(x.kind)}${x.e.note ? ' · ' + esc(x.e.note) : ''}${on ? '' : ' <span class="text-slate-400">(vor Inventur)</span>'}</span>
-                <span class="tabular-nums font-medium shrink-0">${esc(val)}</span>
-                <button type="button" data-stock-del="${esc(x.e.id)}" class="p-1 -my-1 text-slate-400 hover:text-red-600" title="Eintrag löschen" aria-label="Eintrag löschen"><i data-lucide="trash-2" class="w-3.5 h-3.5 pointer-events-none"></i></button></li>`;
+                <span class="flex-1 min-w-0 truncate">${stockKindLabel(x.kind)}${x.e.note ? ' · ' + esc(x.e.note) : ''}</span>
+                <span class="tabular-nums font-medium shrink-0">${esc(x.kind === 'inv' ? '= ' + fmtAmount(x.count) : fmtSigned(x.count))}</span>
+                <button type="button" data-stock-del="${esc(x.e.id)}" class="px-1.5 text-slate-400 hover:text-red-600" aria-label="Eintrag löschen">✕</button></li>`;
         }).join('');
         const sumUsed = uses.reduce((a, u) => a + u.n, 0);
-        return `<div class="pb-3 text-xs text-slate-700 dark:text-slate-300 space-y-3">
+        return `<div class="text-xs text-slate-700 dark:text-slate-300 space-y-2">
             <div>
-                <p class="font-semibold mb-1">Verbrauch${s.stock === null ? ' (alle Fälle)' : ` seit ${esc(formatDate(s.start))}`}: ${esc(fmtAmount(sumUsed))} Amp. in ${uses.length} ${uses.length === 1 ? 'Fall' : 'Fällen'}</p>
-                ${uses.length ? `<ul class="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-72 overflow-y-auto">${useRows}</ul>${uses.length > MAX ? `<p class="text-slate-400 mt-1">… und ${uses.length - MAX} weitere (siehe Liste unten)</p>` : ''}` : '<p class="text-slate-400">Kein Verbrauch in diesem Zeitraum.</p>'}
+                <p class="text-slate-500 dark:text-slate-400">Verbrauch${s.stock === null ? '' : ` seit ${esc(formatDate(s.start))}`}: <b class="text-slate-700 dark:text-slate-200">${esc(fmtAmount(sumUsed))} Amp.</b></p>
+                ${uses.length ? `<ul class="divide-y divide-slate-100 dark:divide-slate-700/50">${useRows}</ul>${uses.length > MAX ? `<p class="text-slate-400">… und ${uses.length - MAX} weitere</p>` : ''}` : ''}
             </div>
-            <div>
-                <p class="font-semibold mb-1">Zugänge, Abgänge &amp; Inventuren</p>
-                ${ents ? `<ul class="divide-y divide-slate-100 dark:divide-slate-700/50">${ents}</ul>` : '<p class="text-slate-400">Noch keine Einträge.</p>'}
-            </div>
-            <div class="flex gap-2">
-                <button type="button" data-stock-add="in" class="set-btn"><i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i> Zugang</button>
-                <button type="button" data-stock-add="out" class="set-btn"><i data-lucide="minus" class="w-4 h-4 pointer-events-none"></i> Abgang</button>
-                <button type="button" data-stock-add="inv" class="set-btn"><i data-lucide="clipboard-check" class="w-4 h-4 pointer-events-none"></i> Inventur</button>
-            </div>
+            ${ents ? `<div><p class="text-slate-500 dark:text-slate-400">Einträge</p><ul class="divide-y divide-slate-100 dark:divide-slate-700/50">${ents}</ul></div>` : ''}
         </div>`;
     }
 
@@ -3236,15 +3279,15 @@
         $('stock-count').value = '';
         $('stock-note').value = '';
         updateStockFormHint();
+        // Formular erscheint direkt unter der Überschrift; kein automatisches
+        // Fokussieren/Scrollen (iPhone springt sonst mit der Tastatur)
         f.classList.remove('hidden');
-        $('btm-stock-add-btn').classList.add('hidden');
-        f.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        setTimeout(() => { try { $('stock-count').focus({ preventScroll: true }); } catch (e) {} }, 50);
+        const top = $('btm-stock-card').getBoundingClientRect().top;
+        if (top < 0) window.scrollBy(0, top - 8);
     }
 
     function closeStockForm() {
         $('btm-stock-form').classList.add('hidden');
-        $('btm-stock-add-btn').classList.remove('hidden');
     }
 
     function saveStockEntry(ev) {
@@ -3265,7 +3308,8 @@
         btmStock.push(e);
         saveBtmStock();
         enqueueRaw(stockOp('stock-upsert', e));
-        btmStockOpen = btmName(opt.label);
+        const grp = BTM_KOFFER.find((k) => k.members.includes(btmName(opt.label)));
+        btmStockOpen = grp ? grp.name : btmName(opt.label);
         closeStockForm();
         renderBtmStock();
         showToast(`${stockKindLabel(kind)} gespeichert: ${btmName(opt.label)} ${kind === 'inv' ? '= ' + fmtAmount(n) : fmtSigned(e.count)} Amp.`);
@@ -3293,9 +3337,9 @@
             const item = ev.target.closest('.stock-item');
             if (!item) return;
             const add = ev.target.closest('[data-stock-add]');
-            if (add) { openStockForm(add.dataset.stockAdd, item.dataset.name); return; }
+            if (add) { const m = add.closest('[data-name]'); openStockForm(add.dataset.stockAdd, m ? m.dataset.name : ''); return; }
             if (ev.target.closest('[data-stock-toggle]')) {
-                btmStockOpen = btmStockOpen === item.dataset.name ? null : item.dataset.name;
+                btmStockOpen = btmStockOpen === item.dataset.group ? null : item.dataset.group;
                 renderBtmStock();
             }
         });
@@ -7219,7 +7263,7 @@
         ['Urologie', 'Nephrektomie', 3, 63, 'itn abd sono'],
         ['Gefäßchirurgie', 'Karotis-TEA', 3, 70, 'sed kh', { per: 'Sonstiger peripherer Block' }],
         ['Gefäßchirurgie', 'Femoro-poplitealer Bypass', 3, 68, 'itn sono'],
-        ['Thoraxchirurgie', 'Lobektomie', 3, 66, 'itn thx sono fib', { spa: 'PDK', btm: [{ id: 'remifentanil-2', count: 2 }, { id: 'morphin-10', count: 1 }] }],
+        ['Thoraxchirurgie', 'Lobektomie', 3, 66, 'itn thx sono fib', { spa: 'PDK', btm: [{ id: 'remifentanil-1', count: 2 }, { id: 'morphin-10', count: 1 }] }],
         ['Thoraxchirurgie', 'VATS', 3, 58, 'itn thx vid'],
         ['Plastische Chirurgie', 'Lappenplastik', 2, 44, 'itn', { per: 'Erector Spinae (ESP) Block' }],
         ['Mund-Kiefer-Gesicht', 'Zahnsanierung (ITN)', 1, 5, 'itn kh amb'],
