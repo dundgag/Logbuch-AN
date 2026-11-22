@@ -546,7 +546,7 @@
                     <input type="text" id="input-initials" placeholder="z. B. MM" required maxlength="6" onblur="formatInitials(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm uppercase focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
                 <div data-field="dob">
-                    <label for="input-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geburtsdatum * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kinder" data-cat-prefix="≤10J: "></span></label>
+                    <label for="input-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase mb-1">Geburtsdatum * <span class="eval-badge normal-case text-[11px] text-slate-400 dark:text-slate-500 font-normal" data-cat="kinder" data-cat-prefix="≤5J: "></span></label>
                     <input type="text" id="input-dob" inputmode="numeric" placeholder="15.05.64" required oninput="formatDobLive(this)" onblur="handleSmartDobInput(this)" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700/50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
                     <p id="dob-hint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"></p>
                 </div>
@@ -1508,6 +1508,11 @@
         // Aus Google Sheets wiederhergestellte Fälle haben kein Alter, nur
         // die Angabe „Kind ≤ 10 J.“ (Feld kindLe5).
         return a !== null ? a <= CHILD_MAX_AGE : !!c.kindLe5;
+    }
+    // WBO-Richtzahl: Kinder bis 5 Jahre (ohne Alter: Angabe aus der Tabelle)
+    function isWboChildCase(c) {
+        const a = caseAge(c);
+        return a !== null ? a <= 5 : !!c.kindLe5;
     }
     function isOlderChildCase(c) {
         const a = caseAge(c);
@@ -2712,7 +2717,8 @@
         { id: 'video', label: 'Videoassistierte Intubationsverfahren', short: 'Video-Intubation', target: 20, icon: 'monitor-play' },
         { id: 'ultraschall', label: 'Anästhesierelevante Ultraschallverfahren', short: 'Ultraschall', target: 50, icon: 'waves' },
         { id: 'intrakraniell', label: 'Mitwirkung: Intrakranielle Eingriffe', short: 'Intrakraniell', target: 25, icon: 'brain' },
-        { id: 'kinder', label: 'Kinder ≤ 10 Jahre (WBO: ≤ 5 J., 6–10 J. mit Hinweis)', short: 'Kind ≤ 10 J.', target: 50, icon: 'baby' },
+        { id: 'kinder', label: 'Kinder ≤ 5 Jahre (WBO)', short: 'Kind ≤ 5 J.', target: 50, icon: 'baby' },
+        { id: 'kinder10', label: 'Kinder ≤ 10 Jahre (eigene Zählung)', short: 'Kind 0–10 J.', target: 50, icon: 'baby' },
         { id: 'geburtshilfe', label: 'Anästhesieverfahren in der Geburtshilfe', short: 'Geburtshilfe', target: 50, icon: 'baby' },
         { id: 'sectio', label: 'davon: Kaiserschnitte (Sectio)', short: 'Sectio', target: 25, icon: 'scissors' },
         { id: 'intrathorakal', label: 'Mitwirkung: Intrathorakale Eingriffe', short: 'Intrathorakal', target: 25, icon: 'wind' },
@@ -2782,7 +2788,8 @@
         if (c.isKopfHals) ids.push('kopf_hals');
         if (c.isIntrathorakal) ids.push('intrathorakal');
         if (c.isIntrakraniell) ids.push('intrakraniell');
-        if (isChildCase(c)) ids.push('kinder');
+        if (isWboChildCase(c)) ids.push('kinder');
+        if (isChildCase(c)) ids.push('kinder10');
         if (isGeburtshilfeCase(c)) ids.push('geburtshilfe');
         // Die engere Teilmenge "davon: Kaiserschnitte" wird bewusst NICHT
         // über die (mittlerweile breiter gefasste) Checkbox "Geburtshilfe
@@ -3535,8 +3542,8 @@
         setDobHint(`Alter am Falldatum: ${age} ${age === 1 ? 'Jahr' : 'Jahre'}`, false);
         alertBox.classList.toggle('hidden', age > CHILD_MAX_AGE);
         $('child-age-alert-text').innerHTML = age <= 5
-            ? '<strong>Erkannt:</strong> Kind ≤ 5 Jahre – zählt als Kind.'
-            : `<strong>Hinweis:</strong> Kind mit ${age} Jahren – wird hier als Kind gezählt. Die WBO nennt Kinder ≤ 5 Jahre; ob 6–10-Jährige anerkannt werden, ggf. mit deinem Weiterbilder klären.`;
+            ? '<strong>Erkannt:</strong> Kind ≤ 5 Jahre – zählt für die WBO-Richtzahl und bei „Kinder ≤ 10 Jahre“.'
+            : `<strong>Hinweis:</strong> Kind mit ${age} Jahren – zählt bei „Kinder ≤ 10 Jahre“, nicht bei der WBO-Richtzahl (≤ 5 Jahre).`;
     }
 
     function handleSmartDobInput(el) {
@@ -4159,7 +4166,7 @@
         if (c.isFiberoptik) f.push('Fiberoptik');
         if (c.isVideo && caseAirway(c) !== 'Video-ITN') f.push('Videolaryngoskopie');
         if (c.isSonoGefaess) f.push('Sono-Gefäßpunktion');
-        if (isChildCase(c)) f.push(isOlderChildCase(c) ? `Kind ${caseAge(c)} J. (Hinweis: WBO ≤ 5 J.)` : 'Kind ≤ 5 J.');
+        if (isChildCase(c)) f.push(isOlderChildCase(c) ? `Kind ${caseAge(c)} J. (nur ≤ 10 J.)` : 'Kind ≤ 5 J.');
         if (c.isItsOrgan) f.push('ITS ≥ 2 Organe');
         if (c.isItsNiv) f.push('NIV/Atemunterst.');
         if (c.isZvk) f.push('ZVK');
@@ -4927,7 +4934,7 @@
     const SYNC_BULK_LIMIT = 5;
     // Version von Logbuch-Sync.gs, die zu dieser App passt. Ältere Skripte
     // bekommen keine Aufträge (sonst könnten sie unbekannte verwerfen).
-    const SYNC_SCRIPT_VERSION = 11;
+    const SYNC_SCRIPT_VERSION = 12;
     const SYNC_POLL_MS = 2 * 60 * 1000;
     const DESTRUCTIVE_OPS = ['cancel', 'purge', 'vw-cancel', 'vw-purge', 'trash-delete'];
     const SYNC_BATCH = 100;
@@ -6584,7 +6591,8 @@
     }
 
     function overallProgressPct(prog = computeProgress()) {
-        const withTarget = baekCategories.filter((c) => typeof c.target === 'number');
+        // „Kinder ≤ 10 J.“ ist eine eigene Zählung, keine WBO-Richtzahl
+        const withTarget = baekCategories.filter((c) => typeof c.target === 'number' && c.id !== 'kinder10');
         if (!withTarget.length) return 0;
         const sum = withTarget.reduce((acc, c) => {
             const p = prog[c.id];
@@ -6825,8 +6833,6 @@
         // Richtzahlen
         // Ohne Vorwerte (Zeitraum-Auswertung) entfällt die Vorwerte-Spalte.
         const showVw = scope.withVorwerte;
-        // Kinder 6–10 J. zählen mit, werden aber gekennzeichnet (WBO nennt ≤ 5 J.)
-        const olderKids = scope.cases.filter((c) => !c.cancelled && isOlderChildCase(c)).length;
         sectionTitle('Richtzahlen', showVw ? 'Gesamt = Logbuch + Vorwerte' : 'nur Logbuch-Fälle im Zeitraum');
         const catW = showVw ? 192 : 236;
         const progW = CW - (catW + 48 + 44 * 3 + 40) + (showVw ? 0 : 44);
@@ -6848,8 +6854,7 @@
         ], summary.map((s) => {
             const davon = /^davon:/i.test(s.cat.label);
             const open = s.hasTarget ? Math.max(0, s.cat.target - s.cur) : 0;
-            const kidMark = s.cat.id === 'kinder' && olderKids > 0;
-            const cells = [kidMark ? 'Kinder ≤ 10 Jahre *' : s.cat.id === 'kinder' ? 'Kinder ≤ 10 Jahre' : s.cat.label, s.hasTarget ? nf(s.cat.target) : '–', nf(s.logbook), nf(s.vorwerte), nf(s.cur), open > 0 ? nf(open) : '–'];
+            const cells = [s.cat.label, s.hasTarget ? nf(s.cat.target) : '–', nf(s.logbook), nf(s.vorwerte), nf(s.cur), open > 0 ? nf(open) : '–'];
             const colors = [davon ? col.muted : col.ink, col.muted, col.text, col.text, col.ink, open > 0 ? col.text : col.faint];
             if (!showVw) { cells.splice(3, 1); colors.splice(3, 1); }
             return {
@@ -6860,11 +6865,6 @@
             };
         }), { size: 7.8, minRow: 17 });
         y += 7;
-        if (olderKids > 0) {
-            wrap(`* Darin enthalten: ${olderKids} ${olderKids === 1 ? 'Fall' : 'Fälle'} mit Kindern im Alter von 6–10 Jahren (in der Fallübersicht mit „Kind 6–10 J. *“ gekennzeichnet). Die WBO nennt Kinder ≤ 5 Jahre.`, 6.8, CW)
-                .forEach((ln) => { text(ln, M, y, 6.8, { font: FB, color: col.amberInk }); y += 9; });
-            y += 3;
-        }
         wrap((scope.ranged ? `Zeitraum-Auswertung ${scope.label}: gezählt werden nur Logbuch-Fälle aus diesem Zeitraum; Vorwerte (ohne Datum) sind ${scope.withVorwerte ? 'zusätzlich enthalten' : 'nicht enthalten'}. ` : '') + 'Richtzahlen in Anlehnung an das Logbuch Anästhesiologie der Ärztekammer Niedersachsen; „davon“-Positionen sind Teilmengen der jeweils vorstehenden Kategorie. Maßgeblich ist die jeweils gültige Weiterbildungsordnung. Diese Übersicht ist eine persönliche Aufzeichnung und ersetzt nicht das offizielle Logbuch.', 6.8, CW)
             .forEach((ln) => { text(ln, M, y, 6.8, { color: col.muted }); y += 9; });
         y += 16;
@@ -6936,7 +6936,7 @@
                 if (c.isSedierung) v.push('Analgosedierung');
                 return v.join(', ') || '–';
             };
-            const kriterien = (c) => caseCategoryIds(c).filter((id) => id !== 'total').map((id) => id === 'kinder' ? (isOlderChildCase(c) ? 'Kind 6–10 J. *' : 'Kind ≤ 5 J.') : catById[id].short).join(', ') || '–';
+            const kriterien = (c) => { const ids = caseCategoryIds(c); return ids.filter((id) => id !== 'total' && !(id === 'kinder10' && ids.includes('kinder'))).map((id) => id === 'kinder10' ? 'Kind 6–10 J.' : catById[id].short).join(', ') || '–'; };
             const colsFull = [
                 { title: 'Nr.', w: 24, align: 'right' }, { title: 'Datum', w: 50 }, { title: 'Initialen', w: 40 },
                 { title: 'Alter', w: 30, align: 'right' }, { title: 'Ort', w: 32 }, { title: 'Eingriff', w: 146 },
@@ -7420,7 +7420,7 @@
 <!-- Google-Apps-Script für die Synchronisierung (wird über „Skript kopieren“ in der Anleitung ausgegeben) -->
 <script type="text/plain" id="gs-source">
 /**
- * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 11)
+ * Anästhesie-Logbuch – Synchronisierung mit Google Sheets (Version 12)
  * ===================================================================
  *
  * Schritt-für-Schritt-Anleitung: in der App unter Mehr → Google Sheets →
@@ -7464,7 +7464,7 @@
  * Google-Konto mit 2-Faktor-Anmeldung schützen, Schlüssel geheim halten.
  */
 
-var SCRIPT_VERSION = 11;
+var SCRIPT_VERSION = 12;
 
 var SHEET_CASES = 'Fälle';
 var SHEET_VW = 'Vorwerte';
@@ -7488,7 +7488,8 @@ var RZ = [
   ['video', 'Video-Intubation', 'Videoassistierte Intubation', 20],
   ['ultraschall', 'Ultraschall', 'Anästhesierelevante Ultraschallverfahren', 50],
   ['intrakraniell', 'Intrakraniell', 'Mitwirkung: Intrakranielle Eingriffe', 25],
-  ['kinder', 'Kind ≤ 10 J.', 'Kinder ≤ 10 Jahre (WBO: ≤ 5 J., 6–10 J. mit Hinweis)', 50],
+  ['kinder', 'Kind ≤ 5 J.', 'Kinder ≤ 5 Jahre (WBO)', 50],
+  ['kinder10', 'Kind 0–10 J.', 'Kinder ≤ 10 Jahre (eigene Zählung)', 50],
   ['geburtshilfe', 'Geburtshilfe', 'Anästhesie in der Geburtshilfe', 50],
   ['sectio', 'Sectio', 'davon: Kaiserschnitte (Sectio)', 25],
   ['intrathorakal', 'Intrathorakal', 'Mitwirkung: Intrathorakale Eingriffe', 25],
@@ -7689,7 +7690,8 @@ function computeRz_(o) {
     video: !!o.isVideo,
     ultraschall: !!o.isSonoGefaess,
     intrakraniell: !!o.isIntrakraniell,
-    kinder: age !== null ? age <= 10 : !!o.kindLe5,
+    kinder: age !== null ? age <= 5 : !!o.kindLe5,
+    kinder10: age !== null ? age <= 10 : !!o.kindLe5,
     geburtshilfe: geb,
     sectio: procs.indexOf('Sectio Caesarea') > -1,
     intrathorakal: !!o.isIntrathorakal,
@@ -7889,7 +7891,7 @@ function setupCases_(ss) {
   });
   sh.getRange(1, km['rz:total'] + 1).setNote('RZ-Spalten rechnet das Skript aus den Angaben links aus.');
   sh.getRange(1, km.ageAtCase + 1).setNote('Wird aus Geburtsdatum und OP-Datum berechnet. Ohne Geburtsdatum (Datenschutz-Modus) steht hier das in der App gespeicherte Alter.');
-  sh.getRange(1, km.kindLe5 + 1).setNote('Ergibt sich aus dem Alter (bis einschließlich 10 Jahre; die WBO nennt ≤ 5 Jahre – 6–10 J. nur mit Hinweis). Nur ohne Alter von Hand setzen.');
+  sh.getRange(1, km.kindLe5 + 1).setNote('Ergibt sich aus dem Alter (bis einschließlich 10 Jahre). Die Auswertung zählt getrennt: Kinder ≤ 5 J. (WBO) und Kinder ≤ 10 J. Nur ohne Alter von Hand setzen. Nur ohne Alter von Hand setzen.');
   sh.getRange(1, km.pos + 1).setNote('Reihenfolge des Falls an diesem Tag (wie in der App).');
   sh.getRange(1, km.uid + 1).setNote('Nicht ändern: eindeutige Kennung des Falls. Bei neuen Zeilen leer lassen – wird automatisch vergeben.');
 
@@ -7911,6 +7913,8 @@ function setupVorwerte_(ss) {
     rows = readByHeader_(sh).map(function (r) {
       var o = { name: r['Bezeichnung'], status: r['Status'], id: r['ID'], ts: r['Version'], changedAt: r['Geändert am'] };
       RZ.forEach(function (x) { o['n:' + x[0]] = r[x[1]] != null ? r[x[1]] : r[x[2]]; });
+      // Vorwerte „Kinder“ aus Skript 10/11 (andere Spaltennamen) übernehmen
+      if (o['n:kinder'] == null) o['n:kinder'] = r['Kind < 10 J.'] != null ? r['Kind < 10 J.'] : r['Kind ≤ 10 J.'];
       return o;
     });
     resetSheet_(sh);
