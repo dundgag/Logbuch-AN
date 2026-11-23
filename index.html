@@ -2852,10 +2852,8 @@
     BTM_OPTIONS.forEach((o) => { btmById[o.id] = o; });
 
     function btmSelectOptionsHtml() {
-        const groups = [];
-        BTM_OPTIONS.forEach((o) => { if (!groups.includes(o.group)) groups.push(o.group); });
-        return groups.map((g) => `<optgroup label="${esc(g)}">${BTM_OPTIONS.filter((o) => o.group === g)
-            .map((o) => `<option value="${o.id}">${esc(o.label)}</option>`).join('')}</optgroup>`).join('');
+        // Einfache Liste ohne Überschriften (Gruppen)
+        return BTM_OPTIONS.map((o) => `<option value="${o.id}">${esc(o.label)}</option>`).join('');
     }
 
     function fmtAmount(n) {
